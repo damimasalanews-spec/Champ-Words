@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Guessing Word Game — Demo Client</title>
+</head>
+<body>
+  <h1>Guessing Word Game — Demo</h1>
+  <div>
+    <label>Room ID: <input id="room" value="room1" /></label>
+    <label>Your ID: <input id="pid" value="p1" /></label>
+    <label>Name: <input id="name" value="Alice" /></label>
+    <button id="create">Create & Join</button>
+    <button id="join">Join</button>
+    <button id="start">Start Game (host)</button>
+  </div>
+
+  <div id="game" style="margin-top:20px">
+    <div id="state"></div>
+    <input id="guess" placeholder="enter 5-letter guess" />
+    <button id="send">Send Guess</button>
+    <ul id="log"></ul>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const roomEl = document.getElementById('room');
+    const pidEl = document.getElementById('pid');
+    const nameEl = document.getElementById('name');
+    const createBtn = document.getElementById('create');
+    const joinBtn = document.getElementById('join');
+    const startBtn = document.getElementById('start');
+    const stateDiv = document.getElementById('state');
+    const guessInput = document.getElementById('guess');
+    const sendBtn = document.getElementById('send');
+    const log = document.getElementById('log');
+
+    function logMsg(m){
+      const li = document.createElement('li');
+      li.textContent = m;
+      log.appendChild(li);
+    }
+
+    socket.on('room_state', s => {
+      stateDiv.textContent = JSON.stringify(s);
+    });
+
+    socket.on('guess_made', (d) => {
+      logMsg(`[${d.playerId}] ${d.guess} -> ${d.feedback.join(',')}`);
+    });
+
+    socket.on('game_started', d => {
+      logMsg('Game started! word length ' + d.wordLength);
+    });
+
+    socket.on('game_over', d => {
+      logMsg('Game over! ' + (d.winner ? `winner: ${d.winner}` : 'no winner') + ' secret: ' + d.secret);
+    });
+
+    createBtn.onclick = () => {
+      socket.emit('create_room', { roomId: roomEl.value, playerId: pidEl.value, name: nameEl.value }, (r) => {
+        if (!r.ok) alert(r.error);
+      });
+    };
+    joinBtn.onclick = () => {
+      socket.emit('join_room', { roomId: roomEl.value, playerId: pidEl.value, name: nameEl.value }, (r) => {
+        if (!r.ok) alert(r.error);
+      });
+    };
+    startBtn.onclick = () => {
+      socket.emit('start_game', { roomId: roomEl.value }, (r) => {
+        if (!r.ok) alert(r.error);
+      });
+    };
+    sendBtn.onclick = () => {
+      const g = guessInput.value;
+      socket.emit('make_guess', { roomId: roomEl.value, playerId: pidEl.value, guess: g }, (r) => {
+        if (!r.ok) alert(r.error);
+      });
+      guessInput.value = '';
+    };
+  </script>
+</body>
+</html>
