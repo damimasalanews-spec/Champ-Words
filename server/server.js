@@ -330,8 +330,8 @@ function beginChampTurn(room, champId) {
     champ: champ ? { id: champ.id, name: champ.name } : null
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
-  // Secretly send the 3 word choices ONLY to the champ
-  io.to(champId).emit('word_choices', { choices: room.choices });
+  // Delay word_choices slightly so the client's React component mounts and registers its listener
+  setTimeout(() => io.to(champId).emit('word_choices', { choices: room.choices }), 120);
 }
 
 function startRound(room) { // champ has picked their word
@@ -380,31 +380,18 @@ function endRound(room) {
     winner: winner ? { id: winner.id, name: winner.name, score: room.roundScore, elapsed: room.roundElapsed } : null,
     scores
   });
-  if (room.round >= room.totalRounds) {
-    setTimeout(() => {
-      if (room.players.length === 0) return;
-      room.state = 'finished';
-      const final = [...room.players].sort((a, b) => b.score - a.score);
-      io.to(room.id).emit('game_over', {
-        room: sanitizeRoom(room),
-        winner: { id: final[0].id, name: final[0].name },
-        scores: final.map(p => ({ id: p.id, name: p.name, score: p.score }))
-      });
-    }, ROUND_OVER_TO_NEXT_MS);
-  } else {
-    setTimeout(() => {
-      if (room.players.length === 0) return;
-      let nextId = null;
-      if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
-        nextId = room.roundWinnerId; // winner picks the next word
-      } else {
-        const idx = room.players.findIndex(p => p.id === room.champId);
-        nextId = room.players[(idx + 1) % room.players.length].id; // nobody guessed — pass the turn
-      }
-      room.round++;
-      beginChampTurn(room, nextId);
-    }, ROUND_OVER_TO_NEXT_MS);
-  }
+  setTimeout(() => {
+    if (room.players.length === 0) return;
+    let nextId = null;
+    if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
+      nextId = room.roundWinnerId; // winner picks the next word
+    } else {
+      const idx = room.players.findIndex(p => p.id === room.champId);
+      nextId = room.players[(idx + 1) % room.players.length].id; // nobody guessed — pass the turn
+    }
+    room.round++;
+    beginChampTurn(room, nextId);
+  }, ROUND_OVER_TO_NEXT_MS);
 }
 
 // ── Socket.IO ────────────────────────────────────────────────────────────

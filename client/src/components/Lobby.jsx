@@ -4,8 +4,6 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   const [mode, setMode] = useState('create'); // create | join
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [roomCode, setRoomCode] = useState('');
-  const [totalRounds, setTotalRounds] = useState(5);
-
   const nameRef = useRef(null);
   const codeRef = useRef(null);
 
@@ -21,7 +19,7 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   const handleCreate = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    onCreateRoom(name.trim(), totalRounds);
+    onCreateRoom(name.trim(), 999);
   };
 
   const handleJoin = (e) => {
@@ -45,15 +43,6 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
             <label>Your Name</label>
             <input ref={nameRef} value={name} onChange={e => setName(e.target.value)}
               placeholder="Enter your name" maxLength={16} required />
-          </div>
-          <div className="form-group">
-            <label>Rounds</label>
-            <select value={totalRounds} onChange={e => setTotalRounds(Number(e.target.value))}>
-              <option value={3}>3 Rounds</option>
-              <option value={5}>5 Rounds</option>
-              <option value={7}>7 Rounds</option>
-              <option value={10}>10 Rounds</option>
-            </select>
           </div>
           <button type="submit" className="btn btn-primary">Create Room</button>
         </form>

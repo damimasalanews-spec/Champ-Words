@@ -4,7 +4,6 @@ import LoginPage from './components/LoginPage';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
 import RoundOver from './components/RoundOver';
-import GameOver from './components/GameOver';
 import Chat from './components/Chat';
 import Toast from './components/Toast';
 import './App.css';
@@ -18,7 +17,6 @@ export default function App() {
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
-  const [gameResult, setGameResult] = useState(null);
 
   const showToast = useCallback((text, type = 'error') => {
     setToast({ text, type });
@@ -46,19 +44,18 @@ export default function App() {
     if (!user) return;
 
     socket.on('room_update', (data) => setRoom(data));
-    socket.on('champ_turn', (data) => { setRoom(data.room); setScreen('playing'); setRoundResult(null); setGameResult(null); });
+    socket.on('champ_turn', (data) => { setRoom(data.room); setScreen('playing'); setRoundResult(null); });
     socket.on('round_started', (data) => { setRoom(data.room); setScreen('playing'); });
     socket.on('word_found', (data) => { setRoom(data.room); });
     socket.on('time_up', (data) => { setRoom(data.room); });
     socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); });
-    socket.on('game_over', (data) => { setRoom(data.room); setGameResult(data); setScreen('finished'); });
     socket.on('chat', (msg) => setMessages(prev => [...prev, msg]));
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
 
     return () => {
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
-      socket.off('game_over'); socket.off('chat'); socket.off('connect_error');
+      socket.off('chat'); socket.off('connect_error');
     };
   }, [user, showToast]);
 
@@ -103,15 +100,9 @@ export default function App() {
       showToast(`Hint: ${res.revealed.toUpperCase()}${'_'.repeat(res.wordLength - res.revealed.length)} (${res.hintsLeft} left)`, 'success');
     });
   };
-  const handlePlayAgain = () => {
-    if (!room) return;
-    socket.emit('play_again', { roomId: room.id }, (res) => {
-      if (res.ok) { setScreen('waiting'); setRoundResult(null); setGameResult(null); setMessages([]); }
-    });
-  };
   const handleLeave = () => {
     if (room) socket.emit('leave_room', { roomId: room.id });
-    setRoom(null); setScreen('lobby'); setRoundResult(null); setGameResult(null); setMessages([]); setChatOpen(false);
+    setRoom(null); setScreen('lobby'); setRoundResult(null); setMessages([]); setChatOpen(false);
   };
   const handleSendMessage = (text) => { if (room && text.trim()) socket.emit('chat_message', { roomId: room.id, text: text.trim() }); };
 
@@ -206,9 +197,6 @@ export default function App() {
 
       {screen === 'round_over' && roundResult && (
         <RoundOver result={roundResult} room={room} />
-      )}
-      {screen === 'finished' && gameResult && (
-        <GameOver result={gameResult} room={room} isHost={socket.id === room?.host} onPlayAgain={handlePlayAgain} onLeave={handleLeave} />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
       {toast && <Toast text={toast.text} type={toast.type} />}

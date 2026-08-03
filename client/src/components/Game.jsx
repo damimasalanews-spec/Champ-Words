@@ -278,7 +278,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} />}
 
       <div className="game-header">
-        <span className="round-info">Round <span>{room.round}</span> / {room.totalRounds}</span>
+        <span className="round-info">Round <span>{room.round}</span></span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
             {chatOpen ? 'Close Chat' : 'Chat'}

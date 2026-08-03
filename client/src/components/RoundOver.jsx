@@ -1,9 +1,8 @@
 export default function RoundOver({ result, room }) {
-  const { word, winner, round, totalRounds, champName, scores } = result;
+  const { word, winner, round, champName, scores } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const nextChamp = winner?.name || null;
-  const isLastRound = round >= (totalRounds || 5);
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;
@@ -50,11 +49,7 @@ export default function RoundOver({ result, room }) {
         </div>
 
         <p className="next-champ-note">
-          {isLastRound
-            ? 'Final results coming up...'
-            : nextChamp
-              ? `Next up: ${nextChamp} picks the next word!`
-              : 'The next player picks the next word!'}
+          {nextChamp ? `Next up: ${nextChamp} picks the next word!` : 'The next player picks the next word!'}
         </p>
 
         <div className="overlay-buttons">
