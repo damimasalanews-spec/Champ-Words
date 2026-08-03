@@ -6,57 +6,6 @@ function isAdjacent(r1, c1, r2, c2) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
-// ── Bracket grid: 2-column ────────────────────────────────────────────────
-function BracketGrid({ count, letters, showLabel, solved, wonRound }) {
-  const boxes = [];
-  for (let i = 0; i < count; i++) {
-    const l = (letters && letters[i]) || '';
-    let cls = '';
-    if (l) cls = wonRound ? 'found-me' : (solved ? 'found-other' : 'hint-revealed');
-    boxes.push(<div key={i} className={`bracket-box ${cls}`}>{l && <span className="bracket-letter">{l.toUpperCase()}</span>}</div>);
-  }
-  const rows = [];
-  for (let i = 0; i < boxes.length; i += 2) {
-    let row = boxes.slice(i, i + 2);
-    if (row.length < 2) row.push(<div key={`e${i}`} className="bracket-box bracket-empty" />);
-    rows.push(<div key={`r${i}`} className="bracket-row bracket-row-2">{row}</div>);
-  }
-  return (
-    <div className="bracket-grid">
-      {showLabel && <div className="brackets-grid-label">WORD</div>}
-      {rows}
-    </div>
-  );
-}
-
-function AnswerGrid({ count, solvedWord, wonRound, solvedByName }) {
-  const boxes = [];
-  for (let i = 0; i < count; i++) {
-    const l = solvedWord ? solvedWord[i] || '' : '';
-    let cls = '';
-    if (solvedWord && !solvedByName) cls = '';
-    else if (l) cls = wonRound ? 'found-me' : 'found-other';
-    boxes.push(<div key={i} className={`bracket-box ${cls}`}>{l && <span className="bracket-letter">{l.toUpperCase()}</span>}</div>);
-  }
-  const rows = [];
-  for (let i = 0; i < boxes.length; i += 2) {
-    let row = boxes.slice(i, i + 2);
-    if (row.length < 2) row.push(<div key={`e${i}`} className="bracket-box bracket-empty" />);
-    rows.push(<div key={`r${i}`} className="bracket-row bracket-row-2">{row}</div>);
-  }
-  return (
-    <div className="bracket-grid answer-brackets">
-      <div className="brackets-grid-label">ANSWER</div>
-      {rows}
-      {solvedWord && (
-        <div className="solved-text">
-          {wonRound ? 'You got it!' : solvedByName ? `${solvedByName} got it!` : 'Time is up!'}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Word Pick Popup (6 choices) ───────────────────────────────────────────
 function WordPickPopup({ choices, onPick, disabled }) {
   return (
@@ -123,7 +72,7 @@ function Confetti({ word, onDone }) {
 // ═══════════════════════════════════════════════════════════════════════════
 const CELL_SZ = 58, GAP = 8, SPACING = CELL_SZ + GAP;
 
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, onHint }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -249,13 +198,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setTimeout(() => setSubmitting(false), 500);
   };
 
-  // Top bracket letters
-  const topLetters = Array.from({ length: wordLen }, (_, i) => {
-    if (state === 'round_over' && solvedWord) return solvedWord[i] || '';
-    if (i < (room.revealedPrefix || '').length) return room.revealedPrefix[i];
-    return '';
-  });
-
   const solved = Boolean(solvedWord);
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
@@ -294,11 +236,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {state === 'playing' && (
         <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
-      )}
-
-      {/* ── WORD brackets ── */}
-      {wordLen > 0 && state === 'playing' && (
-        <BracketGrid count={wordLen} letters={topLetters} solved={solved} wonRound={wonRound} showLabel={true} />
       )}
 
       {/* ── 4×4 Grid ── */}
@@ -343,9 +280,29 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── ANSWER brackets ── */}
+      {/* ── ANSWER brackets (single row) ── */}
       {wordLen > 0 && state === 'playing' && (
-        <AnswerGrid count={wordLen} solvedWord={solvedWord} wonRound={wonRound} solvedByName={solvedByName} />
+        <div className="brackets-section">
+          <div className="brackets-label">ANSWER</div>
+          <div className="bracket-row">
+            {Array.from({ length: wordLen }, (_, i) => {
+              const l = solvedWord ? solvedWord[i] || '' : '';
+              let cls = '';
+              if (solvedWord && !solvedByName) cls = '';
+              else if (l) cls = wonRound ? 'found-me' : 'found-other';
+              return (
+                <div key={i} className={`bracket-box ${cls}`}>
+                  {l && <span className="bracket-letter">{l.toUpperCase()}</span>}
+                </div>
+              );
+            })}
+          </div>
+          {solvedWord && (
+            <div className="solved-text">
+              {wonRound ? 'You got it!' : solvedByName ? `${solvedByName} got it!` : 'Time is up!'}
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── Score board ── */}
@@ -362,12 +319,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         ))}
       </div>
 
-      {/* ── Hint ── */}
-      {!isChamp && state === 'playing' && !solved && (
-        <button className="hint-btn" onClick={onHint} disabled={(me?.hintsLeft || 0) <= 0} style={{ marginTop: 10 }}>
-          <span className="hint-icon">💡</span> Hint <span className="hint-count">{me?.hintsLeft ?? 0}</span>
-        </button>
-      )}
       {isChamp && state === 'playing' && (
         <div className="champ-watching">Waiting for someone to drag the right word...</div>
       )}

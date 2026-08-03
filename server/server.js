@@ -183,7 +183,9 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     endedRound: false,
     choices: [],              // 6 word choices offered to champ (secret from guessers)
     grid: null,               // 4×4 letter grid (generated from chosen word)
-    timer: null
+    timer: null,
+    hintTimer1: null,         // auto-reveal first letter after 20s
+    hintTimer2: null          // auto-reveal second letter after 40s
   };
   rooms.set(id, room);
   return room;
@@ -206,7 +208,11 @@ function sanitizeRoom(room) {
 function playerById(room, id) { return room.players.find(p => p.id === id); }
 function champOf(room) { return playerById(room, room.champId); }
 
-function clearTimer(room) { if (room.timer) { clearTimeout(room.timer); room.timer = null; } }
+function clearTimer(room) {
+  if (room.timer) { clearTimeout(room.timer); room.timer = null; }
+  if (room.hintTimer1) { clearTimeout(room.hintTimer1); room.hintTimer1 = null; }
+  if (room.hintTimer2) { clearTimeout(room.hintTimer2); room.hintTimer2 = null; }
+}
 
 // ── Pick 6 words (varied lengths) for the champ ─────────────────────────
 function generateChoices() {
@@ -334,6 +340,15 @@ function beginChampTurn(room, champId) {
   setTimeout(() => io.to(champId).emit('word_choices', { choices: room.choices }), 120);
 }
 
+// ── Auto-reveal a hint level ─────────────────────────────────────────────
+function revealHint(room, level) {
+  if (!room.word || room.state !== 'playing') return;
+  if (room.wordRevealed < level) {
+    room.wordRevealed = level;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+  }
+}
+
 function startRound(room) { // champ has picked their word
   room.state = 'playing';
   room.wordRevealed = 0;
@@ -345,6 +360,9 @@ function startRound(room) { // champ has picked their word
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
+  // Auto-hints: first letter at 20s elapsed (40s left), second at 40s elapsed (20s left)
+  room.hintTimer1 = setTimeout(() => revealHint(room, 1), 20000);
+  room.hintTimer2 = setTimeout(() => revealHint(room, 2), 40000);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }

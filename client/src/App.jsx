@@ -191,7 +191,6 @@ export default function App() {
           onChatToggle={() => setChatOpen(o => !o)}
           chatOpen={chatOpen}
           onChooseWord={handleChooseWord}
-          onHint={handleHint}
         />
       )}
 
