@@ -1,15 +1,19 @@
 {
   "name": "champ-words",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "Multiplayer Word Guessing Game — race against friends to guess the word!",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "ts-node src/server.ts"
+    "dev": "node server/server.js",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "build:deploy": "npm --prefix server install && npm --prefix client install && npm --prefix client run build",
+    "start": "node server/server.js",
+    "install:all": "cd server && npm install && cd ../client && npm install"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "ts-node": "^10.0.0"
-  }
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["wordle", "multiplayer", "word-game", "socket.io"],
+  "license": "MIT"
 }
