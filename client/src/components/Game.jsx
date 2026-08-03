@@ -1,61 +1,53 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerList from './PlayerList';
 
-// ── Bracket grid helper: 2 columns, up to 4 rows ──────────────────────────
+// ═══ Helpers ══════════════════════════════════════════════════════════════
+function isAdjacent(r1, c1, r2, c2) {
+  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
+}
+
+// ── Bracket grid: 2-column ────────────────────────────────────────────────
 function BracketGrid({ count, letters, showLabel, solved, wonRound }) {
   const boxes = [];
   for (let i = 0; i < count; i++) {
     const l = (letters && letters[i]) || '';
     let cls = '';
     if (l) cls = wonRound ? 'found-me' : (solved ? 'found-other' : 'hint-revealed');
-    boxes.push(
-      <div key={i} className={`bracket-box ${cls}`}>
-        {l && <span className="bracket-letter">{l.toUpperCase()}</span>}
-      </div>
-    );
+    boxes.push(<div key={i} className={`bracket-box ${cls}`}>{l && <span className="bracket-letter">{l.toUpperCase()}</span>}</div>);
   }
   const rows = [];
   for (let i = 0; i < boxes.length; i += 2) {
-    const row = boxes.slice(i, i + 2);
-    if (row.length < 2) row.push(<div key={`empty-${i}`} className="bracket-box bracket-empty" />);
-    rows.push(row);
+    let row = boxes.slice(i, i + 2);
+    if (row.length < 2) row.push(<div key={`e${i}`} className="bracket-box bracket-empty" />);
+    rows.push(<div key={`r${i}`} className="bracket-row bracket-row-2">{row}</div>);
   }
   return (
     <div className="bracket-grid">
       {showLabel && <div className="brackets-grid-label">WORD</div>}
-      {rows.map((row, ri) => (
-        <div key={ri} className="bracket-row bracket-row-2">{row}</div>
-      ))}
+      {rows}
     </div>
   );
 }
 
-// ── Answer grid (2-col, letters filled when solved) ───────────────────────
 function AnswerGrid({ count, solvedWord, wonRound, solvedByName }) {
   const boxes = [];
   for (let i = 0; i < count; i++) {
     const l = solvedWord ? solvedWord[i] || '' : '';
     let cls = '';
-    if (solvedWord && !solvedByName) cls = ''; // time-up: neutral
+    if (solvedWord && !solvedByName) cls = '';
     else if (l) cls = wonRound ? 'found-me' : 'found-other';
-    boxes.push(
-      <div key={i} className={`bracket-box ${cls}`}>
-        {l && <span className="bracket-letter">{l.toUpperCase()}</span>}
-      </div>
-    );
+    boxes.push(<div key={i} className={`bracket-box ${cls}`}>{l && <span className="bracket-letter">{l.toUpperCase()}</span>}</div>);
   }
   const rows = [];
   for (let i = 0; i < boxes.length; i += 2) {
-    const row = boxes.slice(i, i + 2);
-    if (row.length < 2) row.push(<div key={`empty-${i}`} className="bracket-box bracket-empty" />);
-    rows.push(row);
+    let row = boxes.slice(i, i + 2);
+    if (row.length < 2) row.push(<div key={`e${i}`} className="bracket-box bracket-empty" />);
+    rows.push(<div key={`r${i}`} className="bracket-row bracket-row-2">{row}</div>);
   }
   return (
     <div className="bracket-grid answer-brackets">
       <div className="brackets-grid-label">ANSWER</div>
-      {rows.map((row, ri) => (
-        <div key={ri} className="bracket-row bracket-row-2">{row}</div>
-      ))}
+      {rows}
       {solvedWord && (
         <div className="solved-text">
           {wonRound ? 'You got it!' : solvedByName ? `${solvedByName} got it!` : 'Time is up!'}
@@ -65,31 +57,60 @@ function AnswerGrid({ count, solvedWord, wonRound, solvedByName }) {
   );
 }
 
-// ── Confetti overlay (CSS animation) ──────────────────────────────────────
+// ── Word Pick Popup (6 choices) ───────────────────────────────────────────
+function WordPickPopup({ choices, onPick, disabled }) {
+  return (
+    <div className="pick-popup-overlay">
+      <div className="pick-popup-card">
+        <h2>Choose your word</h2>
+        <p className="pick-popup-sub">Others must guess it from the grid below</p>
+        <div className="pick-popup-choices">
+          {choices.map((w, i) => (
+            <button key={i} className="pick-popup-word" disabled={disabled}
+              onClick={() => onPick(w)}>
+              <span className="pick-popup-text">{w.toUpperCase()}</span>
+              <span className="pick-popup-len">{w.length} letters</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Confetti + sound ─────────────────────────────────────────────────────
+function playCelebrationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.5);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.12); osc.stop(ctx.currentTime + i * 0.12 + 0.5);
+    });
+    setTimeout(() => {
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+        osc.type = 'triangle'; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.9);
+      });
+    }, 450);
+  } catch (_) {}
+}
+
 function Confetti({ word, onDone }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 2000);
-    playCelebrationSound();
-    return () => clearTimeout(t);
-  }, [onDone]);
-
-  const pieces = Array.from({ length: 36 }, (_, i) => {
-    const color = ['#fe2c55', '#00e676', '#ffab00', '#25f4ee', '#7a74b8', '#ff6d00'][i % 6];
-    const xStart = Math.random() * 100;
-    const delay = Math.random() * 0.6;
-    const size = 6 + Math.random() * 6;
-    return (
-      <div key={i} className="confetti-piece" style={{
-        '--x': xStart, '--delay': delay + 's',
-        '--color': color, '--size': size + 'px',
-        left: xStart + '%'
-      }} />
-    );
-  });
-
+  useEffect(() => { playCelebrationSound(); const t = setTimeout(onDone, 2000); return () => clearTimeout(t); }, [onDone]);
   return (
     <div className="confetti-overlay">
-      {pieces}
+      {Array.from({ length: 36 }, (_, i) => {
+        const c = ['#fe2c55','#00e676','#ffab00','#25f4ee','#7a74b8','#ff6d00'][i % 6];
+        return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':(6+Math.random()*6)+'px',left:Math.random()*100+'%'}}/>;
+      })}
       <div className="confetti-center">
         <div className="confetti-star">✨</div>
         <div className="confetti-word">{word.toUpperCase()}</div>
@@ -99,116 +120,128 @@ function Confetti({ word, onDone }) {
   );
 }
 
-// ── Simple Web Audio celebration sound ────────────────────────────────────
-function playCelebrationSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [523.25, 659.25, 783.99]; // C5 E5 G5
-    notes.forEach((freq, i) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.12);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.5);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(ctx.currentTime + i * 0.12);
-      osc.stop(ctx.currentTime + i * 0.12 + 0.5);
-    });
-    // final chord
-    setTimeout(() => {
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.9);
-      });
-    }, 450);
-  } catch (_) { /* audio not available — silent is fine */ }
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, onGuess, onHint }) {
+const CELL_SZ = 58, GAP = 8, SPACING = CELL_SZ + GAP;
+
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, onHint }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
   const state = room.state;
+  const grid = room.grid || [];
 
-  const [choices, setChoices] = useState([]);     // 3 word choices (champ only)
-  const [champWord, setChampWord] = useState('');  // champ's own word (local)
-  const [guess, setGuess] = useState('');
+  const [choices, setChoices] = useState([]);
+  const [champWord, setChampWord] = useState('');
   const [solvedWord, setSolvedWord] = useState('');
   const [solvedBy, setSolvedBy] = useState(null);
   const [solvedByName, setSolvedByName] = useState('');
   const [falling, setFalling] = useState(false);
-  const [confetti, setConfetti] = useState(null);  // { word } or null
+  const [confetti, setConfetti] = useState(null);
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
-  const guessRef = useRef(null);
 
-  // ── Listen for word_choices (champ only) ─────────────────────────────────
-  useEffect(() => {
-    const handler = (data) => setChoices(data.choices || []);
-    socket.on('word_choices', handler);
-    return () => socket.off('word_choices', handler);
-  }, [socket]);
+  // Drag state
+  const [dragPath, setDragPath] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const gridRef = useRef(null);
+  const lastCellRef = useRef(null);
+
+  const clearConfetti = useCallback(() => setConfetti(null), []);
+
+  // word_choices listener
+  useEffect(() => { const h = data => setChoices(data.choices || []); socket.on('word_choices', h); return () => socket.off('word_choices', h); }, [socket]);
 
   // Reset per round
   useEffect(() => {
-    setGuess(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
+    setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
-    setChoices([]); setChampWord('');
+    setDragPath([]); setIsDragging(false); lastCellRef.current = null;
   }, [room.round, room.champId]);
 
   // Countdown
   useEffect(() => {
     if (state !== 'playing' || !room.endsAt) return;
-    const tick = () => {
-      const rem = Math.max(0, Math.ceil((room.endsAt - Date.now()) / 1000));
-      setTimeLeft(rem);
-      if (rem <= 0) clearInterval(iv);
-    };
-    const iv = setInterval(tick, 250);
-    tick();
+    const tick = () => { const rem = Math.max(0, Math.ceil((room.endsAt - Date.now()) / 1000)); setTimeLeft(rem); if (rem <= 0) clearInterval(iv); };
+    const iv = setInterval(tick, 250); tick();
     return () => clearInterval(iv);
   }, [state, room.endsAt, room.round]);
 
-  // Word found / time up → fall animation + congrats
+  // Word found / time up
   useEffect(() => {
     const onFound = (data) => {
-      setSolvedWord(data.word);
-      setSolvedBy(data.winnerId);
-      setSolvedByName(data.winnerName);
-      setFalling(true);
+      setSolvedWord(data.word); setSolvedBy(data.winnerId); setSolvedByName(data.winnerName);
+      setFalling(true); setTimeout(() => setFalling(false), 1300);
       if (data.winnerId === socket.id) setConfetti({ word: data.word });
-      setTimeout(() => setFalling(false), 1300);
     };
-    const onTimeUp = (data) => {
-      setSolvedWord(data.word);
-    };
-    socket.on('word_found', onFound);
-    socket.on('time_up', onTimeUp);
+    const onTimeUp = (data) => { setSolvedWord(data.word); };
+    socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
     return () => { socket.off('word_found', onFound); socket.off('time_up', onTimeUp); };
   }, [socket]);
 
-  // Top bracket letters
-  const topLetters = Array.from({ length: wordLen }, (_, i) => {
-    if (state === 'round_over' && solvedWord) return solvedWord[i] || '';
-    if (isChamp && champWord) return champWord[i] || '';
-    if (i < (room.revealedPrefix || '').length) return room.revealedPrefix[i];
-    return '';
-  });
+  // ── Drag: cell under a pointer ───────────────────────────────────
+  const cellUnderPoint = (clientX, clientY) => {
+    if (!gridRef.current) return null;
+    const cells = gridRef.current.querySelectorAll('.grid-cell');
+    for (const cell of cells) {
+      const rect = cell.getBoundingClientRect();
+      if (clientX >= rect.left + 2 && clientX <= rect.right - 2 && clientY >= rect.top + 2 && clientY <= rect.bottom - 2) {
+        return { r: parseInt(cell.dataset.row), c: parseInt(cell.dataset.col) };
+      }
+    }
+    return null;
+  };
 
-  const solved = Boolean(solvedWord);
-  const wonRound = solved && solvedBy === socket.id;
-  const clearConfetti = useCallback(() => setConfetti(null), []);
-  const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
+  const startDrag = (r, c, e) => {
+    if (submitting || isChamp) return;
+    e.preventDefault();
+    setIsDragging(true);
+    setDragPath([[r, c]]);
+    lastCellRef.current = `${r},${c}`;
+  };
 
+  const continueDrag = useCallback((e) => {
+    if (!isDragging || submitting) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const cell = cellUnderPoint(cx, cy);
+    if (!cell) return;
+    const ck = `${cell.r},${cell.c}`;
+    if (ck === lastCellRef.current) return;
+    lastCellRef.current = ck;
+    const last = dragPath[dragPath.length - 1];
+    if (cell.r === last[0] && cell.c === last[1]) return;
+    if (!isAdjacent(last[0], last[1], cell.r, cell.c)) return;
+    const idx = dragPath.findIndex(([pr, pc]) => pr === cell.r && pc === cell.c);
+    if (idx >= 0) { setDragPath(prev => prev.slice(0, idx + 1)); return; }
+    if (dragPath.length >= 8) return;
+    setDragPath(prev => [...prev, [cell.r, cell.c]]);
+  }, [isDragging, dragPath, submitting]);
+
+  const endDrag = useCallback(() => {
+    if (!isDragging || submitting) return;
+    setIsDragging(false);
+    lastCellRef.current = null;
+    if (dragPath.length < 3) { setDragPath([]); return; }
+    const word = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('');
+    setSubmitting(true);
+    socket.emit('submit_word', { roomId: room.id, word, path: dragPath }, (res) => {
+      setSubmitting(false);
+      if (res.ok) { /* handled by word_found event */ }
+      else if (res.error) showToast(res.error);
+      setDragPath([]);
+    });
+  }, [isDragging, dragPath, submitting, grid, room.id, socket, showToast]);
+
+  // Drag global listeners
+  useEffect(() => {
+    const move = (e) => continueDrag(e);
+    const up = () => endDrag();
+    window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+    window.addEventListener('touchmove', move, { passive: false }); window.addEventListener('touchend', up);
+    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); window.removeEventListener('touchmove', move); window.removeEventListener('touchend', up); };
+  }, [continueDrag, endDrag]);
+
+  // ── Champ pick ────────────────────────────────────────────────────
   const submitPick = (w) => {
     setSubmitting(true);
     onChooseWord(w);
@@ -216,27 +249,32 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setTimeout(() => setSubmitting(false), 500);
   };
 
-  const submitGuess = () => {
-    const g = guess.trim().toLowerCase();
-    if (!g) return;
-    if (timeLeft <= 0) { showToast('Time is up!'); return; }
-    setSubmitting(true);
-    onGuess(g);
-    setGuess('');
-    setTimeout(() => setSubmitting(false), 500);
-  };
+  // Top bracket letters
+  const topLetters = Array.from({ length: wordLen }, (_, i) => {
+    if (state === 'round_over' && solvedWord) return solvedWord[i] || '';
+    if (i < (room.revealedPrefix || '').length) return room.revealedPrefix[i];
+    return '';
+  });
+
+  const solved = Boolean(solvedWord);
+  const wonRound = solved && solvedBy === socket.id;
+  const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
+  const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
+  const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
 
   const banner = state === 'champ_pick'
-    ? (isChamp ? 'Champ turn! Pick one word' : `${champPlayer?.name || 'Champ'} is picking a word...`)
+    ? (isChamp ? 'Pick a word from the popup' : `${champPlayer?.name || 'Champ'} is choosing a word...`)
     : state === 'playing'
-      ? (isChamp ? 'Your word is in play — good luck, guessers!' : `${champPlayer?.name || 'Champ'}'s word — guess it!`)
+      ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Find ${champPlayer?.name || 'Champ'}'s word — drag on the grid!`)
       : 'Round over';
-
-  // ── Score board players (sorted) ────────────────────────────────────────
-  const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
 
   return (
     <div className="game-area">
+      {/* ── Word pick popup (champ only) ── */}
+      {isChamp && state === 'champ_pick' && choices.length > 0 && (
+        <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting} />
+      )}
+
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} />}
 
       <div className="game-header">
@@ -250,82 +288,67 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       <PlayerList players={room.players} host={room.host} champId={room.champId} myId={socket.id} />
 
-      {/* Champ banner */}
       <div className={`champ-banner ${isChamp ? 'champ-banner-me' : ''}`}>
         <span className="champ-crown">👑</span> {banner}
       </div>
 
-      {/* Timer */}
       {state === 'playing' && (
-        <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>
-          {timerLabel}
-        </div>
+        <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
       )}
 
-      {/* ── WORD grid (2 columns) ──────────────────────────────────────── */}
-      <div className="brackets-area">
-        {wordLen > 0 && (
-          <BracketGrid
-            count={wordLen}
-            letters={topLetters}
-            solved={solved}
-            wonRound={wonRound}
-            showLabel={true}
-          />
-        )}
+      {/* ── WORD brackets ── */}
+      {wordLen > 0 && state === 'playing' && (
+        <BracketGrid count={wordLen} letters={topLetters} solved={solved} wonRound={wonRound} showLabel={true} />
+      )}
 
-        {falling && solvedWord && (
-          <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
-        )}
-
-        {/* ── ANSWER grid ──────────────────────────────────────────────── */}
-        {wordLen > 0 && (
-          <AnswerGrid
-            count={wordLen}
-            solvedWord={solvedWord}
-            wonRound={wonRound}
-            solvedByName={solvedByName}
-          />
-        )}
-      </div>
-
-      {/* ── Champ word picker (3 choices) ──────────────────────────────── */}
-      {isChamp && state === 'champ_pick' && choices.length > 0 && (
-        <div className="pick-word">
-          <label className="pick-word-label">Pick your word — others must guess it</label>
-          <div className="word-choices">
-            {choices.map((w, i) => (
-              <button key={i} className="word-choice-btn" disabled={submitting}
-                onClick={() => submitPick(w)}>
-                {w.toUpperCase()}
-              </button>
+      {/* ── 4×4 Grid ── */}
+      {state === 'playing' && grid.length > 0 && (
+        <div className="grid-drag-wrapper" ref={gridRef}>
+          <div className="grid-4x4">
+            <svg className="drag-path-svg">
+              {dragPath.length > 1 && dragPath.map(([r, c], i) => {
+                if (i === 0) return null;
+                const [pr, pc] = dragPath[i - 1];
+                return <line key={`l${i}`} x1={pc * SPACING + CELL_SZ / 2} y1={pr * SPACING + CELL_SZ / 2}
+                  x2={c * SPACING + CELL_SZ / 2} y2={r * SPACING + CELL_SZ / 2}
+                  stroke="var(--green)" strokeWidth="5" strokeLinecap="round" opacity="0.85" />;
+              })}
+            </svg>
+            {grid.map((row, r) => (
+              <div key={r} className="grid-row">
+                {row.map((ch, c) => {
+                  const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
+                  const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
+                  return (
+                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}`}
+                      data-row={r} data-col={c}
+                      onMouseDown={(e) => startDrag(r, c, e)}
+                      onTouchStart={(e) => startDrag(r, c, e)}>
+                      {ch.toUpperCase()}
+                    </div>
+                  );
+                })}
+              </div>
             ))}
           </div>
+          {dragPath.length > 0 && !submitting && (
+            <div style={{ textAlign: 'center', marginTop: 6 }}>
+              <span className="drag-word-display">{dragWord}</span>
+              <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
+            </div>
+          )}
+          {falling && solvedWord && (
+            <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
+          )}
         </div>
       )}
 
-      {/* ── Guesser input ──────────────────────────────────────────────── */}
-      {!isChamp && state === 'playing' && !solved && (
-        <form className="guess-form" onSubmit={(e) => { e.preventDefault(); submitGuess(); }}>
-          <div className="input-row">
-            <input
-              ref={guessRef}
-              className="word-input"
-              value={guess}
-              onChange={e => setGuess(e.target.value.replace(/[^a-zA-Z]/g, '').slice(0, 8))}
-              placeholder="Type your guess..."
-              disabled={timeLeft <= 0}
-              autoFocus
-            />
-            <button type="submit" className="submit-btn" disabled={submitting || guess.length < 3 || timeLeft <= 0}>
-              Guess
-            </button>
-          </div>
-          {timeLeft <= 0 && <p className="time-up-note">Time's up — waiting for the reveal...</p>}
-        </form>
+      {/* ── ANSWER brackets ── */}
+      {wordLen > 0 && state === 'playing' && (
+        <AnswerGrid count={wordLen} solvedWord={solvedWord} wonRound={wonRound} solvedByName={solvedByName} />
       )}
 
-      {/* ── Score board ────────────────────────────────────────────────── */}
+      {/* ── Score board ── */}
       <div className="score-board">
         <div className="score-board-title">SCORES</div>
         {sortedPlayers.map((p, i) => (
@@ -339,23 +362,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         ))}
       </div>
 
-      {/* ── Hint button ────────────────────────────────────────────────── */}
+      {/* ── Hint ── */}
       {!isChamp && state === 'playing' && !solved && (
-        <button
-          className="hint-btn"
-          onClick={onHint}
-          disabled={(me?.hintsLeft || 0) <= 0}
-          style={{ marginTop: 10 }}
-        >
-          <span className="hint-icon">💡</span>
-          Hint
-          <span className="hint-count">{me?.hintsLeft ?? 0}</span>
+        <button className="hint-btn" onClick={onHint} disabled={(me?.hintsLeft || 0) <= 0} style={{ marginTop: 10 }}>
+          <span className="hint-icon">💡</span> Hint <span className="hint-count">{me?.hintsLeft ?? 0}</span>
         </button>
       )}
-
-      {/* Champ watching status */}
       {isChamp && state === 'playing' && (
-        <div className="champ-watching">Waiting for a guesser to get it...</div>
+        <div className="champ-watching">Waiting for someone to drag the right word...</div>
       )}
     </div>
   );

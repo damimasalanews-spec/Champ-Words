@@ -181,7 +181,8 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     roundScore: 0,
     roundElapsed: 0,
     endedRound: false,
-    choices: [],              // 3 word choices offered to champ (same length, secret from guessers)
+    choices: [],              // 6 word choices offered to champ (secret from guessers)
+    grid: null,               // 4×4 letter grid (generated from chosen word)
     timer: null
   };
   rooms.set(id, room);
@@ -197,6 +198,7 @@ function sanitizeRoom(room) {
     wordRevealed: room.wordRevealed,
     revealedPrefix: room.wordRevealed > 0 && room.word ? room.word.slice(0, room.wordRevealed) : '',
     endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
+    grid: room.state === 'playing' ? room.grid : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
   };
 }
@@ -206,19 +208,106 @@ function champOf(room) { return playerById(room, room.champId); }
 
 function clearTimer(room) { if (room.timer) { clearTimeout(room.timer); room.timer = null; } }
 
-// ── Pick 3 same-length dictionary words for the champ ────────────────────
+// ── Pick 6 words (varied lengths) for the champ ─────────────────────────
 function generateChoices() {
-  const lengths = [3, 4, 5, 6, 7, 8].filter(l => [...DICT].some(w => w.length === l));
-  const len = lengths[Math.floor(Math.random() * lengths.length)];
-  const pool = [...DICT].filter(w => w.length === len);
-  if (pool.length < 3) {
-    // fallback — any 3 words from dict
-    const all = [...DICT];
-    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
-    return all.slice(0, 3);
+  const byLen = {};
+  for (const w of DICT) {
+    if (!byLen[w.length]) byLen[w.length] = [];
+    byLen[w.length].push(w);
   }
-  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  return pool.slice(0, 3);
+  const lengths = Object.keys(byLen).map(Number).filter(l => l >= 3 && l <= 8);
+  if (lengths.length === 0) return ['cat', 'dog', 'hat', 'sun', 'egg', 'fox']; // fallback
+
+  const choices = [];
+  // Pick 6 words, trying to spread across lengths (prefer 4-7)
+  const preferred = lengths.filter(l => l >= 4 && l <= 7);
+  const pool = preferred.length >= 3 ? preferred : lengths;
+  for (let i = 0; i < 6 && i < pool.length; i++) {
+    const len = pool[Math.floor(Math.random() * pool.length)];
+    const words = byLen[len];
+    const w = words[Math.floor(Math.random() * words.length)];
+    if (!choices.includes(w)) choices.push(w);
+  }
+  // Fill any slots if we got fewer than 6
+  while (choices.length < 6) {
+    const all = [...DICT];
+    const w = all[Math.floor(Math.random() * all.length)];
+    if (!choices.includes(w)) choices.push(w);
+  }
+  // shuffle
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+  return choices;
+}
+
+// ── Generate 4×4 grid with the word placed as an adjacent path ────────────
+function isAdjacent(r1, c1, r2, c2) {
+  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
+}
+
+function generateWordGrid(word) {
+  const letters = word.split('');
+  const GRID = 4;
+
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const grid = Array.from({ length: GRID }, () => Array(GRID).fill(''));
+    const used = new Set();
+    const startR = Math.floor(Math.random() * GRID);
+    const startC = Math.floor(Math.random() * GRID);
+    grid[startR][startC] = letters[0];
+    used.add(`${startR},${startC}`);
+
+    let r = startR, c = startC;
+    let placed = 1;
+    for (let li = 1; li < letters.length; li++) {
+      const adj = [];
+      for (let dr = -1; dr <= 1; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && !used.has(`${nr},${nc}`))
+            adj.push([nr, nc]);
+        }
+      if (adj.length === 0) break;
+      const [nr, nc] = adj[Math.floor(Math.random() * adj.length)];
+      grid[nr][nc] = letters[li];
+      used.add(`${nr},${nc}`);
+      r = nr; c = nc;
+      placed++;
+    }
+    if (placed < letters.length) continue;
+
+    // Fill remaining cells with random letters
+    const chars = 'abcdefghijklmnopqrstuvwxyz';
+    for (let rr = 0; rr < GRID; rr++)
+      for (let cc = 0; cc < GRID; cc++)
+        if (!grid[rr][cc])
+          grid[rr][cc] = chars[Math.floor(Math.random() * chars.length)];
+
+    return grid;
+  }
+  // Fallback: just fill the grid
+  const g = Array.from({ length: GRID }, () => Array(GRID).fill(''));
+  const chars = 'abcdefghijklmnopqrstuvwxyz';
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      g[r][c] = chars[Math.floor(Math.random() * chars.length)];
+  return g;
+}
+
+function validatePath(grid, path, word) {
+  if (!path || !Array.isArray(path) || path.length < 3) return false;
+  if (path.length !== word.length) return false;
+  const GRID = 4;
+  for (let i = 1; i < path.length; i++) {
+    const [pr, pc] = path[i - 1], [cr, cc] = path[i];
+    if (!isAdjacent(pr, pc, cr, cc)) return false;
+    if (cr < 0 || cr >= GRID || cc < 0 || cc >= GRID) return false;
+  }
+  const formed = path.map(([r, c]) => grid[r][c]).join('');
+  return formed === word;
 }
 
 // ── Round state machine ──────────────────────────────────────────────────
@@ -252,6 +341,7 @@ function startRound(room) { // champ has picked their word
   room.roundScore = 0;
   room.roundElapsed = 0;
   room.endedRound = false;
+  room.grid = generateWordGrid(room.word); // 4×4 grid with the word embedded
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
@@ -362,14 +452,24 @@ io.on('connection', socket => {
     cb && cb({ ok: true, wordLength: w.length });
   });
 
-  socket.on('submit_word', ({ roomId, word }, cb) => {
+  socket.on('submit_word', ({ roomId, word, path }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.state !== 'playing') return cb && cb({ ok: false, error: 'No round in progress' });
     if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ - you know the word!" });
-    const guess = String(word || '').toLowerCase().trim();
-    if (!guess) return cb && cb({ ok: false });
-    if (guess !== room.word) return cb && cb({ ok: false, error: 'Not the word - try again!' });
+
+    let guessWord = null;
+    if (path && Array.isArray(path) && path.length >= 3) {
+      // Drag mode — validate path against grid
+      if (!validatePath(room.grid, path, room.word))
+        return cb && cb({ ok: false, error: 'Not the word - try dragging again!' });
+      guessWord = room.word;
+    } else {
+      // Text fallback
+      guessWord = String(word || '').toLowerCase().trim();
+      if (!guessWord || guessWord !== room.word)
+        return cb && cb({ ok: false, error: 'Not the word - try again!' });
+    }
 
     // Correct guess!
     clearTimer(room);

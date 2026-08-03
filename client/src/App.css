@@ -561,13 +561,13 @@
 .answer-brackets { margin-top: 14px; }
 
 .falling-word.falling-answer {
-  top: 26px;
+  top: 130px;
   animation: fallToAnswer 1.1s ease-in forwards;
 }
 @keyframes fallToAnswer {
-  0% { opacity: 1; transform: translate(-50%, 0) scale(1.5); }
-  70% { opacity: 1; transform: translate(-50%, 110px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, 118px) scale(0.9); }
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1.4); }
+  80% { opacity: 1; transform: translate(-50%, 160px) scale(1); }
+  100% { opacity: 0.5; transform: translate(-50%, 170px) scale(0.9); }
 }
 
 .timer-display {
@@ -628,27 +628,87 @@
 .bracket-row-2 { justify-content: center; margin-bottom: 5px; }
 .bracket-empty { visibility: hidden; }
 
-/* ── Word Choice Buttons ────────────────────────────────────────────────── */
-.word-choices {
-  display: flex; flex-direction: column; gap: 10px; margin-top: 10px;
+/* ── Word Pick Popup (6 choices, skribbl.io style) ──────────────────── */
+.pick-popup-overlay {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(5, 3, 20, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
 }
-.word-choice-btn {
-  width: 100%; padding: 15px 10px;
-  background: linear-gradient(135deg, #1a1540 0%, #24243e 100%);
+.pick-popup-card {
+  background: linear-gradient(145deg, #1a1540 0%, #24243e 100%);
   border: 2px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-size: 20px; font-weight: 800; letter-spacing: 4px;
-  cursor: pointer; text-transform: uppercase;
-  transition: border-color 0.2s, transform 0.1s, background 0.2s;
+  border-radius: 18px;
+  padding: 28px 24px;
+  max-width: 360px; width: 90%;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
 }
-.word-choice-btn:hover {
+.pick-popup-card h2 {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  margin-bottom: 4px; letter-spacing: 1px;
+}
+.pick-popup-sub {
+  font-size: 12px; color: var(--text-dim); margin-bottom: 18px;
+}
+.pick-popup-choices {
+  display: flex; flex-direction: column; gap: 9px;
+}
+.pick-popup-word {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid var(--border);
+  border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+}
+.pick-popup-word:hover {
   border-color: var(--green);
-  background: linear-gradient(135deg, rgba(0,230,118,0.1), #24243e);
+  background: rgba(0,230,118,0.08);
   transform: scale(1.02);
 }
-.word-choice-btn:active { transform: scale(0.97); }
-.word-choice-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.pick-popup-word:active { transform: scale(0.97); }
+.pick-popup-word:disabled { opacity: 0.5; cursor: default; transform: none; }
+.pick-popup-text {
+  font-size: 20px; font-weight: 800; letter-spacing: 3px;
+  color: var(--text); text-transform: uppercase;
+}
+.pick-popup-len {
+  font-size: 11px; color: var(--text-dim); font-weight: 600;
+  background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 16px;
+}
+
+/* ── 4×4 Grid ───────────────────────────────────────────────────────── */
+.grid-4x4 {
+  margin: 12px auto;
+  display: flex; flex-direction: column;
+  gap: 8px; align-items: center;
+  position: relative;
+}
+.grid-4x4 .grid-row { display: flex; gap: 8px; }
+.grid-4x4 .grid-cell {
+  width: 58px; height: 58px;
+  background: linear-gradient(145deg, #ffffff 0%, #e0dbff 100%);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800;
+  color: var(--text-dark);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  user-select: none; cursor: pointer;
+  transition: background 0.06s, transform 0.06s;
+  -webkit-user-select: none; touch-action: none;
+}
+.grid-4x4 .grid-cell:active { cursor: grabbing; }
+.grid-4x4 .grid-cell.selected {
+  background: linear-gradient(145deg, #00e676 0%, #00c853 100%);
+  color: white; transform: scale(1.1);
+  box-shadow: 0 2px 14px rgba(0,230,118,0.4);
+}
+.grid-4x4 .grid-cell.last {
+  transform: scale(1.16);
+  box-shadow: 0 0 18px rgba(0,230,118,0.55);
+}
 
 /* ── Score Board ────────────────────────────────────────────────────────── */
 .score-board {
