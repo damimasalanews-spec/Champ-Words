@@ -181,6 +181,7 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     roundScore: 0,
     roundElapsed: 0,
     endedRound: false,
+    choices: [],              // 3 word choices offered to champ (same length, secret from guessers)
     timer: null
   };
   rooms.set(id, room);
@@ -205,6 +206,21 @@ function champOf(room) { return playerById(room, room.champId); }
 
 function clearTimer(room) { if (room.timer) { clearTimeout(room.timer); room.timer = null; } }
 
+// ── Pick 3 same-length dictionary words for the champ ────────────────────
+function generateChoices() {
+  const lengths = [3, 4, 5, 6, 7, 8].filter(l => [...DICT].some(w => w.length === l));
+  const len = lengths[Math.floor(Math.random() * lengths.length)];
+  const pool = [...DICT].filter(w => w.length === len);
+  if (pool.length < 3) {
+    // fallback — any 3 words from dict
+    const all = [...DICT];
+    for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+    return all.slice(0, 3);
+  }
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return pool.slice(0, 3);
+}
+
 // ── Round state machine ──────────────────────────────────────────────────
 function beginChampTurn(room, champId) {
   room.state = 'champ_pick';
@@ -217,13 +233,16 @@ function beginChampTurn(room, champId) {
   room.roundElapsed = 0;
   room.endedRound = false;
   clearTimer(room);
-  room.players.forEach(p => { p.hintsLeft = MAX_HINTS; });
+  room.choices = generateChoices(); // store for validation
   const champ = champOf(room);
+  // Broadcast the turn to everyone (no word info)
   io.to(room.id).emit('champ_turn', {
     room: sanitizeRoom(room),
     champ: champ ? { id: champ.id, name: champ.name } : null
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
+  // Secretly send the 3 word choices ONLY to the champ
+  io.to(champId).emit('word_choices', { choices: room.choices });
 }
 
 function startRound(room) { // champ has picked their word
@@ -337,7 +356,7 @@ io.on('connection', socket => {
     if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can pick the word' });
     const w = String(word || '').toLowerCase().trim();
     if (w.length < 3 || w.length > 8) return cb && cb({ ok: false, error: 'Word must be 3-8 letters' });
-    if (!/^[a-z]+$/.test(w)) return cb && cb({ ok: false, error: 'Letters only please' });
+    if (!room.choices.includes(w)) return cb && cb({ ok: false, error: 'Please pick one of the 3 words shown' });
     room.word = w;
     startRound(room);
     cb && cb({ ok: true, wordLength: w.length });
@@ -360,6 +379,7 @@ io.on('connection', socket => {
     const player = playerById(room, socket.id);
     if (!player) return cb && cb({ ok: false, error: 'Player not found' });
     player.score += gained;
+    player.hintsLeft++; // bonus hint for guessing correctly
     room.roundWinnerId = socket.id;
     room.roundScore = gained;
     room.roundElapsed = elapsed;
@@ -374,7 +394,7 @@ io.on('connection', socket => {
       totalRounds: room.totalRounds
     });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
-    cb && cb({ ok: true, word: room.word, score: gained, elapsed });
+    cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
     setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
   });
 

@@ -618,6 +618,114 @@
   padding: 10px 0;
 }
 
+/* ── 2-Column Bracket Grid ─────────────────────────────────────────────── */
+.bracket-grid { margin-bottom: 6px; }
+.brackets-grid-label {
+  font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+  text-transform: uppercase; text-align: center; font-weight: 700;
+  margin-bottom: 5px;
+}
+.bracket-row-2 { justify-content: center; margin-bottom: 5px; }
+.bracket-empty { visibility: hidden; }
+
+/* ── Word Choice Buttons ────────────────────────────────────────────────── */
+.word-choices {
+  display: flex; flex-direction: column; gap: 10px; margin-top: 10px;
+}
+.word-choice-btn {
+  width: 100%; padding: 15px 10px;
+  background: linear-gradient(135deg, #1a1540 0%, #24243e 100%);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 20px; font-weight: 800; letter-spacing: 4px;
+  cursor: pointer; text-transform: uppercase;
+  transition: border-color 0.2s, transform 0.1s, background 0.2s;
+}
+.word-choice-btn:hover {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(0,230,118,0.1), #24243e);
+  transform: scale(1.02);
+}
+.word-choice-btn:active { transform: scale(0.97); }
+.word-choice-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+/* ── Score Board ────────────────────────────────────────────────────────── */
+.score-board {
+  margin-top: 14px;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.score-board-title {
+  font-size: 9px; font-weight: 700; letter-spacing: 2px;
+  color: var(--text-dim); text-transform: uppercase;
+  margin-bottom: 8px; text-align: center;
+}
+.score-board-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 12px; font-weight: 600;
+}
+.score-board-row:last-child { border-bottom: none; }
+.score-board-me {
+  background: rgba(0,230,118,0.06);
+  border-radius: 6px; padding: 4px 6px; margin: 0 -6px;
+}
+.score-board-rank {
+  font-size: 16px; font-weight: 900; color: var(--text-dim);
+  min-width: 20px; text-align: center;
+}
+.score-board-rank:nth-child(1) { color: var(--gold); }
+.score-board-name {
+  flex: 1; color: var(--text);
+  display: flex; align-items: center; gap: 4px;
+}
+.score-board-pts {
+  font-size: 14px; font-weight: 800; color: var(--green);
+  min-width: 40px; text-align: right; font-variant-numeric: tabular-nums;
+}
+
+/* ── Confetti + congratulations ─────────────────────────────────────────── */
+.confetti-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  pointer-events: none; overflow: hidden;
+}
+.confetti-piece {
+  position: absolute; top: -10px;
+  width: var(--size); height: var(--size);
+  background: var(--color);
+  border-radius: 2px;
+  animation: confettiFall 2s var(--delay) ease-out forwards;
+  opacity: 0;
+}
+@keyframes confettiFall {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(100vh) rotate(720deg) scale(0.3); }
+}
+.confetti-center {
+  position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center; animation: confettiPop 0.4s ease-out;
+  background: rgba(15,12,41,0.88); border-radius: 20px;
+  padding: 24px 32px; border: 2px solid var(--green);
+  pointer-events: none;
+}
+@keyframes confettiPop {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  60% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.confetti-star { font-size: 42px; }
+.confetti-word {
+  font-size: 28px; font-weight: 900; letter-spacing: 5px;
+  color: var(--green); text-transform: uppercase; margin: 8px 0;
+}
+.confetti-msg {
+  font-size: 16px; font-weight: 700; color: var(--text);
+}
+
 .round-word { text-align: center; font-size: 16px; color: var(--text); margin: 6px 0 2px; }
 .round-word b {
   font-size: 24px;

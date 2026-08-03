@@ -92,7 +92,7 @@ export default function App() {
   const handleGuess = (word) => {
     if (!room) return;
     socket.emit('submit_word', { roomId: room.id, word }, (res) => {
-      if (res.ok) showToast(`Correct! +${res.score} pts`, 'success');
+      if (res.ok) showToast(`Correct! +${res.score} pts (+1 hint!)`, 'success');
       else if (res.error) showToast(res.error);
     });
   };
