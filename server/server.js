@@ -175,17 +175,19 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     state: 'waiting', round: 0, totalRounds: totalRounds || 5,
     champId: null,
     word: null,            // mystery word — NEVER sent to clients
-    wordRevealed: 0,
+    revealedMask: [],          // which letter positions are hint-revealed (booleans)
     roundStartedAt: null,
     roundWinnerId: null,
     roundScore: 0,
     roundElapsed: 0,
     endedRound: false,
+    pickStartedAt: null,
     choices: [],              // 6 word choices offered to champ (secret from guessers)
     grid: null,               // 4×4 letter grid (generated from chosen word)
     timer: null,
     hintTimer1: null,         // auto-reveal first letter after 20s
-    hintTimer2: null          // auto-reveal second letter after 40s
+    hintTimer2: null,         // auto-reveal second letter after 40s
+    champTimer: null          // 15s timeout for champ to pick a word
   };
   rooms.set(id, room);
   return room;
@@ -197,9 +199,11 @@ function sanitizeRoom(room) {
     round: room.round, totalRounds: room.totalRounds,
     champId: room.champId,
     wordLength: room.word ? room.word.length : 0,
-    wordRevealed: room.wordRevealed,
-    revealedPrefix: room.wordRevealed > 0 && room.word ? room.word.slice(0, room.wordRevealed) : '',
+    revealedLetters: room.word && room.revealedMask
+      ? room.word.split('').map((ch, i) => room.revealedMask[i] ? ch : '')
+      : [],
     endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
+    pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
     grid: room.state === 'playing' ? room.grid : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
   };
@@ -212,6 +216,7 @@ function clearTimer(room) {
   if (room.timer) { clearTimeout(room.timer); room.timer = null; }
   if (room.hintTimer1) { clearTimeout(room.hintTimer1); room.hintTimer1 = null; }
   if (room.hintTimer2) { clearTimeout(room.hintTimer2); room.hintTimer2 = null; }
+  if (room.champTimer) { clearTimeout(room.champTimer); room.champTimer = null; }
 }
 
 // ── Pick 6 words (varied lengths) for the champ ─────────────────────────
@@ -321,14 +326,22 @@ function beginChampTurn(room, champId) {
   room.state = 'champ_pick';
   room.champId = champId;
   room.word = null;
-  room.wordRevealed = 0;
+  room.revealedMask = [];
   room.roundStartedAt = null;
   room.roundWinnerId = null;
   room.roundScore = 0;
   room.roundElapsed = 0;
   room.endedRound = false;
+  room.pickStartedAt = Date.now();
   clearTimer(room);
   room.choices = generateChoices(); // store for validation
+  // 15s auto-pass if champ doesn't pick
+  room.champTimer = setTimeout(() => {
+    if (room.state !== 'champ_pick') return;
+    const idx = room.players.findIndex(p => p.id === room.champId);
+    const nextId = room.players[(idx + 1) % room.players.length].id;
+    beginChampTurn(room, nextId);
+  }, 15000);
   const champ = champOf(room);
   // Broadcast the turn to everyone (no word info)
   io.to(room.id).emit('champ_turn', {
@@ -340,18 +353,24 @@ function beginChampTurn(room, champId) {
   setTimeout(() => io.to(champId).emit('word_choices', { choices: room.choices }), 120);
 }
 
-// ── Auto-reveal a hint level ─────────────────────────────────────────────
-function revealHint(room, level) {
+// ── Auto-reveal a hint at a random still-hidden position ──────────────────
+function revealRandomHint(room) {
   if (!room.word || room.state !== 'playing') return;
-  if (room.wordRevealed < level) {
-    room.wordRevealed = level;
-    io.to(room.id).emit('room_update', sanitizeRoom(room));
+  // Find all unrevealed positions
+  const hidden = [];
+  for (let i = 0; i < room.word.length; i++) {
+    if (!room.revealedMask[i]) hidden.push(i);
   }
+  if (hidden.length === 0) return;
+  // Pick a random one and reveal it
+  const pos = hidden[Math.floor(Math.random() * hidden.length)];
+  room.revealedMask[pos] = true;
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
 function startRound(room) { // champ has picked their word
   room.state = 'playing';
-  room.wordRevealed = 0;
+  room.revealedMask = Array(room.word.length).fill(false);
   room.roundWinnerId = null;
   room.roundScore = 0;
   room.roundElapsed = 0;
@@ -360,9 +379,9 @@ function startRound(room) { // champ has picked their word
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
-  // Auto-hints: first letter at 20s elapsed (40s left), second at 40s elapsed (20s left)
-  room.hintTimer1 = setTimeout(() => revealHint(room, 1), 20000);
-  room.hintTimer2 = setTimeout(() => revealHint(room, 2), 40000);
+  // Auto-hints: one random letter at 20s elapsed (40s left), another at 40s (20s left)
+  room.hintTimer1 = setTimeout(() => revealRandomHint(room), 20000);
+  room.hintTimer2 = setTimeout(() => revealRandomHint(room), 40000);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }

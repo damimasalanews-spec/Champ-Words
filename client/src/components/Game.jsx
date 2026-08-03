@@ -7,12 +7,12 @@ function isAdjacent(r1, c1, r2, c2) {
 }
 
 // ── Word Pick Popup (6 choices) ───────────────────────────────────────────
-function WordPickPopup({ choices, onPick, disabled }) {
+function WordPickPopup({ choices, onPick, disabled, timeLeft }) {
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
         <h2>Choose your word</h2>
-        <p className="pick-popup-sub">Others must guess it from the grid below</p>
+        <p className="pick-popup-sub">Others must guess it from the grid below — {timeLeft}s left</p>
         <div className="pick-popup-choices">
           {choices.map((w, i) => (
             <button key={i} className="pick-popup-word" disabled={disabled}
@@ -96,6 +96,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const lastCellRef = useRef(null);
 
   const clearConfetti = useCallback(() => setConfetti(null), []);
+  const [pickTimeLeft, setPickTimeLeft] = useState(15);
+
+  // Champ pick countdown (15s)
+  useEffect(() => {
+    if (state !== 'champ_pick' || !room.pickEndsAt) return;
+    const tick = () => {
+      const rem = Math.max(0, Math.ceil((room.pickEndsAt - Date.now()) / 1000));
+      setPickTimeLeft(rem);
+      if (rem <= 0) clearInterval(iv);
+    };
+    const iv = setInterval(tick, 250);
+    tick();
+    return () => clearInterval(iv);
+  }, [state, room.pickEndsAt]);
 
   // word_choices listener
   useEffect(() => { const h = data => setChoices(data.choices || []); socket.on('word_choices', h); return () => socket.off('word_choices', h); }, [socket]);
@@ -205,7 +219,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
 
   const banner = state === 'champ_pick'
-    ? (isChamp ? 'Pick a word from the popup' : `${champPlayer?.name || 'Champ'} is choosing a word...`)
+    ? (isChamp ? `Pick a word (${pickTimeLeft}s left)` : `${champPlayer?.name || 'Champ'} is choosing... (${pickTimeLeft}s)`)
     : state === 'playing'
       ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Find ${champPlayer?.name || 'Champ'}'s word — drag on the grid!`)
       : 'Round over';
@@ -214,7 +228,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     <div className="game-area">
       {/* ── Word pick popup (champ only) ── */}
       {isChamp && state === 'champ_pick' && choices.length > 0 && (
-        <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting} />
+        <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting} timeLeft={pickTimeLeft} />
       )}
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} />}
@@ -280,16 +294,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── ANSWER brackets (single row) ── */}
+      {/* ── ANSWER brackets (single row, shows hint letters + solved word) ── */}
       {wordLen > 0 && state === 'playing' && (
         <div className="brackets-section">
           <div className="brackets-label">ANSWER</div>
           <div className="bracket-row">
             {Array.from({ length: wordLen }, (_, i) => {
-              const l = solvedWord ? solvedWord[i] || '' : '';
+              // Show hint-revealed letters when unsolved, full word when solved
+              const hintLetters = room.revealedLetters || [];
+              const hintChar = (hintLetters[i] !== undefined && hintLetters[i] !== '') ? hintLetters[i] : '';
+              const solvedChar = solvedWord ? solvedWord[i] || '' : '';
+              const l = solvedChar || hintChar;
               let cls = '';
-              if (solvedWord && !solvedByName) cls = '';
-              else if (l) cls = wonRound ? 'found-me' : 'found-other';
+              if (solvedWord && solvedByName) cls = wonRound ? 'found-me' : 'found-other';
+              else if (l) cls = 'hint-revealed';
               return (
                 <div key={i} className={`bracket-box ${cls}`}>
                   {l && <span className="bracket-letter">{l.toUpperCase()}</span>}
