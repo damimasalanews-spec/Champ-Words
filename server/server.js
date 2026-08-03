@@ -512,6 +512,7 @@ io.on('connection', socket => {
       word: room.word,
       winnerId: socket.id,
       winnerName: player.name,
+      champName: champOf(room)?.name || '',
       score: gained,
       elapsed,
       round: room.round,

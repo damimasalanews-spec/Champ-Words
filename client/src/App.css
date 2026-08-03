@@ -680,19 +680,20 @@
 }
 
 /* ── 4×4 Grid ───────────────────────────────────────────────────────── */
+.grid-drag-wrapper { padding: 6px 4px; }
 .grid-4x4 {
-  margin: 12px auto;
+  margin: 10px auto;
   display: flex; flex-direction: column;
-  gap: 8px; align-items: center;
+  gap: 7px; align-items: center;
   position: relative;
 }
-.grid-4x4 .grid-row { display: flex; gap: 8px; }
+.grid-4x4 .grid-row { display: flex; gap: 7px; }
 .grid-4x4 .grid-cell {
-  width: 58px; height: 58px;
+  width: 53px; height: 53px;
   background: linear-gradient(145deg, #ffffff 0%, #e0dbff 100%);
-  border-radius: 12px;
+  border-radius: 11px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 800;
+  font-size: 20px; font-weight: 800;
   color: var(--text-dark);
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   user-select: none; cursor: pointer;
@@ -708,6 +709,23 @@
 .grid-4x4 .grid-cell.last {
   transform: scale(1.16);
   box-shadow: 0 0 18px rgba(0,230,118,0.55);
+}
+
+/* ── Champ word display ────────────────────────────────────────────────── */
+.champ-word-display {
+  text-align: center; font-size: 13px; color: var(--text-dim);
+  margin: 0 0 4px;
+}
+.champ-word-display b {
+  color: var(--gold); letter-spacing: 2px; font-size: 15px; text-transform: uppercase;
+}
+
+/* ── Hint text below grid ───────────────────────────────────────────────── */
+.hint-text {
+  text-align: center;
+  font-size: 18px; font-weight: 800; letter-spacing: 6px;
+  color: var(--gold);
+  margin: 8px 0 2px;
 }
 
 /* ── Score Board ────────────────────────────────────────────────────────── */

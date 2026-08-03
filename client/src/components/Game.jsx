@@ -52,7 +52,7 @@ function playCelebrationSound() {
   } catch (_) {}
 }
 
-function Confetti({ word, onDone }) {
+function Confetti({ word, onDone, msg }) {
   useEffect(() => { playCelebrationSound(); const t = setTimeout(onDone, 2000); return () => clearTimeout(t); }, [onDone]);
   return (
     <div className="confetti-overlay">
@@ -63,15 +63,13 @@ function Confetti({ word, onDone }) {
       <div className="confetti-center">
         <div className="confetti-star">✨</div>
         <div className="confetti-word">{word.toUpperCase()}</div>
-        <div className="confetti-msg">Correct!</div>
+        <div className="confetti-msg">{msg}</div>
       </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-const CELL_SZ = 58, GAP = 8, SPACING = CELL_SZ + GAP;
-
 export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
@@ -134,7 +132,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     const onFound = (data) => {
       setSolvedWord(data.word); setSolvedBy(data.winnerId); setSolvedByName(data.winnerName);
       setFalling(true); setTimeout(() => setFalling(false), 1300);
-      if (data.winnerId === socket.id) setConfetti({ word: data.word });
+      const winName = data.winnerName || 'Someone';
+      const cName = data.champName || 'Champ';
+      if (data.winnerId === socket.id) setConfetti({ word: data.word, msg: `Awesome! You cracked ${cName}'s word!` });
+      else setSolvedByName(`${winName} cracked ${cName}'s word`);
     };
     const onTimeUp = (data) => { setSolvedWord(data.word); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
@@ -147,7 +148,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     const cells = gridRef.current.querySelectorAll('.grid-cell');
     for (const cell of cells) {
       const rect = cell.getBoundingClientRect();
-      if (clientX >= rect.left + 2 && clientX <= rect.right - 2 && clientY >= rect.top + 2 && clientY <= rect.bottom - 2) {
+      if (clientX >= rect.left + 4 && clientX <= rect.right - 4 && clientY >= rect.top + 4 && clientY <= rect.bottom - 4) {
         return { r: parseInt(cell.dataset.row), c: parseInt(cell.dataset.col) };
       }
     }
@@ -231,7 +232,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting} timeLeft={pickTimeLeft} />
       )}
 
-      {confetti && <Confetti word={confetti.word} onDone={clearConfetti} />}
+      {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
       <div className="game-header">
         <span className="round-info">Round <span>{room.round}</span></span>
@@ -248,6 +249,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <span className="champ-crown">👑</span> {banner}
       </div>
 
+      {isChamp && state === 'playing' && champWord && (
+        <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
+      )}
+
       {state === 'playing' && (
         <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
       )}
@@ -256,15 +261,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {state === 'playing' && grid.length > 0 && (
         <div className="grid-drag-wrapper" ref={gridRef}>
           <div className="grid-4x4">
-            <svg className="drag-path-svg">
-              {dragPath.length > 1 && dragPath.map(([r, c], i) => {
-                if (i === 0) return null;
-                const [pr, pc] = dragPath[i - 1];
-                return <line key={`l${i}`} x1={pc * SPACING + CELL_SZ / 2} y1={pr * SPACING + CELL_SZ / 2}
-                  x2={c * SPACING + CELL_SZ / 2} y2={r * SPACING + CELL_SZ / 2}
-                  stroke="var(--green)" strokeWidth="5" strokeLinecap="round" opacity="0.85" />;
-              })}
-            </svg>
             {grid.map((row, r) => (
               <div key={r} className="grid-row">
                 {row.map((ch, c) => {
@@ -286,6 +282,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div style={{ textAlign: 'center', marginTop: 6 }}>
               <span className="drag-word-display">{dragWord}</span>
               <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
+            </div>
+          )}
+          {/* Hint text below grid */}
+          {!isChamp && state === 'playing' && room.revealedLetters && room.revealedLetters.some(l => l) && (
+            <div className="hint-text">
+              HINT: {room.revealedLetters.map((l, i) => l ? l.toUpperCase() : '_').join(' ')}
             </div>
           )}
           {falling && solvedWord && (
@@ -317,7 +319,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           </div>
           {solvedWord && (
             <div className="solved-text">
-              {wonRound ? 'You got it!' : solvedByName ? `${solvedByName} got it!` : 'Time is up!'}
+              {wonRound ? `You cracked ${champPlayer?.name || 'Champ'}'s word!` : solvedByName || 'Time is up!'}
             </div>
           )}
         </div>
