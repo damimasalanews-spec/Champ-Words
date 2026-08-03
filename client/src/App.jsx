@@ -102,6 +102,11 @@ export default function App() {
 
   const handleLogout = () => { window.location.href = '/auth/logout'; };
 
+  const handlePlayAsGuest = () => {
+    setUser({ name: 'Guest', avatar: '', isGuest: true });
+    socket.connect();
+  };
+
   // ── Loading ──
   if (loading) {
     return (
@@ -117,9 +122,9 @@ export default function App() {
   }
 
   // ── Not logged in ──
-  if (!user) return <LoginPage />;
+  if (!user) return <LoginPage onPlayAsGuest={handlePlayAsGuest} />;
 
-  // ── Logged in ──
+  // ── Logged in / guest ──
   return (
     <div className="app">
       <div className="app-header">
@@ -132,7 +137,11 @@ export default function App() {
             {user.avatar && <img src={user.avatar} alt="" className="user-avatar" />}
             <span className="user-name">{user.name}</span>
           </div>
-          <button className="logout-btn" onClick={handleLogout} title="Logout">↪</button>
+          {user.isGuest ? (
+            <a className="logout-btn" href="/auth/tiktok" title="Log in with TikTok" style={{ textDecoration: 'none' }}>Log in</a>
+          ) : (
+            <button className="logout-btn" onClick={handleLogout} title="Logout">↪</button>
+          )}
         </div>
       </div>
 

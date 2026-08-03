@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export default function LoginPage() {
+export default function LoginPage({ onPlayAsGuest }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -58,8 +58,16 @@ export default function LoginPage() {
           Continue with TikTok
         </a>
 
+        <div className="login-divider">
+          <span>or</span>
+        </div>
+
+        <button className="guest-login-btn" onClick={onPlayAsGuest}>
+          Play as Guest
+        </button>
+
         <p className="login-note">
-          We only access your public profile name and avatar
+          No account needed to play. We only access your public profile name and avatar when you sign in with TikTok.
         </p>
       </div>
     </div>

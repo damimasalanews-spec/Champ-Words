@@ -437,6 +437,25 @@
 .tiktok-login-btn:active { transform: scale(0.98); }
 .tiktok-icon { width: 22px; height: 22px; color: #fe2c55; }
 
+.guest-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px;
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.guest-login-btn:hover { background: var(--bg-light); transform: scale(1.02); }
+.guest-login-btn:active { transform: scale(0.98); }
+
 .login-note {
   margin-top: 16px;
   font-size: 11px;
