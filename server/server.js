@@ -13,9 +13,6 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 3000;
-const GRID_SIZE = 6;
-const VOWELS = 'aeiou';
-const CONSONANTS = 'bcdfghjklmnpqrstvwxyz';
 
 // ── TikTok OAuth Config ──────────────────────────────────────────────────
 const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || 'YOUR_CLIENT_KEY';
@@ -160,146 +157,144 @@ try {
     .forEach(w => DICT.add(w));
 } catch (_) {}
 
-// ── Adjacency ────────────────────────────────────────────────────────────
-function isAdjacent(r1, c1, r2, c2) {
-  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
-}
-
-function validatePath(grid, path) {
-  if (!path || !Array.isArray(path) || path.length < 3) return false;
-  for (let i = 1; i < path.length; i++) {
-    const [pr, pc] = path[i - 1], [cr, cc] = path[i];
-    if (!isAdjacent(pr, pc, cr, cc)) return false;
-    if (cr < 0 || cr >= 6 || cc < 0 || cc >= 6) return false;
-  }
-  return path.map(([r, c]) => grid[r][c]).join('');
-}
-
-function canFormAdjacent(grid, word) {
-  const letters = word.split('');
-  for (let r = 0; r < GRID_SIZE; r++) {
-    for (let c = 0; c < GRID_SIZE; c++) {
-      if (grid[r][c] === letters[0]) {
-        const visited = new Set([`${r},${c}`]);
-        if (dfsAdj(grid, r, c, letters, 1, visited)) return true;
-      }
-    }
-  }
-  return false;
-}
-
-function dfsAdj(grid, r, c, letters, idx, visited) {
-  if (idx === letters.length) return true;
-  for (let dr = -1; dr <= 1; dr++) {
-    for (let dc = -1; dc <= 1; dc++) {
-      if (dr === 0 && dc === 0) continue;
-      const nr = r + dr, nc = c + dc;
-      if (nr < 0 || nr >= GRID_SIZE || nc < 0 || nc >= GRID_SIZE) continue;
-      const key = `${nr},${nc}`;
-      if (visited.has(key)) continue;
-      if (grid[nr][nc] === letters[idx]) {
-        visited.add(key);
-        if (dfsAdj(grid, nr, nc, letters, idx + 1, visited)) return true;
-        visited.delete(key);
-      }
-    }
-  }
-  return false;
-}
-
-// ── Puzzle ───────────────────────────────────────────────────────────────
-function generateGrid() {
-  const grid = [];
-  for (let r = 0; r < GRID_SIZE; r++) {
-    grid[r] = [];
-    for (let c = 0; c < GRID_SIZE; c++) {
-      const vowCount = grid[r].filter(ch => VOWELS.includes(ch)).length;
-      if (c >= GRID_SIZE - 2 && vowCount < 2)
-        grid[r][c] = VOWELS[Math.floor(Math.random() * VOWELS.length)];
-      else if (Math.random() < 0.4)
-        grid[r][c] = VOWELS[Math.floor(Math.random() * VOWELS.length)];
-      else
-        grid[r][c] = CONSONANTS[Math.floor(Math.random() * CONSONANTS.length)];
-    }
-  }
-  return grid;
-}
-
-function generatePuzzle() {
-  for (let i = 0; i < 120; i++) {
-    const grid = generateGrid();
-    const found = new Set();
-    for (const word of DICT)
-      if (word.length >= 3 && word.length <= 8 && canFormAdjacent(grid, word))
-        found.add(word);
-    const allWords = [...found];
-    if (allWords.length < 10) continue;
-
-    const byLen = {};
-    for (const w of allWords) {
-      if (!byLen[w.length]) byLen[w.length] = [];
-      byLen[w.length].push(w);
-    }
-    const lengths = Object.keys(byLen).sort((a, b) => +a - +b);
-    const n = Math.min(7, lengths.length);
-    if (n < 4) continue;
-    const picked = lengths.sort(() => Math.random() - 0.5).slice(0, n);
-    const targets = picked.map(len => {
-      const words = byLen[len];
-      return { length: +len, word: words[Math.floor(Math.random() * words.length)], foundBy: null };
-    });
-    return { grid, targetSlots: targets, allPossible: allWords };
-  }
-  return { grid: [['c','a','t'],['d','o','g'],['r','a','t']], targetSlots: [{length:3,word:'cat',foundBy:null},{length:3,word:'dog',foundBy:null}], allPossible:['cat','dog','rat'] };
-}
-
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
 const rooms = new Map();
+
+const ROUND_TIME_MS = Number(process.env.ROUND_TIME_MS) || 60 * 1000; // 1 minute to guess each word
+const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 2200; // falling-word reveal window
+const ROUND_OVER_TO_NEXT_MS = Number(process.env.ROUND_OVER_TO_NEXT_MS) || 3500; // pause before next champ / game over
+const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 1200; // reveal pause on time-up
+const MAX_HINTS = 3;
 
 function createRoom(hostId, hostName, hostAvatar, totalRounds) {
   const id = makeRoomId();
   const room = {
     id, host: hostId,
-    players: [{ id: hostId, name: hostName, avatar: hostAvatar, score: 0, wordsFound: [], hintsLeft: 3 }],
-    state: 'waiting', round: 0, totalRounds: totalRounds || 5, puzzle: null
+    players: [{ id: hostId, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS }],
+    state: 'waiting', round: 0, totalRounds: totalRounds || 5,
+    champId: null,
+    word: null,            // mystery word — NEVER sent to clients
+    wordRevealed: 0,
+    roundStartedAt: null,
+    roundWinnerId: null,
+    roundScore: 0,
+    roundElapsed: 0,
+    endedRound: false,
+    timer: null
   };
   rooms.set(id, room);
   return room;
 }
 
 function sanitizeRoom(room) {
-  const totalTargets = room.puzzle ? room.puzzle.targetSlots.length : 0;
-  const solved = room.puzzle ? room.puzzle.targetSlots.filter(s => s.foundBy !== null).length : 0;
-  const pct = totalTargets > 0 ? ((solved / totalTargets) * 100).toFixed(1) : '0.0';
   return {
     id: room.id, host: room.host, state: room.state,
     round: room.round, totalRounds: room.totalRounds,
-    puzzle: room.puzzle ? { grid: room.puzzle.grid, targetSlots: room.puzzle.targetSlots.map(s => ({ length: s.length, foundBy: s.foundBy })), solvedPct: pct } : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, wordsFound: p.wordsFound.length, connected: io.sockets.sockets.has(p.id) }))
+    champId: room.champId,
+    wordLength: room.word ? room.word.length : 0,
+    wordRevealed: room.wordRevealed,
+    revealedPrefix: room.wordRevealed > 0 && room.word ? room.word.slice(0, room.wordRevealed) : '',
+    endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
-function startRound(room) {
-  if (room.round >= room.totalRounds) return false;
-  room.round++;
-  room.puzzle = generatePuzzle();
-  room.state = 'playing';
-  room.players.forEach(p => { p.wordsFound = []; p.hintsLeft = 3; });
-  return true;
+function playerById(room, id) { return room.players.find(p => p.id === id); }
+function champOf(room) { return playerById(room, room.champId); }
+
+function clearTimer(room) { if (room.timer) { clearTimeout(room.timer); room.timer = null; } }
+
+// ── Round state machine ──────────────────────────────────────────────────
+function beginChampTurn(room, champId) {
+  room.state = 'champ_pick';
+  room.champId = champId;
+  room.word = null;
+  room.wordRevealed = 0;
+  room.roundStartedAt = null;
+  room.roundWinnerId = null;
+  room.roundScore = 0;
+  room.roundElapsed = 0;
+  room.endedRound = false;
+  clearTimer(room);
+  room.players.forEach(p => { p.hintsLeft = MAX_HINTS; });
+  const champ = champOf(room);
+  io.to(room.id).emit('champ_turn', {
+    room: sanitizeRoom(room),
+    champ: champ ? { id: champ.id, name: champ.name } : null
+  });
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
-function allFound(room) { return room.puzzle.targetSlots.every(s => s.foundBy !== null); }
+function startRound(room) { // champ has picked their word
+  room.state = 'playing';
+  room.wordRevealed = 0;
+  room.roundWinnerId = null;
+  room.roundScore = 0;
+  room.roundElapsed = 0;
+  room.endedRound = false;
+  room.roundStartedAt = Date.now();
+  clearTimer(room);
+  room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
+  io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
+}
+
+function onTimeUp(room) {
+  clearTimer(room);
+  room.state = 'round_over';
+  io.to(room.id).emit('time_up', {
+    room: sanitizeRoom(room),
+    word: room.word,
+    round: room.round,
+    totalRounds: room.totalRounds,
+    champId: room.champId
+  });
+  setTimeout(() => endRound(room), TIME_UP_TO_ROUND_OVER_MS);
+}
 
 function endRound(room) {
+  if (room.endedRound) return;
+  room.endedRound = true;
+  clearTimer(room);
   room.state = 'round_over';
-  const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score, wordsFound: p.wordsFound.length }));
+  const winner = playerById(room, room.roundWinnerId);
+  const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
   scores.sort((a, b) => b.score - a.score);
-  io.to(room.id).emit('round_over', { grid: room.puzzle.grid, targetSlots: room.puzzle.targetSlots.map(s => ({ length: s.length, word: s.word, foundBy: s.foundBy })), allPossible: room.puzzle.allPossible, scores, round: room.round, totalRounds: room.totalRounds });
+  const champ = champOf(room);
+  io.to(room.id).emit('round_over', {
+    room: sanitizeRoom(room),
+    word: room.word,
+    round: room.round,
+    totalRounds: room.totalRounds,
+    champName: champ ? champ.name : '',
+    winner: winner ? { id: winner.id, name: winner.name, score: room.roundScore, elapsed: room.roundElapsed } : null,
+    scores
+  });
   if (room.round >= room.totalRounds) {
-    const final = [...room.players].sort((a, b) => b.score - a.score);
-    io.to(room.id).emit('game_over', { winner: { id: final[0].id, name: final[0].name }, scores: final.map(p => ({ id: p.id, name: p.name, score: p.score })) });
-    room.state = 'finished';
+    setTimeout(() => {
+      if (room.players.length === 0) return;
+      room.state = 'finished';
+      const final = [...room.players].sort((a, b) => b.score - a.score);
+      io.to(room.id).emit('game_over', {
+        room: sanitizeRoom(room),
+        winner: { id: final[0].id, name: final[0].name },
+        scores: final.map(p => ({ id: p.id, name: p.name, score: p.score }))
+      });
+    }, ROUND_OVER_TO_NEXT_MS);
+  } else {
+    setTimeout(() => {
+      if (room.players.length === 0) return;
+      let nextId = null;
+      if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
+        nextId = room.roundWinnerId; // winner picks the next word
+      } else {
+        const idx = room.players.findIndex(p => p.id === room.champId);
+        nextId = room.players[(idx + 1) % room.players.length].id; // nobody guessed — pass the turn
+      }
+      room.round++;
+      beginChampTurn(room, nextId);
+    }, ROUND_OVER_TO_NEXT_MS);
   }
 }
 
@@ -318,7 +313,7 @@ io.on('connection', socket => {
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game in progress' });
     if (room.players.find(p => p.id === socket.id)) return cb && cb({ ok: false, error: 'Already joined' });
-    room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, wordsFound: [], hintsLeft: 3 });
+    room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS });
     socket.join(roomId);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
@@ -327,66 +322,88 @@ io.on('connection', socket => {
 
   socket.on('start_game', ({ roomId }, cb) => {
     const room = rooms.get(roomId);
-    if (!room || room.host !== socket.id) return cb && cb({ ok: false });
-    if (startRound(room)) { io.to(roomId).emit('game_started', sanitizeRoom(room)); io.to(roomId).emit('room_update', sanitizeRoom(room)); }
+    if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Only the host can start' });
+    if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game already started' });
+    if (room.players.length < 2) return cb && cb({ ok: false, error: 'Need at least 2 players to start' });
+    room.round = 1;
+    beginChampTurn(room, room.host);
     cb && cb({ ok: true });
   });
 
-  socket.on('submit_word', ({ roomId, word, path }, cb) => {
+  socket.on('choose_word', ({ roomId, word }, cb) => {
     const room = rooms.get(roomId);
-    if (!room || room.state !== 'playing') return cb && cb({ ok: false });
-    const player = room.players.find(p => p.id === socket.id);
-    if (!player) return cb && cb({ ok: false });
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    if (room.state !== 'champ_pick') return cb && cb({ ok: false, error: 'It is not your turn to pick' });
+    if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can pick the word' });
+    const w = String(word || '').toLowerCase().trim();
+    if (w.length < 3 || w.length > 8) return cb && cb({ ok: false, error: 'Word must be 3-8 letters' });
+    if (!/^[a-z]+$/.test(w)) return cb && cb({ ok: false, error: 'Letters only please' });
+    room.word = w;
+    startRound(room);
+    cb && cb({ ok: true, wordLength: w.length });
+  });
 
-    if (path && Array.isArray(path) && path.length >= 3) {
-      const formed = validatePath(room.puzzle.grid, path);
-      if (!formed) return cb && cb({ ok: false, error: 'Cells must be adjacent' });
-      word = formed;
-    } else { word = String(word || '').toLowerCase().trim(); }
+  socket.on('submit_word', ({ roomId, word }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    if (room.state !== 'playing') return cb && cb({ ok: false, error: 'No round in progress' });
+    if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ - you know the word!" });
+    const guess = String(word || '').toLowerCase().trim();
+    if (!guess) return cb && cb({ ok: false });
+    if (guess !== room.word) return cb && cb({ ok: false, error: 'Not the word - try again!' });
 
-    if (word.length < 3 || !/^[a-z]+$/.test(word)) return cb && cb({ ok: false });
-    if (player.wordsFound.includes(word)) return cb && cb({ ok: false, error: 'Already found' });
-    if (!DICT.has(word)) return cb && cb({ ok: false, error: 'Not a valid word' });
-
-    const slot = room.puzzle.targetSlots.find(s => s.word === word && s.foundBy === null);
-    if (!slot) return cb && cb({ ok: false, error: 'Not a target word' });
-
-    slot.foundBy = socket.id;
-    player.wordsFound.push(word);
-    const isFirst = !room.puzzle.targetSlots.some(s => s.foundBy !== null && s.foundBy !== socket.id);
-    player.score += 50 + (isFirst ? 25 : 0);
-
-    io.to(roomId).emit('word_found', { playerId: socket.id, playerName: player.name, word, length: word.length, slotIndex: room.puzzle.targetSlots.indexOf(slot), score: player.score, path: path || null });
+    // Correct guess!
+    clearTimer(room);
+    room.state = 'round_over'; // block further guesses while the reveal plays out
+    const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
+    const gained = Math.max(10, 100 - elapsed);
+    const player = playerById(room, socket.id);
+    if (!player) return cb && cb({ ok: false, error: 'Player not found' });
+    player.score += gained;
+    room.roundWinnerId = socket.id;
+    room.roundScore = gained;
+    room.roundElapsed = elapsed;
+    io.to(roomId).emit('word_found', {
+      room: sanitizeRoom(room),
+      word: room.word,
+      winnerId: socket.id,
+      winnerName: player.name,
+      score: gained,
+      elapsed,
+      round: room.round,
+      totalRounds: room.totalRounds
+    });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
-    cb && cb({ ok: true, word, score: player.score });
-    if (allFound(room)) { player.score += 100; endRound(room); }
+    cb && cb({ ok: true, word: room.word, score: gained, elapsed });
+    setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
   });
 
   socket.on('use_hint', ({ roomId }, cb) => {
     const room = rooms.get(roomId);
-    if (!room || room.state !== 'playing') return cb && cb({ ok: false });
-    const player = room.players.find(p => p.id === socket.id);
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    if (room.state !== 'playing') return cb && cb({ ok: false, error: 'No round in progress' });
+    if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ!" });
+    const player = playerById(room, socket.id);
     if (!player) return cb && cb({ ok: false });
-
-    const isHost = room.host === socket.id;
-    if (!isHost) {
-      if (!player.hintsLeft) player.hintsLeft = 3;
-      if (player.hintsLeft <= 0) return cb && cb({ ok: false, error: 'No hints left' });
-    }
-    const slot = room.puzzle.targetSlots.find(s => s.foundBy === null);
-    if (!slot) return cb && cb({ ok: false, error: 'All words found' });
-    if (!isHost) player.hintsLeft--;
-    if (!slot.hintRevealed) slot.hintRevealed = 0;
-    slot.hintRevealed = Math.min(slot.hintRevealed + 1, slot.word.length);
-    const revealed = slot.word.slice(0, slot.hintRevealed);
-    const firstCh = slot.word[0];
-    let startCell = null;
-    for (let r = 0; r < 6; r++) { for (let c = 0; c < 6; c++) { if (room.puzzle.grid[r][c] === firstCh) { startCell = [r, c]; break; } } if (startCell) break; }
-    cb && cb({ ok: true, slotIndex: room.puzzle.targetSlots.indexOf(slot), revealed, wordLength: slot.word.length, startCell, hintsLeft: isHost ? '∞' : player.hintsLeft });
+    if (player.hintsLeft <= 0) return cb && cb({ ok: false, error: 'No hints left' });
+    player.hintsLeft--;
+    room.wordRevealed = Math.min(room.wordRevealed + 1, room.word.length);
+    cb && cb({ ok: true, revealed: room.word.slice(0, room.wordRevealed), wordLength: room.word.length, hintsLeft: player.hintsLeft });
+    io.to(roomId).emit('room_update', sanitizeRoom(room));
   });
 
-  socket.on('next_round', ({ roomId }, cb) => { const room = rooms.get(roomId); if (room && room.host === socket.id && startRound(room)) { io.to(roomId).emit('game_started', sanitizeRoom(room)); io.to(roomId).emit('room_update', sanitizeRoom(room)); } cb && cb({ ok: true }); });
-  socket.on('play_again', ({ roomId }, cb) => { const room = rooms.get(roomId); if (room && room.host === socket.id) { room.state = 'waiting'; room.round = 0; room.puzzle = null; room.players.forEach(p => { p.score = 0; p.wordsFound = []; p.hintsLeft = 3; }); io.to(roomId).emit('room_update', sanitizeRoom(room)); } cb && cb({ ok: true }); });
+  socket.on('play_again', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (room && room.host === socket.id) {
+      clearTimer(room);
+      room.state = 'waiting'; room.round = 0; room.champId = null;
+      room.word = null; room.wordRevealed = 0; room.endedRound = false;
+      room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; });
+      io.to(roomId).emit('room_update', sanitizeRoom(room));
+    }
+    cb && cb({ ok: true });
+  });
+
   socket.on('leave_room', ({ roomId }, cb) => { leaveRoom(socket, roomId); cb && cb({ ok: true }); });
   socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: player.name, text }); });
   socket.on('disconnect', () => { for (const [id, room] of rooms.entries()) { if (room.players.find(p => p.id === socket.id)) leaveRoom(socket, id); } });
@@ -399,11 +416,15 @@ function leaveRoom(socket, roomId) {
   if (idx === -1) return;
   const p = room.players[idx]; room.players.splice(idx, 1);
   socket.leave(roomId);
-  if (room.players.length === 0) { rooms.delete(roomId); return; }
+  if (room.players.length === 0) { clearTimer(room); rooms.delete(roomId); return; }
   if (room.host === socket.id) room.host = room.players[0].id;
+  // If the champ leaves while still picking their word, hand the turn to the next player
+  if (room.champId === socket.id && room.state === 'champ_pick') {
+    clearTimer(room);
+    beginChampTurn(room, room.players[0].id);
+  }
   io.to(roomId).emit('room_update', sanitizeRoom(room));
   io.to(roomId).emit('chat', { system: true, text: `${p.name} left` });
-  if (room.state === 'playing' && allFound(room)) endRound(room);
 }
 
 // ── Static files ─────────────────────────────────────────────────────────

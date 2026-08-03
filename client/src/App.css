@@ -517,3 +517,119 @@
   font-size: 14px;
   gap: 8px;
 }
+
+/* ── New Champ/Guess Format ────────────────────────────────────────────── */
+.champ-crown { font-size: 11px; }
+
+.champ-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 6px;
+  padding: 9px 12px;
+  background: linear-gradient(135deg, rgba(255, 171, 0, 0.16), rgba(255, 109, 0, 0.10));
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+.champ-banner-me {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(0, 230, 118, 0.18), rgba(0, 230, 118, 0.06));
+  animation: champPulse 1.4s ease-in-out infinite;
+}
+@keyframes champPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(0, 230, 118, 0); }
+  50% { box-shadow: 0 0 14px rgba(0, 230, 118, 0.35); }
+}
+
+.brackets-area { position: relative; margin: 4px 0 6px; }
+.brackets-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin: 0 0 5px;
+  text-align: center;
+  font-weight: 700;
+}
+.brackets-area .bracket-row { justify-content: center; }
+
+.answer-brackets { margin-top: 14px; }
+
+.falling-word.falling-answer {
+  top: 26px;
+  animation: fallToAnswer 1.1s ease-in forwards;
+}
+@keyframes fallToAnswer {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1.5); }
+  70% { opacity: 1; transform: translate(-50%, 110px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, 118px) scale(0.9); }
+}
+
+.timer-display {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--green);
+  margin: 4px 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+.timer-warn { color: var(--danger); animation: champPulse 0.7s ease-in-out infinite; }
+
+.pick-word { margin-top: 8px; }
+.pick-word-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.pick-preview {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-top: 10px;
+  min-height: 34px;
+  align-items: center;
+}
+.pick-preview-box {
+  width: 32px; height: 32px;
+  border: 2px dashed var(--gold);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800;
+  color: var(--gold);
+}
+.pick-preview-hint { font-size: 10px; color: var(--text-dim); }
+
+.guess-form { margin-top: 8px; }
+.time-up-note { text-align: center; font-size: 11px; color: var(--danger); margin-top: 6px; }
+
+.champ-watching {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  padding: 10px 0;
+}
+
+.round-word { text-align: center; font-size: 16px; color: var(--text); margin: 6px 0 2px; }
+.round-word b {
+  font-size: 24px;
+  letter-spacing: 4px;
+  color: var(--green);
+  text-transform: uppercase;
+}
+.round-winner-msg { text-align: center; font-size: 13px; color: var(--text); margin: 8px 0; }
+.next-champ-note {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin: 10px 0 12px;
+  font-style: italic;
+}

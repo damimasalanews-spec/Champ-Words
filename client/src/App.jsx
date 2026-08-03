@@ -41,34 +41,24 @@ export default function App() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Socket events (only after auth)
+  // Socket events (only after auth/guest)
   useEffect(() => {
     if (!user) return;
 
-    socket.on('room_update', (data) => {
-      setRoom(data);
-      if (data.state === 'playing' && data.puzzle && room?.state === 'waiting') setScreen('playing');
-    });
-    socket.on('game_started', (data) => { setRoom(data); setScreen('playing'); setRoundResult(null); setGameResult(null); });
-    socket.on('word_found', (data) => {
-      if (room) {
-        const newRoom = { ...room };
-        if (newRoom.puzzle) {
-          const slots = [...newRoom.puzzle.targetSlots];
-          slots[data.slotIndex] = { ...slots[data.slotIndex], foundBy: data.playerId };
-          newRoom.puzzle = { ...newRoom.puzzle, targetSlots: slots };
-          setRoom(newRoom);
-        }
-      }
-    });
-    socket.on('round_over', (data) => { setRoundResult(data); setScreen('round_over'); });
-    socket.on('game_over', (data) => { setGameResult(data); setScreen('finished'); });
+    socket.on('room_update', (data) => setRoom(data));
+    socket.on('champ_turn', (data) => { setRoom(data.room); setScreen('playing'); setRoundResult(null); setGameResult(null); });
+    socket.on('round_started', (data) => { setRoom(data.room); setScreen('playing'); });
+    socket.on('word_found', (data) => { setRoom(data.room); });
+    socket.on('time_up', (data) => { setRoom(data.room); });
+    socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); });
+    socket.on('game_over', (data) => { setRoom(data.room); setGameResult(data); setScreen('finished'); });
     socket.on('chat', (msg) => setMessages(prev => [...prev, msg]));
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
 
     return () => {
-      socket.off('room_update'); socket.off('game_started'); socket.off('word_found');
-      socket.off('round_over'); socket.off('game_over'); socket.off('chat'); socket.off('connect_error');
+      socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
+      socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
+      socket.off('game_over'); socket.off('chat'); socket.off('connect_error');
     };
   }, [user, showToast]);
 
@@ -86,8 +76,33 @@ export default function App() {
     });
   };
 
-  const handleStartGame = () => { if (room) socket.emit('start_game', { roomId: room.id }, (res) => { if (!res.ok) showToast(res.error); }); };
-  const handleNextRound = () => { if (room) socket.emit('next_round', { roomId: room.id }, (res) => { if (!res.ok) showToast(res.error); }); };
+  const handleStartGame = () => {
+    if (!room) return;
+    socket.emit('start_game', { roomId: room.id }, (res) => {
+      if (!res.ok) showToast(res.error || 'Cannot start game');
+    });
+  };
+  const handleChooseWord = (word) => {
+    if (!room) return;
+    socket.emit('choose_word', { roomId: room.id, word }, (res) => {
+      if (res.ok) showToast(`Word set! ${res.wordLength} letters`, 'success');
+      else showToast(res.error);
+    });
+  };
+  const handleGuess = (word) => {
+    if (!room) return;
+    socket.emit('submit_word', { roomId: room.id, word }, (res) => {
+      if (res.ok) showToast(`Correct! +${res.score} pts`, 'success');
+      else if (res.error) showToast(res.error);
+    });
+  };
+  const handleHint = () => {
+    if (!room) return;
+    socket.emit('use_hint', { roomId: room.id }, (res) => {
+      if (!res.ok) { showToast(res.error); return; }
+      showToast(`Hint: ${res.revealed.toUpperCase()}${'_'.repeat(res.wordLength - res.revealed.length)} (${res.hintsLeft} left)`, 'success');
+    });
+  };
   const handlePlayAgain = () => {
     if (!room) return;
     socket.emit('play_again', { roomId: room.id }, (res) => {
@@ -161,9 +176,14 @@ export default function App() {
             ))}
           </div>
           {socket.id === room.host ? (
-            <button className="btn btn-primary" style={{ maxWidth: 280, marginTop: 24 }} onClick={handleStartGame} disabled={room.players.length < 1}>
-              Start Game
-            </button>
+            <>
+              <button className="btn btn-primary" style={{ maxWidth: 280, marginTop: 24 }} onClick={handleStartGame} disabled={room.players.length < 2}>
+                Start Game
+              </button>
+              {room.players.length < 2 && (
+                <p style={{ color: 'var(--text-dim)', marginTop: 8, fontSize: 11 }}>Need at least 2 players to start</p>
+              )}
+            </>
           ) : (
             <p style={{ color: 'var(--text-dim)', marginTop: 20 }}>Waiting for host to start...</p>
           )}
@@ -171,12 +191,22 @@ export default function App() {
         </div>
       )}
 
-      {(screen === 'playing' || screen === 'round_over' || screen === 'finished') && room && room.puzzle && (
-        <Game room={room} socket={socket} showToast={showToast} onChatToggle={() => setChatOpen(o => !o)} chatOpen={chatOpen} />
+      {screen === 'playing' && room && (
+        <Game
+          room={room}
+          socket={socket}
+          me={room.players.find(p => p.id === socket.id)}
+          showToast={showToast}
+          onChatToggle={() => setChatOpen(o => !o)}
+          chatOpen={chatOpen}
+          onChooseWord={handleChooseWord}
+          onGuess={handleGuess}
+          onHint={handleHint}
+        />
       )}
 
       {screen === 'round_over' && roundResult && (
-        <RoundOver result={roundResult} room={room} isHost={socket.id === room?.host} onNextRound={handleNextRound} />
+        <RoundOver result={roundResult} room={room} />
       )}
       {screen === 'finished' && gameResult && (
         <GameOver result={gameResult} room={room} isHost={socket.id === room?.host} onPlayAgain={handlePlayAgain} onLeave={handleLeave} />
