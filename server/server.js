@@ -431,9 +431,8 @@ function startRound(room) { // champ has picked their word
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
-  // Champ hint windows: category at 40s remaining (20s elapsed), clue at 20s remaining (40s elapsed)
-  room.hintTimer1 = setTimeout(() => requestCategoryHint(room), HINT1_MS);
-  room.hintTimer2 = setTimeout(() => requestWordHint(room), HINT2_MS);
+  // Both hints at 40s remaining (20s elapsed): category + clue + 2 letters
+  room.hintTimer1 = setTimeout(() => requestBothHints(room), HINT1_MS);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
@@ -441,10 +440,12 @@ function startRound(room) { // champ has picked their word
 // ── Open a 5s window for the champ to send a hint; miss = −20 pts ─────────
 function openHintWindow(room, type) {
   room.hintWindow = type;
+  room.hintCategorySent = false;
+  room.hintClueSent = false;
   if (room.hintWindowTimer) clearTimeout(room.hintWindowTimer);
   room.hintWindowTimer = setTimeout(() => {
     room.hintWindowTimer = null;
-    if (room.state !== 'playing' || room.hintWindow !== type) return; // already sent or round over
+    if (room.state !== 'playing' || room.hintWindow !== type) return; // both sent or round over
     room.hintWindow = null;
     room.offeredClues = [];
     const champ = champOf(room);
@@ -453,37 +454,38 @@ function openHintWindow(room, type) {
     io.to(room.id).emit('room_update', sanitizeRoom(room));
     io.to(champ.id).emit('points_lost', {
       amount: HINT_PENALTY,
-      reason: type === 'category' ? 'Missed the category hint' : 'Missed the word clue'
+      reason: 'Missed the hint'
     });
   }, HINT_WINDOW_MS);
 }
 
-// ── Hint window #1 (40s remaining): champ may send the category name ──────
-function requestCategoryHint(room) {
-  if (!room.word || room.state !== 'playing') return;
-  revealRandomHint(room); // one letter revealed at 40s remaining
-  // 'Surprise me' has no useful category — nothing to send
-  const cat = CATEGORIES.list.find(c => c.id === room.category);
-  if (!cat || cat.id === 'mixed') return;
-  openHintWindow(room, 'category');
-  io.to(room.champId).emit('hint_request', { type: 'category', label: cat.label, timeLeft: HINT_WINDOW_MS / 1000 });
+// Close the hint window when both hints have been sent
+function closeHintWindow(room) {
+  if (room.hintWindowTimer) clearTimeout(room.hintWindowTimer);
+  room.hintWindowTimer = null;
+  room.hintWindow = null;
+  room.offeredClues = [];
 }
 
-// ── Hint window #2 (20s remaining): champ picks 1 of 3 clue lines ─────────
-function requestWordHint(room) {
+// ── Hint window (40s remaining): BOTH hints at once ──────────────────────
+// The picker chooses the category hint AND one of 3 clues in a single 5s
+// window; 2 letters are revealed in the answer brackets at the same moment.
+function requestBothHints(room) {
   if (!room.word || room.state !== 'playing') return;
-  revealRandomHint(room); // one more letter revealed at 20s remaining
-  // Build 3 distinct clue options (never infinite-loop: bounded attempts,
-  // template fallback for uniqueness, duplicates only as a last resort)
+  revealRandomHint(room); // letter #1
+  revealRandomHint(room); // letter #2 — both revealed at 40s remaining
+  const cat = CATEGORIES.list.find(c => c.id === room.category);
+  const label = !cat || cat.id === 'mixed' ? null : cat.label;
+  // Build 3 distinct clue options (bounded attempts; duplicates last resort)
   const clues = [];
   const add = c => { if (c && !clues.includes(c)) clues.push(c); };
-  add(room.hintText); // champ's manual clue first
+  add(room.hintText);
   for (let i = 0; clues.length < 3 && i < 20; i++) add(generateClue(room.word, room.category, false));
   for (let i = 0; clues.length < 3 && i < 20; i++) add(generateClue(room.word, room.category, true));
   while (clues.length < 3) clues.push(generateClue(room.word, room.category, true));
   room.offeredClues = clues.slice(0, 3);
-  openHintWindow(room, 'clue');
-  io.to(room.champId).emit('hint_request', { type: 'clue', clues: room.offeredClues, timeLeft: HINT_WINDOW_MS / 1000 });
+  openHintWindow(room, 'both');
+  io.to(room.champId).emit('hint_request', { type: 'both', label, clues: room.offeredClues, timeLeft: HINT_WINDOW_MS / 1000 });
 }
 
 function onTimeUp(room) {
@@ -652,12 +654,12 @@ io.on('connection', socket => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can send hints' });
-    if (room.hintWindow !== 'category') return cb && cb({ ok: false, error: 'No category hint window open' });
+    if (room.hintWindow !== 'both' && room.hintWindow !== 'category') return cb && cb({ ok: false, error: 'No category hint window open' });
     const cat = CATEGORIES.list.find(c => c.id === room.category);
     if (!cat || cat.id === 'mixed') return cb && cb({ ok: false, error: 'Nothing to reveal' });
-    clearTimeout(room.hintWindowTimer); room.hintWindowTimer = null;
-    room.hintWindow = null;
+    room.hintCategorySent = true;
     io.to(room.id).emit('category_hint', { label: cat.label });
+    if (room.hintClueSent) closeHintWindow(room); // both sent — done
     cb && cb({ ok: true });
   });
 
@@ -665,13 +667,12 @@ io.on('connection', socket => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can send hints' });
-    if (room.hintWindow !== 'clue') return cb && cb({ ok: false, error: 'No clue window open' });
+    if (room.hintWindow !== 'both' && room.hintWindow !== 'clue') return cb && cb({ ok: false, error: 'No clue window open' });
     const t = String(text || '').trim();
     if (!room.offeredClues.includes(t)) return cb && cb({ ok: false, error: 'Pick one of the offered clues' });
-    clearTimeout(room.hintWindowTimer); room.hintWindowTimer = null;
-    room.hintWindow = null;
-    room.offeredClues = [];
+    room.hintClueSent = true;
     io.to(room.id).emit('word_hint', { text: t });
+    if (room.hintCategorySent) closeHintWindow(room); // both sent — done
     cb && cb({ ok: true });
   });
 

@@ -119,6 +119,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [hintAction, setHintAction] = useState(null); // champ's 5s hint window: { type, label?, clues?, timeLeft }
   const [hintActionLeft, setHintActionLeft] = useState(0);
   const [hintSending, setHintSending] = useState(false);
+  const [categorySent, setCategorySent] = useState(false);
+  const [clueSent, setClueSent] = useState(false);
   const [choices, setChoices] = useState([]);
   const [champWord, setChampWord] = useState('');
   const [solvedWord, setSolvedWord] = useState('');
@@ -227,7 +229,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // Champ's 5s hint-action window (hint_request) + penalty notice (points_lost)
   useEffect(() => {
-    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); playSound('alert'); };
+    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); setCategorySent(false); setClueSent(false); playSound('alert'); };
     const onLost = (data) => { showToast(`−${data.amount} pts — ${data.reason}`, 'error'); playSound('penalty'); };
     socket.on('hint_request', onReq); socket.on('points_lost', onLost);
     return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
@@ -255,7 +257,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     playSound('click');
     socket.emit('send_category_hint', { roomId: room.id }, (res) => {
       setHintSending(false);
-      if (res && res.ok) setHintAction(null);
+      if (res && res.ok) { setCategorySent(true); if (clueSent) setHintAction(null); }
       else if (res && res.error) showToast(res.error);
     });
   };
@@ -264,7 +266,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     playSound('click');
     socket.emit('send_word_hint', { roomId: room.id, text }, (res) => {
       setHintSending(false);
-      if (res && res.ok) setHintAction(null);
+      if (res && res.ok) { setClueSent(true); if (categorySent) setHintAction(null); }
       else if (res && res.error) showToast(res.error);
     });
   };
@@ -412,13 +414,32 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Champ hint action popup (40s category / 20s clue, 5s to act) ── */}
+      {/* ── Champ hint action popup (both hints at 40s, 5s to act) ── */}
       {hintAction && (
         <div className="pick-popup-overlay">
           <div className="pick-popup-card hint-action-card">
-            <h2>{hintAction.type === 'category' ? 'Send the category hint?' : 'Send a clue to players?'}</h2>
+            <h2>
+              {hintAction.type === 'both'
+                ? 'Send both hints?'
+                : hintAction.type === 'category' ? 'Send the category hint?' : 'Send a clue to players?'}
+            </h2>
             <p className="pick-popup-sub">{hintActionLeft}s left — miss it and you lose 20 pts</p>
-            {hintAction.type === 'category' ? (
+            {hintAction.type === 'both' ? (
+              <>
+                {hintAction.label && (
+                  <button className="btn btn-primary hint-send-btn" disabled={hintSending || categorySent} onClick={sendCategoryHint}>
+                    🏷️ Send "It's a {hintAction.label} word!"{categorySent ? ' ✓' : ''}
+                  </button>
+                )}
+                <div className="hint-clue-options">
+                  {hintAction.clues.map((c, i) => (
+                    <button key={i} className="hint-clue-option" disabled={hintSending || clueSent} onClick={() => sendClue(c)}>
+                      💡 {c}{clueSent ? '' : ''}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : hintAction.type === 'category' ? (
               <button className="btn btn-primary hint-send-btn" disabled={hintSending} onClick={sendCategoryHint}>
                 🏷️ Send "It's a {hintAction.label} word!"
               </button>
