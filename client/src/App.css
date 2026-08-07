@@ -2136,3 +2136,107 @@
   .score-board-inline .score-board-name { font-size: 8.5px; max-width: 72px; }
   .score-board-inline .score-board-pts { font-size: 13px; }
 }
+
+/* ═══ TikTok half-screen browser mode ═══════════════════════════════════
+   TikTok's in-app browser shows links in the top ~50% of the screen.
+   When detected (UA + short viewport, or ?half=1), the whole game compacts
+   to fit that half from the top; the area below stays empty (page scroll
+   disabled, body background shows through). */
+.tiktok-half body { margin: 0; overflow: hidden; }
+.tiktok-half .app {
+  height: 100vh; min-height: 100vh; max-height: 100vh;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.tiktok-half .game-area { overflow: hidden; }
+
+/* Header */
+.tiktok-half .app-header { padding: 6px 12px; margin: 0 -12px; }
+.tiktok-half .app-header .brand-name { font-size: 13px; letter-spacing: 1px; }
+.tiktok-half .sound-toggle { width: 26px; height: 26px; font-size: 11px; }
+.tiktok-half .user-avatar { width: 20px; height: 20px; }
+.tiktok-half .user-name { font-size: 11px; }
+.tiktok-half .logout-btn { padding: 3px 8px; font-size: 10px; }
+
+/* Login / lobby */
+.tiktok-half .login-page { min-height: calc(100vh - 60px); padding: 8px 0; }
+.tiktok-half .login-card { padding: 12px; max-width: 300px; }
+.tiktok-half .login-logo h1 { font-size: 22px; margin: 8px 0 2px; }
+.tiktok-half .login-note { font-size: 10px; margin-top: 8px; }
+.tiktok-half .lobby-title h1 { font-size: 22px; letter-spacing: 2px; margin-bottom: 2px; }
+.tiktok-half .lobby-title p { font-size: 10px; }
+.tiktok-half .lobby-card { padding: 10px 12px; max-width: 300px; }
+.tiktok-half .form-group { margin-bottom: 6px; }
+.tiktok-half .form-group label { font-size: 9px; margin-bottom: 2px; }
+.tiktok-half .form-group input, .tiktok-half .form-group select { padding: 6px 8px; font-size: 12px; }
+.tiktok-half .btn { padding: 8px 12px; font-size: 11px; border-radius: 10px; box-shadow: none; }
+.tiktok-half .lobby-divider { margin: 6px 0; }
+
+/* Waiting room */
+.tiktok-half .waiting-host { padding: 6px 0 10px; gap: 8px; }
+.tiktok-half .waiting-host .room-code { font-size: 20px; padding: 5px 12px; }
+.tiktok-half .waiting-host .players-count { font-size: 11px; }
+.tiktok-half .waiting-player { font-size: 11px; padding: 3px 8px; }
+.tiktok-half .player-avatar { width: 20px; height: 20px; }
+.tiktok-half .host-star { font-size: 10px; }
+
+/* Game header + banners */
+.tiktok-half .game-header { padding: 4px 0 2px; }
+.tiktok-half .round-info { font-size: 10px; padding: 4px 10px; letter-spacing: 1px; }
+.tiktok-half .chat-toggle { font-size: 9px; padding: 2px 7px; }
+.tiktok-half .spot-banner { display: none; }
+.tiktok-half .champ-word-display { font-size: 11px; padding: 4px 8px; margin: 2px 0 4px; }
+.tiktok-half .champ-word-display b { font-size: 13px; }
+
+/* Timer */
+.tiktok-half .timer-display { font-size: 26px; margin: 2px 0; }
+.tiktok-half .timer-bar { max-width: 220px; height: 5px; margin: 0 auto 6px; }
+
+/* Grid + inline scoreboard */
+.tiktok-half .grid-score-row { gap: 8px; }
+.tiktok-half .grid-4x4 { padding: 6px; gap: 4px; margin: 4px auto; }
+.tiktok-half .grid-row { gap: 4px; }
+.tiktok-half .grid-4x4 .grid-cell { width: 32px; height: 32px; font-size: 15px; border-radius: 8px; }
+.tiktok-half .grid-4x4 .grid-cell.last { transform: scale(1.1); }
+.tiktok-half .score-board-inline { width: 84px; margin-top: 8px; }
+.tiktok-half .score-board-inline .score-board-title { font-size: 8px; letter-spacing: 2px; margin-bottom: 3px; }
+.tiktok-half .score-board-inline .score-board-row {
+  flex-direction: column; align-items: center; gap: 1px;
+  padding: 4px 3px; margin-bottom: 4px; border-radius: 8px;
+}
+.tiktok-half .score-board-inline .score-board-rank { display: none; }
+.tiktok-half .score-board-inline .score-board-name { font-size: 9px; max-width: 78px; text-align: center; line-height: 1.15; }
+.tiktok-half .score-board-inline .score-board-pts { font-size: 12px; min-width: 0; }
+.tiktok-half .drag-word-display { font-size: 13px; letter-spacing: 2px; }
+
+/* Brackets + input + chips */
+.tiktok-half .brackets-section { margin-top: 2px; }
+.tiktok-half .brackets-label { font-size: 8px; letter-spacing: 2px; margin-bottom: 2px; }
+.tiktok-half .bracket-row { gap: 3px; }
+.tiktok-half .bracket-box { width: 22px; height: 22px; border-width: 1.5px; border-radius: 5px; }
+.tiktok-half .bracket-letter { font-size: 12px; }
+.tiktok-half .type-answer { max-width: 240px; }
+.tiktok-half .type-answer input { padding: 6px 8px; font-size: 12px; }
+.tiktok-half .type-answer .btn { padding: 6px 10px; font-size: 10px; }
+.tiktok-half .found-now { margin-top: 2px; }
+.tiktok-half .found-chip { font-size: 9px; padding: 2px 8px; }
+.tiktok-half .solved-text { font-size: 11px; }
+
+/* Secondary panels hidden in the half screen */
+.tiktok-half .art-board, .tiktok-half .side-status-card, .tiktok-half .champ-watching { display: none; }
+.tiktok-half .hint-clue { font-size: 10px; padding: 4px 8px; }
+
+/* Popups + overlays + chat */
+.tiktok-half .pick-popup-card { padding: 12px; max-height: 42vh; overflow-y: auto; }
+.tiktok-half .pick-popup-card h2 { font-size: 15px; margin-bottom: 2px; }
+.tiktok-half .pick-popup-sub { font-size: 10px; margin-bottom: 8px; }
+.tiktok-half .pick-popup-choices { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.tiktok-half .pick-popup-word { padding: 7px 6px; font-size: 11px; flex: 1 1 45%; }
+.tiktok-half .pick-popup-len { font-size: 9px; }
+.tiktok-half .pick-hint-box { margin-top: 6px; }
+.tiktok-half .pick-hint-input { padding: 6px 8px; font-size: 12px; }
+.tiktok-half .overlay-card { padding: 14px; max-height: 42vh; }
+.tiktok-half .chat-panel { top: 0; bottom: auto; height: 45vh; }
+.tiktok-half .chat-msg { font-size: 11px; }
+.tiktok-half .score-item { padding: 4px 8px; }
+.tiktok-half .round-word-item { padding: 3px 8px; }
