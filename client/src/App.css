@@ -61,24 +61,29 @@
 /* ── Game ──────────────────────────────────────────────────────────────── */
 .game-area { flex: 1; display: flex; flex-direction: column; padding-bottom: 16px; }
 
-/* ── Game layout: grid left, notifications right ───────────────────────── */
+/* ── Game layout: play field centered, side panels below ───────────────── */
 .game-layout {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  justify-content: center;
 }
 .game-col-left {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
 }
 .game-col-right {
-  width: 190px;
-  flex-shrink: 0;
+  width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
   gap: 10px;
-  padding-top: 4px;
+  margin-top: 12px;
 }
+.game-col-right .side-status-card { flex: 0 1 auto; min-width: 190px; }
+.game-col-right .score-board-grid { flex: 0 1 auto; min-width: 210px; }
+.game-col-right .art-board { flex: 0 1 auto; min-width: 150px; }
+.game-col-right .hint-clue { flex: 0 1 auto; }
 
 /* ── Side status card (champ avatar + wave + status line) ──────────────── */
 .side-status-card {
@@ -2059,15 +2064,8 @@
 @media (max-width: 760px) {
   .app { padding: 0 12px; }
   .app-header { margin: 0 -12px; padding: 10px 12px; }
-  .game-layout { flex-direction: column; }
-  .game-col-right {
-    width: 100%;
-    flex-direction: row; flex-wrap: wrap; align-items: stretch;
-    gap: 10px;
-  }
-  .side-status-card { flex: 1; min-width: 200px; }
-  .score-board-grid { flex: 1; min-width: 220px; }
-  .hint-category, .hint-clue { width: auto; flex: 1; }
+  .game-col-right .side-status-card { flex: 1 1 200px; }
+  .game-col-right .score-board-grid { flex: 1 1 220px; }
 }
 @media (max-width: 480px) {
   .app-header { gap: 8px; }

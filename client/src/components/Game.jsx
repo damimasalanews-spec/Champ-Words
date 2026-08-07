@@ -509,9 +509,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       )}
 
         </div>
+      </div>
 
-        {/* ── Right: notifications ── */}
-        <div className="game-col-right">
+      {/* ── Side panels: live drawing, leader, scores (below the grid) ── */}
+      <div className="game-col-right">
           {/* ── Live drawing of the word (Pictionary-style reveal) ── */}
           {state === 'playing' && (
             <div key={room.round} className="art-board">
@@ -571,7 +572,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="champ-watching">Waiting for someone to drag the right word...</div>
           )}
         </div>
-      </div>
 
     </div>
   );
