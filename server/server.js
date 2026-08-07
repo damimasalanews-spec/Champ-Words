@@ -256,6 +256,25 @@ function clearTimer(room) {
   if (room.champTimer) { clearTimeout(room.champTimer); room.champTimer = null; }
 }
 
+// ── System-picked word: no champ, the game chooses randomly ──────────────
+function pickRandomWord() {
+  const all = [...DICT];
+  return all[Math.floor(Math.random() * all.length)];
+}
+
+function startSystemRound(room) {
+  room.word = pickRandomWord();
+  room.category = null;
+  room.hintText = null;
+  room.hintWindow = null;
+  room.offeredClues = [];
+  room.roundFinds = [];
+  room.allFound = false;
+  room.choices = [];
+  room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
+  startRound(room);
+}
+
 // ── Pick 6 words (varied lengths) for the champ ─────────────────────────
 function generateChoices(category) {
   // Use the chosen category's words; fall back to the full mixed pool
@@ -420,7 +439,7 @@ function revealRandomHint(room) {
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
-function startRound(room) { // champ has picked their word
+function startRound(room) {
   room.state = 'playing';
   room.revealedMask = Array(room.word.length).fill(false);
   room.roundWinnerId = null;
@@ -431,8 +450,12 @@ function startRound(room) { // champ has picked their word
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
-  // Both hints at 40s remaining (20s elapsed): category + clue + 2 letters
-  room.hintTimer1 = setTimeout(() => requestBothHints(room), HINT1_MS);
+  // Auto hint: 2 letters revealed in the answer brackets at 40s remaining
+  room.hintTimer1 = setTimeout(() => {
+    if (room.state !== 'playing') return;
+    revealRandomHint(room);
+    revealRandomHint(room);
+  }, HINT1_MS);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
@@ -554,28 +577,8 @@ function endRound(room) {
       finishGame(room);
       return;
     }
-    if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
-      // The guesser found it — they keep the hot seat, streak resets;
-      // the picker rotates to the next non-guesser ("the others" keep
-      // setting words for them)
-      room.failStreak = 0;
-      const nextPicker = nextPlayerAfter(room, room.champId, room.guesserId);
-      beginChampTurn(room, nextPicker ? nextPicker.id : room.host);
-    } else {
-      // The guesser failed — the seat passes to the PICKER who made them
-      // fail ("the one who made the other player fail is asked next").
-      // The FAILED player does NOT ask the next word — the next player
-      // in the queue does ("switch it back to the player in the queue").
-      const failed = guesserOf(room);
-      room.guesserId = room.champId; // the picker is on the spot now
-      room.failStreak = 0;
-      let nextPicker = nextPlayerAfter(room, room.champId, failed ? failed.id : null);
-      if (!nextPicker || nextPicker.id === room.guesserId) {
-        // Only 2 players: the failed player must pick (roles swap)
-        nextPicker = failed;
-      }
-      beginChampTurn(room, nextPicker ? nextPicker.id : room.host);
-    }
+    // The system picks a fresh random word for the next round
+    startSystemRound(room);
   }, ROUND_OVER_TO_NEXT_MS);
 }
 
@@ -607,10 +610,8 @@ io.on('connection', socket => {
     if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game already started' });
     if (room.players.length < 2) return cb && cb({ ok: false, error: 'Need at least 2 players to start' });
     room.round = 1;
-    // Hot-seat: the first guesser is the player right after the host
-    const firstGuesser = nextPlayerAfter(room, room.host);
-    room.guesserId = firstGuesser ? firstGuesser.id : room.host;
-    beginChampTurn(room, room.host);
+    // The system picks a random word and everyone guesses together
+    startSystemRound(room);
     cb && cb({ ok: true });
   });
 
@@ -661,13 +662,10 @@ io.on('connection', socket => {
         return cb && cb({ ok: false, error: 'Not the word - try again!' });
     }
 
-    // Correct guess! Only the hot-seat guesser can answer — they get the score
+    // Correct guess! Everyone guesses the system's word — score by speed
     const player = playerById(room, socket.id);
     if (!player) return cb && cb({ ok: false, error: 'Player not found' });
     if (player.foundWord) return cb && cb({ ok: false, error: 'You already found the word!' });
-    if (room.guesserId && socket.id !== room.guesserId) {
-      return cb && cb({ ok: false, error: `It's ${guesserOf(room)?.name || 'someone else'}'s turn to guess!` });
-    }
 
     const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
     const gained = Math.max(10, 100 - elapsed); // faster guess = more points
@@ -676,38 +674,47 @@ io.on('connection', socket => {
     player.foundWord = true;
     player.roundFoundAt = elapsed;
     player.roundScore = gained;
-    room.roundWinnerId = socket.id;
-    room.roundScore = gained;
-    room.roundElapsed = elapsed;
+    if (!room.roundWinnerId) { // the fastest finder
+      room.roundWinnerId = socket.id;
+      room.roundScore = gained;
+      room.roundElapsed = elapsed;
+    }
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
 
-    io.to(roomId).emit('word_found', {
+    // Round ends early only when EVERYONE has found the word
+    const allFound = room.players.length > 0 && room.players.every(p => p.foundWord);
+    room.allFound = allFound;
+
+    // Only the finder gets the word revealed — others keep guessing
+    const base = {
       room: sanitizeRoom(room),
-      word: room.word,
       winnerId: socket.id,
       winnerName: player.name,
-      champName: champOf(room)?.name || '',
       score: gained,
       elapsed,
       finds: room.roundFinds,
+      allFound,
       round: room.round,
       totalRounds: room.totalRounds
-    });
+    };
+    io.to(socket.id).emit('word_found', { ...base, self: true, word: room.word });
+    socket.to(roomId).emit('word_found', { ...base, self: false, word: null });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
     cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
 
-    clearTimer(room);
-    setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
+    if (allFound) {
+      clearTimer(room);
+      setTimeout(() => endRound(room), 1800);
+    }
   });
 
-  // ── Spectator view: broadcast the guesser's live drag to the others ─────
+  // ── Live activity: every player's drag is broadcast to the room ─────────
   socket.on('guess_drag', ({ roomId, path }) => {
     const room = rooms.get(roomId);
     if (!room || room.state !== 'playing') return;
-    if (room.guesserId !== socket.id) return;
     if (!Array.isArray(path) || path.length < 1 || path.length > 8) return;
     const player = playerById(room, socket.id);
-    if (!player) return;
+    if (!player || player.foundWord) return;
     const word = path.map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
     socket.to(roomId).emit('guess_drag', { playerId: player.id, playerName: player.name, path, word });
   });
@@ -715,9 +722,8 @@ io.on('connection', socket => {
   socket.on('guess_drag_end', ({ roomId, path }) => {
     const room = rooms.get(roomId);
     if (!room || room.state !== 'playing') return;
-    if (room.guesserId !== socket.id) return;
     const player = playerById(room, socket.id);
-    if (!player) return;
+    if (!player || player.foundWord) return;
     const word = (path || []).map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
     socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
   });

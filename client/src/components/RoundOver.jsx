@@ -8,8 +8,8 @@ export default function RoundOver({ result, room }) {
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const pickerName = champName || 'the picker';
   const nextNote = winner
-    ? `Next up: ${winner.name} is on the spot again — the others pick the next word!`
-    : `The hot seat passes to ${pickerName}! The next word comes from the player in the queue.`;
+    ? `${winner.name} was the fastest! A new word comes in a moment…`
+    : `No one found it — a new word comes in a moment…`;
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;

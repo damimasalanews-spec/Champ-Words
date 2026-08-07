@@ -247,7 +247,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   };
 
   const startDrag = (r, c, e) => {
-    if (submitting || isChamp) return;
+    if (submitting) return;
     e.preventDefault();
     setIsDragging(true);
     setDragPath([[r, c]]);
@@ -271,8 +271,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     if (dragPath.length >= 8) return;
     const np = [...dragPath, [cell.r, cell.c]];
     setDragPath(np);
-    if (isGuesser) socket.emit('guess_drag', { roomId: room.id, path: np }); // spectators watch the live drag
-  }, [isDragging, dragPath, submitting, isGuesser, room.id, socket]);
+    socket.emit('guess_drag', { roomId: room.id, path: np }); // everyone sees the live drag
+  }, [isDragging, dragPath, submitting, room.id, socket]);
 
   const endDrag = useCallback(() => {
     if (!isDragging || submitting) return;
@@ -329,14 +329,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
 
-  const banner = state === 'champ_pick'
-    ? (isChamp ? `Pick a word for ${guesserName} (${pickTimeLeft}s left)` : `${champPlayer?.name || 'The picker'} is choosing... (${pickTimeLeft}s)`)
-    : state === 'playing'
-      ? (isGuesser ? `You're on the spot! Find ${champPlayer?.name || 'the picker'}'s word!`
-        : isChamp ? `You picked the word — watch ${guesserName} guess!`
-        : `${guesserName} is on the spot! Find ${champPlayer?.name || 'the picker'}'s word!`)
-      : 'Round over';
-  const champAvatar = (isGuesser ? guesserPlayer : champPlayer)?.avatar || '';
+  const banner = state === 'playing' ? 'Everyone is guessing the word!' : 'Round over';
+  const champAvatar = '';
 
   return (
     <div className="game-area">
@@ -391,17 +385,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       <PlayerList players={room.players} host={room.host} champId={room.champId} guesserId={room.guesserId} myId={socket.id} />
 
-      {/* ── Big jiggling banner: who's choosing / who's guessing ── */}
-      {state === 'champ_pick' && champPlayer?.name && (
+      {/* ── Big jiggling banner ── */}
+      {state === 'playing' && (
         <div className="spot-banner">
-          {`${champPlayer.name.toUpperCase()} IS CHOOSING THE WORD`.split('').map((ch, i) => (
-            <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
-          ))}
-        </div>
-      )}
-      {state === 'playing' && guesserName && (
-        <div className="spot-banner">
-          {`${(champPlayer?.name || 'CHAMP').toUpperCase()} IS ASKING TO ${guesserName.toUpperCase()}`.split('').map((ch, i) => (
+          {"GUESS THE WORD!".split('').map((ch, i) => (
             <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
           ))}
         </div>
@@ -453,8 +440,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
-          {/* Spectator view: the guesser's live drag, shown to everyone else */}
-          {!isGuesser && state === 'playing' && spectPath.length > 0 && (
+          {/* Live activity: other players' drags shown to everyone */}
+          {state === 'playing' && spectPath.length > 0 && (
             <div className="spect-drag-live">
               ✏️ {spectName} is drawing: <b>{spectWord.toUpperCase()}</b>
             </div>
@@ -465,8 +452,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Type the answer (hot-seat guesser) ── */}
-      {isGuesser && state === 'playing' && !solvedWord && (
+      {/* ── Type the answer ── */}
+      {state === 'playing' && !solvedWord && (
         <form className="type-answer" onSubmit={submitTyped}>
           <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
             placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
@@ -485,8 +472,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Spectator: what the guesser just drew ── */}
-      {!isGuesser && spectDrawn && state === 'playing' && (
+      {/* ── Live activity: what a player just drew ── */}
+      {spectDrawn && state === 'playing' && (
         <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
       )}
 
@@ -524,7 +511,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="game-col-right">
           <div className={`side-status-card ${isChamp ? 'side-status-me' : ''}`}>
             <div className="side-avatar">
-              {champAvatar ? <img src={champAvatar} alt="" className="side-avatar-img" /> : <div className="side-avatar-fallback">👑</div>}
+              {champAvatar ? <img src={champAvatar} alt="" className="side-avatar-img" /> : <div className="side-avatar-fallback">🎯</div>}
               <span className="wave-hand">👋</span>
             </div>
             <div className="side-status-text">{banner}</div>
