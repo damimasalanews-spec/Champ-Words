@@ -285,7 +285,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     socket.emit('submit_word', { roomId: room.id, word, path: dragPath }, (res) => {
       setSubmitting(false);
       if (res.ok) { /* handled by word_found event */ }
-      else if (res.error) showToast(res.error);
+      else if (res.error && !res.error.includes('Not the word')) showToast(res.error); // no wrong-guess popup
       setDragPath([]);
     });
   }, [isDragging, dragPath, submitting, grid, room.id, socket, showToast]);
@@ -299,7 +299,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     socket.emit('submit_word', { roomId: room.id, word: w, path: [] }, (res) => {
       setSubmitting(false);
       if (res.ok) { setTypedWord(''); }
-      else if (res.error) showToast(res.error);
+      else if (res.error && !res.error.includes('Not the word')) showToast(res.error); // no wrong-guess popup
     });
   };
 

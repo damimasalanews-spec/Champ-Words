@@ -724,6 +724,7 @@ io.on('connection', socket => {
     const player = playerById(room, socket.id);
     if (!player || player.foundWord) return;
     const word = path.map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
+    if (word === room.word) return; // never show the correct answer mid-drag
     socket.to(roomId).emit('guess_drag', { playerId: player.id, playerName: player.name, path, word });
   });
 
@@ -733,6 +734,7 @@ io.on('connection', socket => {
     const player = playerById(room, socket.id);
     if (!player || player.foundWord) return;
     const word = (path || []).map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
+    if (word === room.word) return; // never show the correct answer on a finished drag
     socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
   });
 
