@@ -1864,8 +1864,12 @@
   .hint-category, .hint-clue { width: auto; flex: 1; }
 }
 @media (max-width: 480px) {
-  .app-header .brand-name { font-size: 15px; letter-spacing: 2px; }
-  .user-name { display: none; }
+  .app-header { gap: 8px; }
+  .app-header .brand { min-width: 0; }
+  .app-header .brand-name { font-size: 14px; letter-spacing: 1.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-header .room-badge { padding: 3px 8px; letter-spacing: 2px; font-size: 10px; }
+  .user-info { display: none; }
+  .sound-toggle { width: 32px; height: 32px; font-size: 14px; }
   .grid-4x4 { padding: 9px; gap: 6px; }
   .grid-row { gap: 6px; }
   .grid-4x4 .grid-cell { width: 48px; height: 48px; font-size: 19px; border-radius: 11px; }
