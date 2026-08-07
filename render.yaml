@@ -1,0 +1,24 @@
+# Render Blueprint — Champ Words
+# Deploy: render.com → New → Blueprint → select this repo (render.yaml is auto-detected)
+# Secrets are NOT stored here — set TIKTOK_* values in the Render dashboard
+# after the service is created (they appear as "must be set before deploy" fields).
+
+services:
+  - type: web
+    name: champ-words
+    runtime: node
+    plan: free
+    buildCommand: npm run build:deploy
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 20.12.0
+      # --- TikTok OAuth (set in dashboard after first deploy) ---
+      - key: TIKTOK_CLIENT_KEY
+        sync: false
+      - key: TIKTOK_CLIENT_SECRET
+        sync: false
+      - key: TIKTOK_REDIRECT_URI
+        sync: false
+        # value: https://champ-words.onrender.com/auth/tiktok/callback
