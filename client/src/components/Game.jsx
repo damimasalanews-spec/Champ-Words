@@ -168,6 +168,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setFoundList([]);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
+    setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
 
   // Countdown
@@ -178,26 +179,41 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => clearInterval(iv);
   }, [state, room.endsAt, room.round]);
 
-  // Word found / time up — the round continues until everyone finds it
+  // Word found / time up — reveal the word and let the letters fall into the brackets
   useEffect(() => {
     const onFound = (data) => {
       playSound('found');
-      const cName = data.champName || 'Champ';
-      if (data.self && data.word) {
-        // the finder gets the word revealed + confetti
+      if (data.word) {
         setSolvedWord(data.word);
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName);
         setFalling(true);
-        setTimeout(() => setFalling(false), 1300);
-        setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
+        setTimeout(() => setFalling(false), 1800);
+        if (data.winnerId === socket.id) {
+          setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
+        }
       }
-      // everyone sees who got it right
-      setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.self }]);
+      setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
     };
     const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
     return () => { socket.off('word_found', onFound); socket.off('time_up', onTimeUp); };
+  }, [socket]);
+
+  // Spectator view: see what the hot-seat guesser is dragging
+  const [spectPath, setSpectPath] = useState([]);
+  const [spectWord, setSpectWord] = useState('');
+  const [spectName, setSpectName] = useState('');
+  const [spectDrawn, setSpectDrawn] = useState(null); // { name, word } after a completed drag
+  useEffect(() => {
+    const onDrag = (d) => { setSpectPath(d.path || []); setSpectWord(d.word || ''); setSpectName(d.playerName || ''); setSpectDrawn(null); };
+    const onEnd = (d) => {
+      setSpectPath([]); setSpectWord('');
+      setSpectDrawn({ name: d.playerName || '', word: d.word || '' });
+      setTimeout(() => setSpectDrawn(null), 3000);
+    };
+    socket.on('guess_drag', onDrag); socket.on('guess_drag_end', onEnd);
+    return () => { socket.off('guess_drag', onDrag); socket.off('guess_drag_end', onEnd); };
   }, [socket]);
 
   // Champ hints: category at 40s remaining, one-line clue at 20s remaining
@@ -286,10 +302,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     if (cell.r === last[0] && cell.c === last[1]) return;
     if (!isAdjacent(last[0], last[1], cell.r, cell.c)) return;
     const idx = dragPath.findIndex(([pr, pc]) => pr === cell.r && pc === cell.c);
-    if (idx >= 0) { setDragPath(prev => prev.slice(0, idx + 1)); return; }
+    if (idx >= 0) { const np = dragPath.slice(0, idx + 1); setDragPath(np); socket.emit('guess_drag', { roomId: room.id, path: np }); return; }
     if (dragPath.length >= 8) return;
-    setDragPath(prev => [...prev, [cell.r, cell.c]]);
-  }, [isDragging, dragPath, submitting]);
+    const np = [...dragPath, [cell.r, cell.c]];
+    setDragPath(np);
+    if (isGuesser) socket.emit('guess_drag', { roomId: room.id, path: np }); // spectators watch the live drag
+  }, [isDragging, dragPath, submitting, isGuesser, room.id, socket]);
 
   const endDrag = useCallback(() => {
     if (!isDragging || submitting) return;
@@ -297,6 +315,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     lastCellRef.current = null;
     if (dragPath.length < 3) { setDragPath([]); return; }
     const word = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('');
+    socket.emit('guess_drag_end', { roomId: room.id, path: dragPath }); // spectators see the finished draw
     setSubmitting(true);
     socket.emit('submit_word', { roomId: room.id, word, path: dragPath }, (res) => {
       setSubmitting(false);
@@ -456,8 +475,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 {row.map((ch, c) => {
                   const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
                   const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
+                  const spectSel = spectPath.some(([pr, pc]) => pr === r && pc === c);
                   return (
-                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}`}
+                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''} ${spectSel && !sel ? 'spect-cell' : ''}`}
                       data-row={r} data-col={c}
                       onMouseDown={(e) => startDrag(r, c, e)}
                       onTouchStart={(e) => startDrag(r, c, e)}>
@@ -472,6 +492,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div style={{ textAlign: 'center', marginTop: 6 }}>
               <span className="drag-word-display">{dragWord}</span>
               <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
+            </div>
+          )}
+
+          {/* Spectator view: the guesser's live drag, shown to everyone else */}
+          {!isGuesser && state === 'playing' && spectPath.length > 0 && (
+            <div className="spect-drag-live">
+              ✏️ {spectName} is drawing: <b>{spectWord.toUpperCase()}</b>
             </div>
           )}
           {falling && solvedWord && (
@@ -500,6 +527,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
+      {/* ── Spectator: what the guesser just drew ── */}
+      {!isGuesser && spectDrawn && state === 'playing' && (
+        <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
+      )}
+
       {wordLen > 0 && state === 'playing' && (
         <div className="brackets-section">
           <div className="brackets-label">ANSWER</div>
@@ -515,7 +547,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               else if (l) cls = 'hint-revealed';
               return (
                 <div key={i} className={`bracket-box ${cls}`}>
-                  {l && <span className="bracket-letter">{l.toUpperCase()}</span>}
+                  {l && <span className={`bracket-letter ${solvedWord ? 'falling-letter' : ''}`} style={{ '--d': `${i * 0.09}s` }}>{l.toUpperCase()}</span>}
                 </div>
               );
             })}

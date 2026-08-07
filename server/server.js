@@ -719,6 +719,28 @@ io.on('connection', socket => {
     setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
   });
 
+  // ── Spectator view: broadcast the guesser's live drag to the others ─────
+  socket.on('guess_drag', ({ roomId, path }) => {
+    const room = rooms.get(roomId);
+    if (!room || room.state !== 'playing') return;
+    if (room.guesserId !== socket.id) return;
+    if (!Array.isArray(path) || path.length < 1 || path.length > 8) return;
+    const player = playerById(room, socket.id);
+    if (!player) return;
+    const word = path.map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
+    socket.to(roomId).emit('guess_drag', { playerId: player.id, playerName: player.name, path, word });
+  });
+
+  socket.on('guess_drag_end', ({ roomId, path }) => {
+    const room = rooms.get(roomId);
+    if (!room || room.state !== 'playing') return;
+    if (room.guesserId !== socket.id) return;
+    const player = playerById(room, socket.id);
+    if (!player) return;
+    const word = (path || []).map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
+    socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
+  });
+
   socket.on('use_hint', ({ roomId }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
