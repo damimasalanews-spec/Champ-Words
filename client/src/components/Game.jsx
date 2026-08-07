@@ -449,10 +449,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       <PlayerList players={room.players} host={room.host} champId={room.champId} guesserId={room.guesserId} myId={socket.id} />
 
-      {/* ── Big jiggling banner: the real player on the spot ── */}
+      {/* ── Big jiggling banner: who's choosing / who's guessing ── */}
+      {state === 'champ_pick' && champPlayer?.name && (
+        <div className="spot-banner">
+          {`${champPlayer.name.toUpperCase()} IS CHOOSING THE WORD`.split('').map((ch, i) => (
+            <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
+          ))}
+        </div>
+      )}
       {state === 'playing' && guesserName && (
         <div className="spot-banner">
-          {`${guesserName.toUpperCase()} IS ON THE SPOT — FIND ANOTHER PLAYER'S WORD!`.split('').map((ch, i) => (
+          {`${guesserName.toUpperCase()} IS GUESSING THE WORD — ${guesserName.toUpperCase()}, PLEASE FIND THE ANSWER!`.split('').map((ch, i) => (
             <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
           ))}
         </div>
