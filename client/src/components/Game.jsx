@@ -51,9 +51,9 @@ function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
           <label className="pick-hint-label">20s clue (optional)</label>
           <input className="pick-hint-input" value={hint}
             onChange={e => setHint(e.target.value)}
-            placeholder="e.g. it grows tall in the forest"
+            placeholder="leave empty for an automatic hint"
             maxLength={60} />
-          <p className="pick-hint-note">Shown to everyone at 20s left — the category is revealed at 40s left</p>
+          <p className="pick-hint-note">Auto-clue shown at 20s left · category at 40s left · one letter revealed at each</p>
         </div>
       </div>
     </div>

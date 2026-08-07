@@ -161,6 +161,9 @@ try {
 const CATEGORIES = require('./categories.js');
 const CATEGORY_IDS = new Set(CATEGORIES.list.map(c => c.id));
 
+// ── 20s hint clues (curated + templates) ─────────────────────────────────
+const { generateClue } = require('./clues.js');
+
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
 const rooms = new Map();
@@ -399,23 +402,22 @@ function startRound(room) { // champ has picked their word
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
-// ── Champ hint #1 (40s remaining): reveal the category name ───────────────
+// ── Champ hint #1 (40s remaining): reveal the category name + 1 letter ────
 function sendCategoryHint(room) {
   if (!room.word || room.state !== 'playing') return;
-  // 'Surprise me' has no useful category — reveal a random letter instead
+  revealRandomHint(room); // one letter revealed at 40s remaining
+  // 'Surprise me' has no useful category — skip the label
   const cat = CATEGORIES.list.find(c => c.id === room.category);
-  if (!cat || cat.id === 'mixed') return revealRandomHint(room);
+  if (!cat || cat.id === 'mixed') return;
   io.to(room.id).emit('category_hint', { label: cat.label });
 }
 
-// ── Champ hint #2 (20s remaining): the champ's one-line clue ──────────────
+// ── Champ hint #2 (20s remaining): one-line clue + 1 letter ───────────────
 function sendWordHint(room) {
   if (!room.word || room.state !== 'playing') return;
-  if (room.hintText) {
-    io.to(room.id).emit('word_hint', { text: room.hintText });
-  } else {
-    revealRandomHint(room); // no clue provided — reveal a random letter
-  }
+  revealRandomHint(room); // one more letter revealed at 20s remaining
+  const text = room.hintText || generateClue(room.word, room.category);
+  io.to(room.id).emit('word_hint', { text });
 }
 
 function onTimeUp(room) {
