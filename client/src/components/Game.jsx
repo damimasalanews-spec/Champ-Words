@@ -110,6 +110,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const wordLen = room.wordLength;
   const state = room.state;
   const grid = room.grid || [];
+  const isGuesser = room.guesserId === socket.id;
 
   const [catChoices, setCatChoices] = useState([]);
   const [pickedCat, setPickedCat] = useState(null);
@@ -372,7 +373,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const totalRounds = room.totalRounds || 5;
   const pickedCatObj = catChoices.find(c => c.id === pickedCat) || null;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
-  const isGuesser = room.guesserId === socket.id;
   const guesserName = guesserPlayer?.name || 'the guesser';
 
   const banner = state === 'champ_pick'
