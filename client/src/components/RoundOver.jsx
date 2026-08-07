@@ -1,4 +1,8 @@
+import { useEffect } from 'react';
+import { playSound } from '../sounds';
+
 export default function RoundOver({ result, room }) {
+  useEffect(() => { playSound('roundover'); }, []);
   const { word, winner, round, champName, scores } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];

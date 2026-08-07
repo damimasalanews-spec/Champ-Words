@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import Logo from './Logo';
+import { playSound } from '../sounds';
 
 export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   const [mode, setMode] = useState('create'); // create | join
@@ -20,18 +22,21 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   const handleCreate = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
+    playSound('click');
     onCreateRoom(name.trim(), rounds);
   };
 
   const handleJoin = (e) => {
     e.preventDefault();
     if (!name.trim() || !roomCode.trim()) return;
+    playSound('click');
     onJoinRoom(roomCode.trim().toUpperCase(), name.trim());
   };
 
   return (
     <div className="lobby">
       <div className="lobby-title">
+        <Logo size={84} />
         <h1>Champ Words</h1>
         <p>Guess the word before your friends do!</p>
       </div>
@@ -82,8 +87,8 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
         <span>or</span>
       </div>
 
-      <button className="btn btn-secondary" style={{ maxWidth: 380 }}
-        onClick={() => setMode(mode === 'create' ? 'join' : 'create')}>
+      <button className="btn btn-secondary" style={{ maxWidth: 400 }}
+        onClick={() => { playSound('click'); setMode(mode === 'create' ? 'join' : 'create'); }}>
         {mode === 'create' ? 'Join Existing Room' : 'Create New Room'}
       </button>
     </div>

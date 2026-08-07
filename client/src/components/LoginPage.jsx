@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import Logo from './Logo';
+import { playSound } from '../sounds';
 
 export default function LoginPage({ onPlayAsGuest }) {
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function LoginPage({ onPlayAsGuest }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo">
-          <span className="login-icon">🔤</span>
+          <Logo size={110} />
           <h1>Champ Words</h1>
           <p>Multiplayer Word Puzzle Game</p>
         </div>
@@ -62,7 +64,7 @@ export default function LoginPage({ onPlayAsGuest }) {
           <span>or</span>
         </div>
 
-        <button className="guest-login-btn" onClick={onPlayAsGuest}>
+        <button className="guest-login-btn" onClick={() => { playSound('click'); onPlayAsGuest(); }}>
           Play as Guest
         </button>
 

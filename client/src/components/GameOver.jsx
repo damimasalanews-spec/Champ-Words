@@ -1,4 +1,9 @@
+import { useEffect } from 'react';
+import Logo from './Logo';
+import { playSound } from '../sounds';
+
 export default function GameOver({ result, room, isHost, onPlayAgain, onLeave }) {
+  useEffect(() => { playSound('gameover'); }, []);
   const sorted = [...result.scores].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const rankEmoji = ['🥇', '🥈', '🥉'];
@@ -27,6 +32,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
       ))}
       <div className="overlay-card">
         <div className="winner-banner">
+          <Logo size={64} />
           <div className="trophy">👑</div>
           <div className="winner-name">{winner?.name || 'Nobody'} Wins!</div>
         </div>

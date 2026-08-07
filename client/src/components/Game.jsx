@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import PlayerList from './PlayerList';
+import { playSound } from '../sounds';
 
 // ═══ Helpers ══════════════════════════════════════════════════════════════
 function isAdjacent(r1, c1, r2, c2) {
@@ -151,8 +152,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // category_choices + word_choices listeners
   useEffect(() => {
-    const onCat = data => setCatChoices(data.categories || []);
-    const onWords = data => setChoices(data.choices || []);
+    const onCat = data => { setCatChoices(data.categories || []); playSound('popup'); };
+    const onWords = data => { setChoices(data.choices || []); playSound('popup'); };
     socket.on('category_choices', onCat); socket.on('word_choices', onWords);
     return () => { socket.off('category_choices', onCat); socket.off('word_choices', onWords); };
   }, [socket]);
@@ -177,6 +178,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Word found / time up
   useEffect(() => {
     const onFound = (data) => {
+      playSound('found');
       setSolvedWord(data.word); setSolvedBy(data.winnerId); setSolvedByName(data.winnerName);
       setFalling(true); setTimeout(() => setFalling(false), 1300);
       const winName = data.winnerName || 'Someone';
@@ -184,23 +186,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       if (data.winnerId === socket.id) setConfetti({ word: data.word, msg: `Awesome! You cracked ${cName}'s word!` });
       else setSolvedByName(`${winName} cracked ${cName}'s word`);
     };
-    const onTimeUp = (data) => { setSolvedWord(data.word); };
+    const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
     return () => { socket.off('word_found', onFound); socket.off('time_up', onTimeUp); };
   }, [socket]);
 
   // Champ hints: category at 40s remaining, one-line clue at 20s remaining
   useEffect(() => {
-    const onCatHint = (data) => setCategoryHint(data.label || '');
-    const onClue = (data) => setWordClue(data.text || '');
+    const onCatHint = (data) => { setCategoryHint(data.label || ''); playSound('hint'); };
+    const onClue = (data) => { setWordClue(data.text || ''); playSound('hint'); };
     socket.on('category_hint', onCatHint); socket.on('word_hint', onClue);
     return () => { socket.off('category_hint', onCatHint); socket.off('word_hint', onClue); };
   }, [socket]);
 
   // Champ's 5s hint-action window (hint_request) + penalty notice (points_lost)
   useEffect(() => {
-    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); };
-    const onLost = (data) => showToast(`−${data.amount} pts — ${data.reason}`, 'error');
+    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); playSound('alert'); };
+    const onLost = (data) => { showToast(`−${data.amount} pts — ${data.reason}`, 'error'); playSound('penalty'); };
     socket.on('hint_request', onReq); socket.on('points_lost', onLost);
     return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
   }, [socket, showToast]);
@@ -219,6 +221,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   const sendCategoryHint = () => {
     setHintSending(true);
+    playSound('click');
     socket.emit('send_category_hint', { roomId: room.id }, (res) => {
       setHintSending(false);
       if (res && res.ok) setHintAction(null);
@@ -227,6 +230,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   };
   const sendClue = (text) => {
     setHintSending(true);
+    playSound('click');
     socket.emit('send_word_hint', { roomId: room.id, text }, (res) => {
       setHintSending(false);
       if (res && res.ok) setHintAction(null);

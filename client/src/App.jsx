@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import socket from './socket';
+import Logo from './components/Logo';
+import { playSound, toggleMute, isMuted } from './sounds';
 import LoginPage from './components/LoginPage';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
@@ -19,9 +21,11 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
+  const [muted, setMuted] = useState(() => isMuted());
 
   const showToast = useCallback((text, type = 'error') => {
     setToast({ text, type });
+    playSound('toast');
     setTimeout(() => setToast(null), 2500);
   }, []);
 
@@ -54,9 +58,9 @@ export default function App() {
     socket.on('round_started', (data) => { setRoom(data.room); setScreen('playing'); });
     socket.on('word_found', (data) => { setRoom(data.room); });
     socket.on('time_up', (data) => { setRoom(data.room); });
-    socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); });
-    socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); });
-    socket.on('chat', (msg) => setMessages(prev => [...prev, msg]));
+    socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
+    socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
+    socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound('chat'); });
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
 
     return () => {
@@ -82,6 +86,7 @@ export default function App() {
 
   const handleStartGame = () => {
     if (!room) return;
+    playSound('click');
     socket.emit('start_game', { roomId: room.id }, (res) => {
       if (!res.ok) showToast(res.error || 'Cannot start game');
     });
@@ -148,11 +153,16 @@ export default function App() {
   return (
     <div className="app">
       <div className="app-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <h1>Champ Words</h1>
+        <div className="brand">
+          <Logo size={34} />
+          <span className="brand-name">Champ Words</span>
           {room && <span className="room-badge">{room.id}</span>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
+            onClick={() => setMuted(toggleMute())}>
+            {muted ? '🔇' : '🔊'}
+          </button>
           <div className="user-info">
             {user.avatar && <img src={user.avatar} alt="" className="user-avatar" />}
             <span className="user-name">{user.name}</span>
