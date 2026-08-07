@@ -8,6 +8,7 @@ import Game from './components/Game';
 import RoundOver from './components/RoundOver';
 import GameOver from './components/GameOver';
 import Chat from './components/Chat';
+import VoiceChat from './components/VoiceChat';
 import Toast from './components/Toast';
 import './App.css';
 
@@ -232,6 +233,16 @@ export default function App() {
         />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
+
+      {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
+        <VoiceChat
+          key={room.id}
+          roomId={room.id}
+          socket={socket}
+          meName={room.players.find(p => p.id === socket.id)?.name}
+        />
+      )}
+
       {toast && <Toast text={toast.text} type={toast.type} />}
     </div>
   );

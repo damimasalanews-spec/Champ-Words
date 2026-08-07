@@ -212,7 +212,8 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     hintTimer1: null,         // opens the category-hint window at 20s elapsed (40s left)
     hintTimer2: null,         // opens the word-clue window at 40s elapsed (20s left)
     hintWindowTimer: null,    // 5s timeout for the champ to send the hint
-    champTimer: null          // 15s timeout for champ to pick a word
+    champTimer: null,         // 15s timeout for champ to pick a word
+    voiceUsers: []            // socket ids currently in the voice chat (WebRTC mesh)
   };
   rooms.set(id, room);
   return room;
@@ -767,6 +768,47 @@ io.on('connection', socket => {
     cb && cb({ ok: true });
   });
 
+  // ── Voice chat signaling (WebRTC mesh) ────────────────────────────────
+  // The newcomer gets the list of existing voice members and creates offers
+  // to each of them (avoids offer glare on simultaneous joins).
+  socket.on('voice_join', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    const player = playerById(room, socket.id);
+    if (!player) return cb && cb({ ok: false, error: 'You are not in this room' });
+    if (!room.voiceUsers.includes(socket.id)) room.voiceUsers.push(socket.id);
+    const members = room.voiceUsers
+      .filter(id => id !== socket.id)
+      .map(id => { const p = playerById(room, id); return { socketId: id, name: p ? p.name : 'Player' }; });
+    cb && cb({ ok: true, members });
+    socket.to(roomId).emit('voice_joined', { socketId: socket.id, name: player.name });
+  });
+
+  socket.on('voice_offer', ({ roomId, to, sdp }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.voiceUsers.includes(socket.id) || !room.voiceUsers.includes(to)) return;
+    io.to(to).emit('voice_offer', { from: socket.id, sdp });
+  });
+
+  socket.on('voice_answer', ({ roomId, to, sdp }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.voiceUsers.includes(socket.id) || !room.voiceUsers.includes(to)) return;
+    io.to(to).emit('voice_answer', { from: socket.id, sdp });
+  });
+
+  socket.on('voice_ice', ({ roomId, to, candidate }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.voiceUsers.includes(socket.id) || !room.voiceUsers.includes(to)) return;
+    io.to(to).emit('voice_ice', { from: socket.id, candidate });
+  });
+
+  socket.on('voice_leave', ({ roomId }) => {
+    const room = rooms.get(roomId);
+    if (!room) return;
+    room.voiceUsers = room.voiceUsers.filter(id => id !== socket.id);
+    socket.to(roomId).emit('voice_left', { socketId: socket.id });
+  });
+
   socket.on('leave_room', ({ roomId }, cb) => { leaveRoom(socket, roomId); cb && cb({ ok: true }); });
   socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: player.name, text }); });
   socket.on('disconnect', () => { for (const [id, room] of rooms.entries()) { if (room.players.find(p => p.id === socket.id)) leaveRoom(socket, id); } });
@@ -779,6 +821,11 @@ function leaveRoom(socket, roomId) {
   if (idx === -1) return;
   const p = room.players[idx]; room.players.splice(idx, 1);
   socket.leave(roomId);
+  // Leave voice chat too (so other players drop the WebRTC connection)
+  if (room.voiceUsers.includes(socket.id)) {
+    room.voiceUsers = room.voiceUsers.filter(id => id !== socket.id);
+    socket.to(roomId).emit('voice_left', { socketId: socket.id });
+  }
   if (room.players.length === 0) { clearTimer(room); rooms.delete(roomId); return; }
   if (room.host === socket.id) room.host = room.players[0].id;
   // Fewer than 2 players left mid-game — end it instead of breaking the

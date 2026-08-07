@@ -2086,3 +2086,22 @@
   .overlay-card { padding: 24px 16px; }
   .lobby-card { padding: 16px 14px; }
 }
+
+/* ── Voice chat ─────────────────────────────────────────────────────── */
+.voice-chat { position: fixed; left: 12px; bottom: 12px; z-index: 150; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 240px; }
+.voice-btn { background: var(--key-bg); color: var(--text); border: 1.5px solid var(--border); border-radius: 22px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.35); transition: all 0.15s ease; }
+.voice-btn:hover { border-color: var(--green); color: var(--green); transform: translateY(-1px); }
+.voice-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+.voice-panel { background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; min-width: 180px; box-shadow: 0 6px 20px rgba(0,0,0,0.45); animation: slideUp 0.2s ease; }
+.voice-panel-header { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+.voice-title { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; color: var(--text); flex: 1; }
+.voice-mute, .voice-leave { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.voice-mute:hover, .voice-leave:hover { border-color: var(--gold); }
+.voice-mute.muted { border-color: var(--danger); background: rgba(255,107,129,0.1); }
+.voice-members { display: flex; flex-direction: column; gap: 4px; }
+.voice-member { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--text); }
+.voice-member.me { color: var(--text-dim); }
+.voice-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; transition: background 0.15s ease; }
+.voice-member.speaking .voice-dot { background: var(--green); box-shadow: 0 0 8px rgba(47,224,164,0.9); animation: voicePulse 0.5s ease-in-out infinite alternate; }
+@keyframes voicePulse { from { transform: scale(1); } to { transform: scale(1.35); } }
+.voice-error { font-size: 10px; color: var(--danger); background: rgba(255,107,129,0.08); border: 1px solid rgba(255,107,129,0.4); border-radius: 8px; padding: 5px 8px; max-width: 220px; }
