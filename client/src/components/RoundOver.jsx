@@ -3,7 +3,7 @@ import { playSound } from '../sounds';
 
 export default function RoundOver({ result, room }) {
   useEffect(() => { playSound('roundover'); }, []);
-  const { word, winner, round, champName, scores } = result;
+  const { word, winner, round, champName, scores, finds } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const nextChamp = winner?.name || null;
@@ -28,7 +28,7 @@ export default function RoundOver({ result, room }) {
 
         {winner ? (
           <p className="round-winner-msg">
-            {winner.name} guessed it in {winner.elapsed}s — <b>+{winner.score} pts</b>!
+            {winner.name} was fastest — found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
           </p>
         ) : (
           <p className="round-winner-msg">
@@ -36,7 +36,24 @@ export default function RoundOver({ result, room }) {
           </p>
         )}
 
-        <div className="score-list" style={{ marginTop: 12 }}>
+        {finds && finds.length > 0 && (
+          <>
+            <p className="gameover-final-title" style={{ marginTop: 14 }}>Who found the word</p>
+            <div className="score-list" style={{ marginTop: 4 }}>
+              {finds.map((f, i) => (
+                <div key={i} className="score-item" style={{ padding: '7px 12px' }}>
+                  <span className="rank">✅</span>
+                  <div className="player-info">
+                    <div className="player-name">{f.name}</div>
+                  </div>
+                  <span className="player-score">+{f.score}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="score-list" style={{ marginTop: 14 }}>
           {sorted.map((p, i) => (
             <div key={p.id} className="score-item">
               <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>

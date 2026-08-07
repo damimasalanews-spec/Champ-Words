@@ -123,6 +123,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [solvedWord, setSolvedWord] = useState('');
   const [solvedBy, setSolvedBy] = useState(null);
   const [solvedByName, setSolvedByName] = useState('');
+  const [foundList, setFoundList] = useState([]); // [{ name, score, self }] — correct guessers this round
   const [falling, setFalling] = useState(false);
   const [confetti, setConfetti] = useState(null);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -163,6 +164,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setCatChoices([]); setPickedCat(null); setCategoryHint(''); setWordClue('');
     setHintAction(null); setHintActionLeft(0); setHintSending(false);
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
+    setFoundList([]);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); lastCellRef.current = null;
   }, [room.round, room.champId]);
@@ -175,16 +177,22 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => clearInterval(iv);
   }, [state, room.endsAt, room.round]);
 
-  // Word found / time up
+  // Word found / time up — the round continues until everyone finds it
   useEffect(() => {
     const onFound = (data) => {
       playSound('found');
-      setSolvedWord(data.word); setSolvedBy(data.winnerId); setSolvedByName(data.winnerName);
-      setFalling(true); setTimeout(() => setFalling(false), 1300);
-      const winName = data.winnerName || 'Someone';
       const cName = data.champName || 'Champ';
-      if (data.winnerId === socket.id) setConfetti({ word: data.word, msg: `Awesome! You cracked ${cName}'s word!` });
-      else setSolvedByName(`${winName} cracked ${cName}'s word`);
+      if (data.self && data.word) {
+        // the finder gets the word revealed + confetti
+        setSolvedWord(data.word);
+        setSolvedBy(data.winnerId);
+        setSolvedByName(data.winnerName);
+        setFalling(true);
+        setTimeout(() => setFalling(false), 1300);
+        setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
+      }
+      // everyone sees who got it right
+      setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.self }]);
     };
     const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
@@ -452,7 +460,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── ANSWER brackets (single row, shows hint letters + solved word) ── */}
+      {/* ── Who found the word (round keeps going until everyone gets it) ── */}
+      {foundList.length > 0 && state === 'playing' && (
+        <div className="found-now">
+          {foundList.map((f, i) => (
+            <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
+              ✅ {f.name} +{f.score}
+            </span>
+          ))}
+        </div>
+      )}
+
       {wordLen > 0 && state === 'playing' && (
         <div className="brackets-section">
           <div className="brackets-label">ANSWER</div>

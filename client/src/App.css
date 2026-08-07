@@ -1513,6 +1513,21 @@
 }
 .drag-word-display { font-size: 17px; font-weight: 800; color: var(--green); letter-spacing: 3px; text-transform: uppercase; animation: fadeIn 0.15s ease; margin: 4px 0; }
 
+/* ── Who found the word (live chips during the round) ──────────────────── */
+.found-now { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+.found-chip {
+  background: rgba(47,224,164,0.1);
+  border: 1px solid rgba(47,224,164,0.4);
+  color: var(--green);
+  font-size: 12px; font-weight: 800;
+  padding: 5px 11px; border-radius: 20px;
+  animation: popIn 0.3s ease-out;
+}
+.found-chip.found-self {
+  background: rgba(47,224,164,0.22);
+  box-shadow: 0 0 12px rgba(47,224,164,0.35);
+}
+
 /* ── Falling word ──────────────────────────────────────────────────────── */
 .falling-word {
   position: absolute; top: 50%; left: 50%;

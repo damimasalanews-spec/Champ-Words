@@ -199,6 +199,8 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     grid: null,               // 4×4 letter grid (generated from chosen word)
     hintWindow: null,         // open hint window: 'category' | 'clue' | null
     offeredClues: [],         // 3 clue options offered to the champ at 20s
+    roundFinds: [],           // ordered list of correct guessers this round: {id, name, score, elapsed}
+    allFound: false,          // every guesser found the word → round ends early
     timer: null,
     hintTimer1: null,         // opens the category-hint window at 20s elapsed (40s left)
     hintTimer2: null,         // opens the word-clue window at 40s elapsed (20s left)
@@ -220,6 +222,7 @@ function sanitizeRoom(room) {
       : [],
     endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
+    finds: room.roundFinds || [],
     grid: room.state === 'playing' ? room.grid : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
   };
@@ -356,8 +359,11 @@ function beginChampTurn(room, champId) {
   room.hintText = null;
   room.hintWindow = null;
   room.offeredClues = [];
+  room.roundFinds = [];
+  room.allFound = false;
   room.choices = [];
   room.pickStartedAt = Date.now();
+  room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
   clearTimer(room);
   // 15s auto-pass if champ doesn't pick a category/word
   room.champTimer = setTimeout(() => {
@@ -487,6 +493,7 @@ function endRound(room) {
     totalRounds: room.totalRounds,
     champName: champ ? champ.name : '',
     winner: winner ? { id: winner.id, name: winner.name, score: room.roundScore, elapsed: room.roundElapsed } : null,
+    finds: room.roundFinds,
     scores
   });
   setTimeout(() => {
@@ -532,7 +539,7 @@ io.on('connection', socket => {
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game in progress' });
     if (room.players.find(p => p.id === socket.id)) return cb && cb({ ok: false, error: 'Already joined' });
-    room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS });
+    room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0 });
     socket.join(roomId);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
@@ -635,31 +642,52 @@ io.on('connection', socket => {
     }
 
     // Correct guess!
-    clearTimer(room);
-    room.state = 'round_over'; // block further guesses while the reveal plays out
-    const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
-    const gained = Math.max(10, 100 - elapsed);
     const player = playerById(room, socket.id);
     if (!player) return cb && cb({ ok: false, error: 'Player not found' });
+    if (player.foundWord) return cb && cb({ ok: false, error: 'You already found the word!' });
+
+    const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
+    const gained = Math.max(10, 100 - elapsed); // faster guess = more points
     player.score += gained;
     player.hintsLeft++; // bonus hint for guessing correctly
-    room.roundWinnerId = socket.id;
-    room.roundScore = gained;
-    room.roundElapsed = elapsed;
-    io.to(roomId).emit('word_found', {
+    player.foundWord = true;
+    player.roundFoundAt = elapsed;
+    player.roundScore = gained;
+    if (!room.roundWinnerId) { // the fastest finder becomes the next champ
+      room.roundWinnerId = socket.id;
+      room.roundScore = gained;
+      room.roundElapsed = elapsed;
+    }
+    room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
+
+    // Round ends early only when EVERY guesser has found the word
+    const guessers = room.players.filter(p => p.id !== room.champId);
+    const allFound = guessers.length > 0 && guessers.every(p => p.foundWord);
+    room.allFound = allFound;
+
+    // Only the finder gets the word revealed — others keep guessing
+    const base = {
       room: sanitizeRoom(room),
-      word: room.word,
       winnerId: socket.id,
       winnerName: player.name,
       champName: champOf(room)?.name || '',
       score: gained,
       elapsed,
+      finds: room.roundFinds,
+      allFound,
       round: room.round,
       totalRounds: room.totalRounds
-    });
+    };
+    io.to(socket.id).emit('word_found', { ...base, self: true, word: room.word });
+    socket.to(roomId).emit('word_found', { ...base, self: false, word: null });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
     cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
-    setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
+
+    if (allFound) {
+      // everyone got it — celebrate briefly, then move on
+      clearTimer(room);
+      setTimeout(() => endRound(room), 1800);
+    }
   });
 
   socket.on('use_hint', ({ roomId }, cb) => {
