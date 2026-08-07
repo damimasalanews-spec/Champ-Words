@@ -499,6 +499,20 @@ function onTimeUp(room) {
   setTimeout(() => endRound(room), TIME_UP_TO_ROUND_OVER_MS);
 }
 
+// End the game with final scores (all rounds played, or too few players left)
+function finishGame(room) {
+  clearTimer(room);
+  room.state = 'game_over';
+  const finalScores = room.players
+    .map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score }))
+    .sort((a, b) => b.score - a.score);
+  io.to(room.id).emit('game_over', {
+    room: sanitizeRoom(room),
+    scores: finalScores,
+    winner: finalScores[0] || null
+  });
+}
+
 function endRound(room) {
   if (room.endedRound) return;
   room.endedRound = true;
@@ -535,18 +549,9 @@ function endRound(room) {
   setTimeout(() => {
     if (room.players.length === 0) return;
     room.round++;
-    // ── Game over: all rounds played ──
-    if (room.round > room.totalRounds) {
-      clearTimer(room);
-      room.state = 'game_over';
-      const finalScores = room.players
-        .map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score }))
-        .sort((a, b) => b.score - a.score);
-      io.to(room.id).emit('game_over', {
-        room: sanitizeRoom(room),
-        scores: finalScores,
-        winner: finalScores[0] || null
-      });
+    // ── Game over: all rounds played, or not enough players left ──
+    if (room.round > room.totalRounds || room.players.length < 2) {
+      finishGame(room);
       return;
     }
     if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
@@ -760,6 +765,12 @@ function leaveRoom(socket, roomId) {
   socket.leave(roomId);
   if (room.players.length === 0) { clearTimer(room); rooms.delete(roomId); return; }
   if (room.host === socket.id) room.host = room.players[0].id;
+  // Fewer than 2 players left mid-game — end it instead of breaking the
+  // picker/guesser roles (this used to make one player both choose AND guess)
+  if (room.players.length < 2 && room.state !== 'waiting') {
+    finishGame(room);
+    return;
+  }
   // If the hot-seat guesser leaves, the next player takes their place
   if (room.guesserId === socket.id) {
     const next = nextPlayerAfter(room, socket.id, room.champId);
