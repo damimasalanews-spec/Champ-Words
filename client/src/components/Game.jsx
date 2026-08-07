@@ -6,13 +6,37 @@ function isAdjacent(r1, c1, r2, c2) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
+// ── Category Pick Popup ───────────────────────────────────────────────────
+function CategoryPickPopup({ categories, onPick, disabled, timeLeft }) {
+  return (
+    <div className="pick-popup-overlay">
+      <div className="pick-popup-card">
+        <h2>Pick a category</h2>
+        <p className="pick-popup-sub">Choose a theme for your word — {timeLeft}s left</p>
+        <div className="category-choices">
+          {categories.map(c => (
+            <button key={c.id} className="category-choice" disabled={disabled}
+              onClick={() => onPick(c.id)}>
+              <span className="category-icon">{c.icon}</span>
+              <span className="category-label">{c.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Word Pick Popup (6 choices) ───────────────────────────────────────────
-function WordPickPopup({ choices, onPick, disabled, timeLeft }) {
+function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
         <h2>Choose your word</h2>
-        <p className="pick-popup-sub">Others must guess it from the grid below — {timeLeft}s left</p>
+        <p className="pick-popup-sub">
+          {categoryLabel ? <span className="pick-category-tag">{categoryLabel}</span> : null}
+          Others must guess it from the grid below — {timeLeft}s left
+        </p>
         <div className="pick-popup-choices">
           {choices.map((w, i) => (
             <button key={i} className="pick-popup-word" disabled={disabled}
@@ -77,6 +101,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const state = room.state;
   const grid = room.grid || [];
 
+  const [catChoices, setCatChoices] = useState([]);
+  const [pickedCat, setPickedCat] = useState(null);
   const [choices, setChoices] = useState([]);
   const [champWord, setChampWord] = useState('');
   const [solvedWord, setSolvedWord] = useState('');
@@ -109,12 +135,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => clearInterval(iv);
   }, [state, room.pickEndsAt]);
 
-  // word_choices listener
-  useEffect(() => { const h = data => setChoices(data.choices || []); socket.on('word_choices', h); return () => socket.off('word_choices', h); }, [socket]);
+  // category_choices + word_choices listeners
+  useEffect(() => {
+    const onCat = data => setCatChoices(data.categories || []);
+    const onWords = data => setChoices(data.choices || []);
+    socket.on('category_choices', onCat); socket.on('word_choices', onWords);
+    return () => { socket.off('category_choices', onCat); socket.off('word_choices', onWords); };
+  }, [socket]);
 
   // Reset per round
   useEffect(() => {
-    setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
+    setCatChoices([]); setPickedCat(null); setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); lastCellRef.current = null;
   }, [room.round, room.champId]);
@@ -213,29 +244,46 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setTimeout(() => setSubmitting(false), 500);
   };
 
+  const pickCategory = (cat) => {
+    setSubmitting(true);
+    socket.emit('choose_category', { roomId: room.id, category: cat }, (res) => {
+      setSubmitting(false);
+      if (res && res.ok) { setPickedCat(cat); setChoices([]); }
+      else if (res && res.error) showToast(res.error);
+    });
+  };
+
   const solved = Boolean(solvedWord);
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
   const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
+  const totalRounds = room.totalRounds || 5;
+  const pickedCatObj = catChoices.find(c => c.id === pickedCat) || null;
 
   const banner = state === 'champ_pick'
-    ? (isChamp ? `Pick a word (${pickTimeLeft}s left)` : `${champPlayer?.name || 'Champ'} is choosing... (${pickTimeLeft}s)`)
+    ? (isChamp ? (pickedCat ? `Pick a word (${pickTimeLeft}s left)` : `Pick a category (${pickTimeLeft}s left)`) : `${champPlayer?.name || 'Champ'} is choosing... (${pickTimeLeft}s)`)
     : state === 'playing'
       ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Find ${champPlayer?.name || 'Champ'}'s word — drag on the grid!`)
       : 'Round over';
 
   return (
     <div className="game-area">
-      {/* ── Word pick popup (champ only) ── */}
-      {isChamp && state === 'champ_pick' && choices.length > 0 && (
-        <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting} timeLeft={pickTimeLeft} />
+      {/* ── Category pick popup (champ only) ── */}
+      {isChamp && state === 'champ_pick' && !pickedCat && catChoices.length > 0 && (
+        <CategoryPickPopup categories={catChoices} onPick={pickCategory} disabled={submitting} timeLeft={pickTimeLeft} />
+      )}
+
+      {/* ── Word pick popup (champ only, after category) ── */}
+      {isChamp && state === 'champ_pick' && pickedCat && choices.length > 0 && (
+        <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting}
+          timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} />
       )}
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
       <div className="game-header">
-        <span className="round-info">Round <span>{room.round}</span></span>
+        <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
             {chatOpen ? 'Close Chat' : 'Chat'}
@@ -254,7 +302,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       )}
 
       {state === 'playing' && (
-        <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+        <>
+          <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+          <div className="timer-bar">
+            <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
+              style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />
+          </div>
+        </>
       )}
 
       {/* ── 4×4 Grid ── */}

@@ -13,13 +13,25 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
   };
 
   return (
-    <div className="overlay">
+    <div className="overlay gameover-overlay">
+      {/* Confetti celebration */}
+      {Array.from({ length: 40 }, (_, i) => (
+        <div key={i} className="gameover-confetti"
+          style={{
+            '--x': Math.random() * 100,
+            '--delay': (Math.random() * 0.9) + 's',
+            '--color': ['#34d399', '#fbbf24', '#fb7185', '#60a5fa', '#a78bfa', '#fb923c'][i % 6],
+            '--size': (6 + Math.random() * 7) + 'px',
+            left: Math.random() * 100 + '%'
+          }} />
+      ))}
       <div className="overlay-card">
         <div className="winner-banner">
           <div className="trophy">👑</div>
-          <div className="winner-name">{winner.name} Wins!</div>
+          <div className="winner-name">{winner?.name || 'Nobody'} Wins!</div>
         </div>
 
+        <p className="gameover-final-title">Final Scores</p>
         <div className="score-list">
           {sorted.map((p, i) => (
             <div key={p.id} className="score-item">

@@ -1,21 +1,21 @@
 :root {
-  --bg: #0f0c29;
-  --bg-light: #1a1540;
+  --bg: #0b1120;
+  --bg-light: #131c30;
   --bg-tile: #ffffff;
-  --border: #302b63;
-  --border-empty: #4a4488;
-  --text: #e8e4ff;
-  --text-dark: #1a1540;
-  --text-dim: #7a74b8;
-  --green: #00e676;
-  --yellow: #ffab00;
-  --gray: #3a3555;
-  --gold: #ffab00;
-  --danger: #ff5252;
-  --accent: #ff6d00;
-  --key-bg: #302b63;
-  --bracket-bg: rgba(255,255,255,0.04);
-  --bracket-border: #4a4488;
+  --border: #25334f;
+  --border-empty: #3b4c70;
+  --text: #eef2ff;
+  --text-dark: #0b1120;
+  --text-dim: #8494b8;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --gray: #1d2a45;
+  --gold: #fbbf24;
+  --danger: #fb7185;
+  --accent: #fb923c;
+  --key-bg: #1c2a47;
+  --bracket-bg: rgba(255,255,255,0.05);
+  --bracket-border: #3b4c70;
 
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -25,7 +25,7 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background: linear-gradient(135deg, #0f0c29 0%, #1a1540 40%, #24243e 100%);
+  background: linear-gradient(160deg, #0b1120 0%, #101a33 45%, #17223f 100%);
   color: var(--text);
 }
 
