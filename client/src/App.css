@@ -1398,6 +1398,7 @@
 .waiting-player { margin: 6px; animation: popUp 0.3s ease; }
 .player-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold); }
 .host-star { color: var(--gold); font-size: 12px; }
+.guesser-dot { font-size: 12px; animation: champPulse 1.2s ease-in-out infinite; }
 .player-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 8px 0; }
 
 /* ── Game header ───────────────────────────────────────────────────────── */

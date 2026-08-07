@@ -6,7 +6,9 @@ export default function RoundOver({ result, room }) {
   const { word, winner, round, champName, scores, finds } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
-  const nextChamp = winner?.name || null;
+  const nextNote = winner
+    ? `Next up: ${winner.name} is on the spot again — the others pick the next word!`
+    : 'The hot seat passes to the next player!';
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;
@@ -28,11 +30,11 @@ export default function RoundOver({ result, room }) {
 
         {winner ? (
           <p className="round-winner-msg">
-            {winner.name} was fastest — found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
+            {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
           </p>
         ) : (
           <p className="round-winner-msg">
-            No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''}
+            No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''} — the seat moves on!
           </p>
         )}
 
@@ -70,7 +72,7 @@ export default function RoundOver({ result, room }) {
         </div>
 
         <p className="next-champ-note">
-          {nextChamp ? `Next up: ${nextChamp} picks the next word!` : 'The next player picks the next word!'}
+          {nextNote}
         </p>
 
         <div className="overlay-buttons">

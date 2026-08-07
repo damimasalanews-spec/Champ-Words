@@ -8,12 +8,12 @@ function isAdjacent(r1, c1, r2, c2) {
 }
 
 // ── Category Pick Popup ───────────────────────────────────────────────────
-function CategoryPickPopup({ categories, onPick, disabled, timeLeft }) {
+function CategoryPickPopup({ categories, onPick, disabled, timeLeft, guesserName }) {
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
         <h2>Pick a category</h2>
-        <p className="pick-popup-sub">Choose a theme for your word — {timeLeft}s left</p>
+        <p className="pick-popup-sub">Choose a theme for {guesserName || 'the guesser'}'s word — {timeLeft}s left</p>
         <div className="category-choices">
           {categories.map(c => (
             <button key={c.id} className="category-choice" disabled={disabled}
@@ -29,7 +29,7 @@ function CategoryPickPopup({ categories, onPick, disabled, timeLeft }) {
 }
 
 // ── Word Pick Popup (6 choices + optional champ clue) ─────────────────────
-function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
+function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel, guesserName }) {
   const [hint, setHint] = useState('');
   return (
     <div className="pick-popup-overlay">
@@ -37,7 +37,7 @@ function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
         <h2>Choose your word</h2>
         <p className="pick-popup-sub">
           {categoryLabel ? <span className="pick-category-tag">{categoryLabel}</span> : null}
-          Others must guess it from the grid below — {timeLeft}s left
+          {guesserName || 'The guesser'} must find it on the grid — {timeLeft}s left
         </p>
         <div className="pick-popup-choices">
           {choices.map((w, i) => (
@@ -338,25 +338,31 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
   const totalRounds = room.totalRounds || 5;
   const pickedCatObj = catChoices.find(c => c.id === pickedCat) || null;
+  const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
+  const isGuesser = room.guesserId === socket.id;
+  const guesserName = guesserPlayer?.name || 'the guesser';
 
   const banner = state === 'champ_pick'
-    ? (isChamp ? (pickedCat ? `Pick a word (${pickTimeLeft}s left)` : `Pick a category (${pickTimeLeft}s left)`) : `${champPlayer?.name || 'Champ'} is choosing... (${pickTimeLeft}s)`)
+    ? (isChamp ? (pickedCat ? `Pick a word for ${guesserName} (${pickTimeLeft}s left)` : `Pick a category for ${guesserName} (${pickTimeLeft}s left)`) : `${champPlayer?.name || 'The picker'} is choosing... (${pickTimeLeft}s)`)
     : state === 'playing'
-      ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Guess ${champPlayer?.name || 'Champ'}'s word!`)
+      ? (isGuesser ? `You're on the spot! Find ${champPlayer?.name || 'the picker'}'s word!`
+        : isChamp ? `You picked the word — watch ${guesserName} guess!`
+        : `${guesserName} is on the spot! Find ${champPlayer?.name || 'the picker'}'s word!`)
       : 'Round over';
-  const champAvatar = champPlayer?.avatar || '';
+  const champAvatar = (isGuesser ? guesserPlayer : champPlayer)?.avatar || '';
 
   return (
     <div className="game-area">
       {/* ── Category pick popup (champ only) ── */}
       {isChamp && state === 'champ_pick' && !pickedCat && catChoices.length > 0 && (
-        <CategoryPickPopup categories={catChoices} onPick={pickCategory} disabled={submitting} timeLeft={pickTimeLeft} />
+        <CategoryPickPopup categories={catChoices} onPick={pickCategory} disabled={submitting}
+          timeLeft={pickTimeLeft} guesserName={guesserName} />
       )}
 
       {/* ── Word pick popup (champ only, after category) ── */}
       {isChamp && state === 'champ_pick' && pickedCat && choices.length > 0 && (
         <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting}
-          timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} />
+          timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} guesserName={guesserName} />
       )}
 
       {/* ── "Champ is choosing" popup (shown to other players) ── */}
@@ -366,7 +372,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="choosing-avatar">
               {champAvatar ? <img src={champAvatar} alt="" className="choosing-avatar-img" /> : <div className="choosing-avatar-fallback">👑</div>}
             </div>
-            <h2>{champPlayer?.name || 'The Champ'} is choosing a word…</h2>
+            <h2>{champPlayer?.name || 'The picker'} is choosing a word for {guesserName}…</h2>
             <p className="pick-popup-sub">Get ready to guess on the grid!</p>
             <div className="choosing-dots"><span></span><span></span><span></span></div>
           </div>
@@ -408,7 +414,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       </div>
 
-      <PlayerList players={room.players} host={room.host} champId={room.champId} myId={socket.id} />
+      <PlayerList players={room.players} host={room.host} champId={room.champId} guesserId={room.guesserId} myId={socket.id} />
 
       <div className="game-layout">
         {/* ── Left: play field ── */}
