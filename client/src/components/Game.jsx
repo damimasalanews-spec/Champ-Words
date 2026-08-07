@@ -284,8 +284,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const banner = state === 'champ_pick'
     ? (isChamp ? (pickedCat ? `Pick a word (${pickTimeLeft}s left)` : `Pick a category (${pickTimeLeft}s left)`) : `${champPlayer?.name || 'Champ'} is choosing... (${pickTimeLeft}s)`)
     : state === 'playing'
-      ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Find ${champPlayer?.name || 'Champ'}'s word — drag on the grid!`)
+      ? (isChamp ? 'Your word is on the grid — watch them guess!' : `Guess ${champPlayer?.name || 'Champ'}'s word!`)
       : 'Round over';
+  const champAvatar = champPlayer?.avatar || '';
 
   return (
     <div className="game-area">
@@ -313,13 +314,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       <PlayerList players={room.players} host={room.host} champId={room.champId} myId={socket.id} />
 
-      <div className={`champ-banner ${isChamp ? 'champ-banner-me' : ''}`}>
-        <span className="champ-crown">👑</span> {banner}
-      </div>
-
-      {isChamp && state === 'playing' && champWord && (
-        <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
-      )}
+      <div className="game-layout">
+        {/* ── Left: play field ── */}
+        <div className="game-col-left">
+          {isChamp && state === 'playing' && champWord && (
+            <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
+          )}
 
       {state === 'playing' && (
         <>
@@ -358,19 +358,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
             </div>
           )}
-          {/* Hint text below grid */}
-          {!isChamp && state === 'playing' && room.revealedLetters && room.revealedLetters.some(l => l) && (
-            <div className="hint-text">
-              HINT: {room.revealedLetters.map((l, i) => l ? l.toUpperCase() : '_').join(' ')}
-            </div>
-          )}
-          {/* Champ hints: category (40s) then one-line clue (20s) */}
-          {categoryHint && state === 'playing' && (
-            <div className="hint-category">🏷️ It's a {categoryHint} category!</div>
-          )}
-          {wordClue && state === 'playing' && (
-            <div className="hint-clue">💡 {wordClue}</div>
-          )}
           {falling && solvedWord && (
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
           )}
@@ -406,6 +393,31 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
+        </div>
+
+        {/* ── Right: notifications ── */}
+        <div className="game-col-right">
+          <div className={`side-status-card ${isChamp ? 'side-status-me' : ''}`}>
+            <div className="side-avatar">
+              {champAvatar ? <img src={champAvatar} alt="" className="side-avatar-img" /> : <div className="side-avatar-fallback">👑</div>}
+              <span className="wave-hand">👋</span>
+            </div>
+            <div className="side-status-text">{banner}</div>
+          </div>
+
+          {categoryHint && state === 'playing' && (
+            <div className="hint-category">🏷️ It's a {categoryHint} category!</div>
+          )}
+          {wordClue && state === 'playing' && (
+            <div className="hint-clue">💡 {wordClue}</div>
+          )}
+
+          {isChamp && state === 'playing' && (
+            <div className="champ-watching">Waiting for someone to drag the right word...</div>
+          )}
+        </div>
+      </div>
+
       {/* ── Score board ── */}
       <div className="score-board">
         <div className="score-board-title">SCORES</div>
@@ -420,9 +432,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         ))}
       </div>
 
-      {isChamp && state === 'playing' && (
-        <div className="champ-watching">Waiting for someone to drag the right word...</div>
-      )}
     </div>
   );
 }
