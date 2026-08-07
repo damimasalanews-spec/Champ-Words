@@ -91,7 +91,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const isGuesser = room.guesserId === socket.id;
 
   const [wordClue, setWordClue] = useState('');
-  const [roundWinner, setRoundWinner] = useState(null); // first/fastest finder: { id, name, avatar }
   const [hintAction, setHintAction] = useState(null); // champ's 5s hint window: { type, clues?, timeLeft }
   const [hintActionLeft, setHintActionLeft] = useState(0);
   const [hintSending, setHintSending] = useState(false);
@@ -140,7 +139,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Reset per round
   useEffect(() => {
     setWordClue(''); setHintAction(null); setHintActionLeft(0); setHintSending(false); setClueSent(false);
-    setRoundWinner(null);
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFoundList([]);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
@@ -170,12 +168,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
         }
       }
-      // Celebrate the first (fastest) finder in the side card
-      setRoundWinner(prev => prev || {
-        id: data.winnerId,
-        name: data.winnerName || 'Someone',
-        avatar: (data.room?.players || []).find(p => p.id === data.winnerId)?.avatar || ''
-      });
       setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
     };
     const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
@@ -339,6 +331,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   const banner = state === 'playing' ? 'Everyone is guessing the word!' : 'Round over';
   const champAvatar = '';
+  // Live #1 player by total score — shown until someone beats them
+  const topPlayer = [...room.players].sort((a, b) => b.score - a.score)[0] || null;
+  const showLeader = state === 'playing' && topPlayer && topPlayer.score > 0;
 
   return (
     <div className="game-area">
@@ -534,14 +529,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
-          <div className={`side-status-card ${roundWinner ? 'side-status-win' : ''}`}>
-            {roundWinner ? (
+          <div className={`side-status-card ${showLeader ? 'side-status-win' : ''}`}>
+            {showLeader ? (
               <>
                 <div className="side-avatar">
-                  {roundWinner.avatar ? <img src={roundWinner.avatar} alt="" className="side-avatar-img win-avatar" /> : <div className="side-avatar-fallback win-avatar">🏆</div>}
+                  {topPlayer.avatar ? <img src={topPlayer.avatar} alt="" className="side-avatar-img win-avatar" /> : <div className="side-avatar-fallback win-avatar">🏆</div>}
                   <span className="wave-hand">🎉</span>
                 </div>
-                <div className="side-status-text congrats">🎉 CONGRATS {roundWinner.name}! 🎉</div>
+                <div className="side-status-text congrats">🎉 CONGRATS {topPlayer.name}! 🎉</div>
               </>
             ) : (
               <>
