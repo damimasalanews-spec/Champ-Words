@@ -383,7 +383,7 @@ function beginChampTurn(room, champId) {
   room.offeredClues = [];
   room.roundFinds = [];
   room.allFound = false;
-  room.choices = [];
+  room.choices = generateChoices(); // 6 random words (no category selection)
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
   clearTimer(room);
@@ -401,8 +401,8 @@ function beginChampTurn(room, champId) {
     champ: champ ? { id: champ.id, name: champ.name } : null
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
-  // Ask the champ to pick a category first; word choices come after
-  setTimeout(() => io.to(champId).emit('category_choices', { categories: CATEGORIES.list }), 120);
+  // Ask the champ to pick a word directly (no category step)
+  setTimeout(() => io.to(champId).emit('word_choices', { choices: room.choices }), 120);
 }
 
 // ── Auto-reveal a hint at a random still-hidden position ──────────────────
@@ -474,8 +474,6 @@ function requestBothHints(room) {
   if (!room.word || room.state !== 'playing') return;
   revealRandomHint(room); // letter #1
   revealRandomHint(room); // letter #2 — both revealed at 40s remaining
-  const cat = CATEGORIES.list.find(c => c.id === room.category);
-  const label = !cat || cat.id === 'mixed' ? null : cat.label;
   // Build 3 distinct clue options (bounded attempts; duplicates last resort)
   const clues = [];
   const add = c => { if (c && !clues.includes(c)) clues.push(c); };
@@ -485,7 +483,7 @@ function requestBothHints(room) {
   while (clues.length < 3) clues.push(generateClue(room.word, room.category, true));
   room.offeredClues = clues.slice(0, 3);
   openHintWindow(room, 'both');
-  io.to(room.champId).emit('hint_request', { type: 'both', label, clues: room.offeredClues, timeLeft: HINT_WINDOW_MS / 1000 });
+  io.to(room.champId).emit('hint_request', { type: 'both', clues: room.offeredClues, timeLeft: HINT_WINDOW_MS / 1000 });
 }
 
 function onTimeUp(room) {
@@ -611,29 +609,6 @@ io.on('connection', socket => {
     cb && cb({ ok: true });
   });
 
-  socket.on('choose_category', ({ roomId, category }, cb) => {
-    const room = rooms.get(roomId);
-    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
-    if (room.state !== 'champ_pick') return cb && cb({ ok: false, error: 'It is not your turn to pick' });
-    if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can pick the category' });
-    const cat = String(category || '').trim();
-    if (!CATEGORY_IDS.has(cat)) return cb && cb({ ok: false, error: 'Unknown category' });
-    room.category = cat;
-    room.choices = generateChoices(cat); // 6 word choices from this category
-    // Fresh 15s window for the word pick
-    room.pickStartedAt = Date.now();
-    if (room.champTimer) clearTimeout(room.champTimer);
-    room.champTimer = setTimeout(() => {
-      if (room.state !== 'champ_pick') return;
-      const idx = room.players.findIndex(p => p.id === room.champId);
-      const nextId = room.players[(idx + 1) % room.players.length].id;
-      beginChampTurn(room, nextId);
-    }, 15000);
-    io.to(socket.id).emit('word_choices', { choices: room.choices });
-    io.to(room.id).emit('room_update', sanitizeRoom(room));
-    cb && cb({ ok: true, category: cat });
-  });
-
   socket.on('choose_word', ({ roomId, word, hintText }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
@@ -641,26 +616,12 @@ io.on('connection', socket => {
     if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can pick the word' });
     const w = String(word || '').toLowerCase().trim();
     if (w.length < 3 || w.length > 8) return cb && cb({ ok: false, error: 'Word must be 3-8 letters' });
-    if (!room.category) return cb && cb({ ok: false, error: 'Pick a category first' });
     if (!room.choices.includes(w)) return cb && cb({ ok: false, error: 'Please pick one of the words shown' });
     room.word = w;
     room.hintText = typeof hintText === 'string' ? hintText.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
     room.hintText = room.hintText || null;
     startRound(room);
     cb && cb({ ok: true, wordLength: w.length });
-  });
-
-  socket.on('send_category_hint', ({ roomId }, cb) => {
-    const room = rooms.get(roomId);
-    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
-    if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can send hints' });
-    if (room.hintWindow !== 'both' && room.hintWindow !== 'category') return cb && cb({ ok: false, error: 'No category hint window open' });
-    const cat = CATEGORIES.list.find(c => c.id === room.category);
-    if (!cat || cat.id === 'mixed') return cb && cb({ ok: false, error: 'Nothing to reveal' });
-    room.hintCategorySent = true;
-    io.to(room.id).emit('category_hint', { label: cat.label });
-    if (room.hintClueSent) closeHintWindow(room); // both sent — done
-    cb && cb({ ok: true });
   });
 
   socket.on('send_word_hint', ({ roomId, text }, cb) => {

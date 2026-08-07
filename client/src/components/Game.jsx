@@ -7,36 +7,14 @@ function isAdjacent(r1, c1, r2, c2) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
-// ── Category Pick Popup ───────────────────────────────────────────────────
-function CategoryPickPopup({ categories, onPick, disabled, timeLeft, guesserName }) {
-  return (
-    <div className="pick-popup-overlay">
-      <div className="pick-popup-card">
-        <h2>Pick a category</h2>
-        <p className="pick-popup-sub">Choose a theme for {guesserName || 'the guesser'}'s word — {timeLeft}s left</p>
-        <div className="category-choices">
-          {categories.map(c => (
-            <button key={c.id} className="category-choice" disabled={disabled}
-              onClick={() => onPick(c.id)}>
-              <span className="category-icon">{c.icon}</span>
-              <span className="category-label">{c.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Word Pick Popup (6 choices + optional champ clue) ─────────────────────
-function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel, guesserName }) {
+function WordPickPopup({ choices, onPick, disabled, timeLeft, guesserName }) {
   const [hint, setHint] = useState('');
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
         <h2>Choose your word</h2>
         <p className="pick-popup-sub">
-          {categoryLabel ? <span className="pick-category-tag">{categoryLabel}</span> : null}
           {guesserName || 'The guesser'} must find it on the grid — {timeLeft}s left
         </p>
         <div className="pick-popup-choices">
@@ -54,7 +32,7 @@ function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel, gue
             onChange={e => setHint(e.target.value)}
             placeholder="leave empty for an automatic hint"
             maxLength={60} />
-          <p className="pick-hint-note">Auto-clue shown at 20s left · category at 40s left · one letter revealed at each</p>
+          <p className="pick-hint-note">Your clue is offered at 40s left · 2 letters revealed at 40s too</p>
         </div>
       </div>
     </div>
@@ -112,14 +90,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const grid = room.grid || [];
   const isGuesser = room.guesserId === socket.id;
 
-  const [catChoices, setCatChoices] = useState([]);
-  const [pickedCat, setPickedCat] = useState(null);
-  const [categoryHint, setCategoryHint] = useState('');
   const [wordClue, setWordClue] = useState('');
-  const [hintAction, setHintAction] = useState(null); // champ's 5s hint window: { type, label?, clues?, timeLeft }
+  const [hintAction, setHintAction] = useState(null); // champ's 5s hint window: { type, clues?, timeLeft }
   const [hintActionLeft, setHintActionLeft] = useState(0);
   const [hintSending, setHintSending] = useState(false);
-  const [categorySent, setCategorySent] = useState(false);
   const [clueSent, setClueSent] = useState(false);
   const [choices, setChoices] = useState([]);
   const [champWord, setChampWord] = useState('');
@@ -155,18 +129,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => clearInterval(iv);
   }, [state, room.pickEndsAt]);
 
-  // category_choices + word_choices listeners
+  // word_choices listener
   useEffect(() => {
-    const onCat = data => { setCatChoices(data.categories || []); playSound('popup'); };
     const onWords = data => { setChoices(data.choices || []); playSound('popup'); };
-    socket.on('category_choices', onCat); socket.on('word_choices', onWords);
-    return () => { socket.off('category_choices', onCat); socket.off('word_choices', onWords); };
+    socket.on('word_choices', onWords);
+    return () => { socket.off('word_choices', onWords); };
   }, [socket]);
 
   // Reset per round
   useEffect(() => {
-    setCatChoices([]); setPickedCat(null); setCategoryHint(''); setWordClue('');
-    setHintAction(null); setHintActionLeft(0); setHintSending(false);
+    setWordClue(''); setHintAction(null); setHintActionLeft(0); setHintSending(false); setClueSent(false);
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFoundList([]);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
@@ -219,17 +191,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => { socket.off('guess_drag', onDrag); socket.off('guess_drag_end', onEnd); };
   }, [socket]);
 
-  // Champ hints: category at 40s remaining, one-line clue at 20s remaining
+  // Champ hint: the picker's one-line clue
   useEffect(() => {
-    const onCatHint = (data) => { setCategoryHint(data.label || ''); playSound('hint'); };
     const onClue = (data) => { setWordClue(data.text || ''); playSound('hint'); };
-    socket.on('category_hint', onCatHint); socket.on('word_hint', onClue);
-    return () => { socket.off('category_hint', onCatHint); socket.off('word_hint', onClue); };
+    socket.on('word_hint', onClue);
+    return () => { socket.off('word_hint', onClue); };
   }, [socket]);
 
   // Champ's 5s hint-action window (hint_request) + penalty notice (points_lost)
   useEffect(() => {
-    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); setCategorySent(false); setClueSent(false); playSound('alert'); };
+    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); setClueSent(false); playSound('alert'); };
     const onLost = (data) => { showToast(`−${data.amount} pts — ${data.reason}`, 'error'); playSound('penalty'); };
     socket.on('hint_request', onReq); socket.on('points_lost', onLost);
     return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
@@ -252,21 +223,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => clearInterval(iv);
   }, [hintAction]);
 
-  const sendCategoryHint = () => {
-    setHintSending(true);
-    playSound('click');
-    socket.emit('send_category_hint', { roomId: room.id }, (res) => {
-      setHintSending(false);
-      if (res && res.ok) { setCategorySent(true); if (clueSent) setHintAction(null); }
-      else if (res && res.error) showToast(res.error);
-    });
-  };
   const sendClue = (text) => {
     setHintSending(true);
     playSound('click');
     socket.emit('send_word_hint', { roomId: room.id, text }, (res) => {
       setHintSending(false);
-      if (res && res.ok) { setClueSent(true); if (categorySent) setHintAction(null); }
+      if (res && res.ok) setHintAction(null);
       else if (res && res.error) showToast(res.error);
     });
   };
@@ -358,27 +320,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setTimeout(() => setSubmitting(false), 500);
   };
 
-  const pickCategory = (cat) => {
-    setSubmitting(true);
-    socket.emit('choose_category', { roomId: room.id, category: cat }, (res) => {
-      setSubmitting(false);
-      if (res && res.ok) { setPickedCat(cat); }
-      else if (res && res.error) showToast(res.error);
-    });
-  };
-
   const solved = Boolean(solvedWord);
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
   const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
   const totalRounds = room.totalRounds || 5;
-  const pickedCatObj = catChoices.find(c => c.id === pickedCat) || null;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
 
   const banner = state === 'champ_pick'
-    ? (isChamp ? (pickedCat ? `Pick a word for ${guesserName} (${pickTimeLeft}s left)` : `Pick a category for ${guesserName} (${pickTimeLeft}s left)`) : `${champPlayer?.name || 'The picker'} is choosing... (${pickTimeLeft}s)`)
+    ? (isChamp ? `Pick a word for ${guesserName} (${pickTimeLeft}s left)` : `${champPlayer?.name || 'The picker'} is choosing... (${pickTimeLeft}s)`)
     : state === 'playing'
       ? (isGuesser ? `You're on the spot! Find ${champPlayer?.name || 'the picker'}'s word!`
         : isChamp ? `You picked the word — watch ${guesserName} guess!`
@@ -388,16 +340,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   return (
     <div className="game-area">
-      {/* ── Category pick popup (champ only) ── */}
-      {isChamp && state === 'champ_pick' && !pickedCat && catChoices.length > 0 && (
-        <CategoryPickPopup categories={catChoices} onPick={pickCategory} disabled={submitting}
-          timeLeft={pickTimeLeft} guesserName={guesserName} />
-      )}
-
-      {/* ── Word pick popup (champ only, after category) ── */}
-      {isChamp && state === 'champ_pick' && pickedCat && choices.length > 0 && (
+      {/* ── Word pick popup (champ only) ── */}
+      {isChamp && state === 'champ_pick' && choices.length > 0 && (
         <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting}
-          timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} guesserName={guesserName} />
+          timeLeft={pickTimeLeft} guesserName={guesserName} />
       )}
 
       {/* ── "Champ is choosing" popup (shown to other players) ── */}
@@ -414,44 +360,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Champ hint action popup (both hints at 40s, 5s to act) ── */}
+      {/* ── Champ hint action popup (3 clue lines at 40s, 5s to act) ── */}
       {hintAction && (
         <div className="pick-popup-overlay">
           <div className="pick-popup-card hint-action-card">
-            <h2>
-              {hintAction.type === 'both'
-                ? 'Send both hints?'
-                : hintAction.type === 'category' ? 'Send the category hint?' : 'Send a clue to players?'}
-            </h2>
+            <h2>Send a clue to the guesser?</h2>
             <p className="pick-popup-sub">{hintActionLeft}s left — miss it and you lose 20 pts</p>
-            {hintAction.type === 'both' ? (
-              <>
-                {hintAction.label && (
-                  <button className="btn btn-primary hint-send-btn" disabled={hintSending || categorySent} onClick={sendCategoryHint}>
-                    🏷️ Send "It's a {hintAction.label} word!"{categorySent ? ' ✓' : ''}
-                  </button>
-                )}
-                <div className="hint-clue-options">
-                  {hintAction.clues.map((c, i) => (
-                    <button key={i} className="hint-clue-option" disabled={hintSending || clueSent} onClick={() => sendClue(c)}>
-                      💡 {c}{clueSent ? '' : ''}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : hintAction.type === 'category' ? (
-              <button className="btn btn-primary hint-send-btn" disabled={hintSending} onClick={sendCategoryHint}>
-                🏷️ Send "It's a {hintAction.label} word!"
-              </button>
-            ) : (
-              <div className="hint-clue-options">
-                {hintAction.clues.map((c, i) => (
-                  <button key={i} className="hint-clue-option" disabled={hintSending} onClick={() => sendClue(c)}>
-                    💡 {c}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="hint-clue-options">
+              {hintAction.clues.map((c, i) => (
+                <button key={i} className="hint-clue-option" disabled={hintSending || clueSent} onClick={() => sendClue(c)}>
+                  💡 {c}
+                </button>
+              ))}
+            </div>
             <button className="btn btn-danger hint-skip-btn" onClick={() => setHintAction(null)}>Skip (−20 pts)</button>
           </div>
         </div>
@@ -623,9 +544,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             ))}
           </div>
 
-          {categoryHint && state === 'playing' && (
-            <div className="hint-category">🏷️ It's a {categoryHint} category!</div>
-          )}
           {wordClue && state === 'playing' && (
             <div className="hint-clue">💡 {wordClue}</div>
           )}
