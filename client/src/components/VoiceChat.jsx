@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Google STUN + a free public TURN relay as fallback for players behind strict NAT.
-// TURN only kicks in when a direct peer-to-peer connection can't be established.
+// Google STUN + Cloudflare STUN + a free public TURN relay as fallback for
+// players behind strict NAT. TURN only kicks in when a direct peer-to-peer
+// connection can't be established.
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun1.google.com:19302' },
+  { urls: 'stun:stun2.google.com:19302' },
+  { urls: 'stun:stun3.google.com:19302' },
+  { urls: 'stun:stun.cloudflare.com:3478' },
   {
     urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443'],
     username: 'openrelayproject',
@@ -17,13 +21,14 @@ export default function VoiceChat({ roomId, socket, meName }) {
   const [joining, setJoining] = useState(false);
   const [muted, setMuted] = useState(false);
   const [error, setError] = useState('');
-  const [members, setMembers] = useState([]); // [{ socketId, name, connected }]
+  const [members, setMembers] = useState([]); // [{ socketId, name, state }] state: connecting | connected | reconnecting
   const [speakers, setSpeakers] = useState(() => new Set());
 
   const localStreamRef = useRef(null);
   const peersRef = useRef(new Map());        // socketId -> RTCPeerConnection
   const audioElsRef = useRef(new Map());     // socketId -> <audio> element
   const analysersRef = useRef(new Map());    // socketId -> { analyser, data, ctx }
+  const restartTimersRef = useRef(new Map()); // socketId -> timeout id
   const speakersRef = useRef(new Set());
   const levelTimerRef = useRef(null);
   const joinedRef = useRef(false);
@@ -37,12 +42,67 @@ export default function VoiceChat({ roomId, socket, meName }) {
     const an = analysersRef.current.get(socketId);
     if (an && an.ctx) an.ctx.close().catch(() => {});
     analysersRef.current.delete(socketId);
+    const rt = restartTimersRef.current.get(socketId);
+    if (rt) { clearTimeout(rt); restartTimersRef.current.delete(socketId); }
+  }
+
+  // Force a new ICE negotiation when the audio link drops (transient NAT/firewall blips)
+  function restartPeer(socketId) {
+    const pc = peersRef.current.get(socketId);
+    if (!pc) return;
+    try {
+      if (typeof pc.restartIce === 'function') {
+        pc.restartIce();
+      } else {
+        // Older browsers: re-offer with iceRestart explicitly
+        pc.createOffer({ iceRestart: true })
+          .then(o => pc.setLocalDescription(o))
+          .then(() => socket.emit('voice_offer', { roomId, to: socketId, sdp: pc.localDescription }))
+          .catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  function setMemberState(socketId, state) {
+    setMembers(prev => prev.map(m => m.socketId === socketId ? { ...m, state } : m));
   }
 
   function makePeer(socketId) {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    pc.onnegotiationneeded = async () => {
+      // Only the initiator sends offers; answerers (have-remote-offer) must not
+      if (pc.signalingState !== 'stable') return;
+      try {
+        await pc.setLocalDescription(await pc.createOffer());
+        socket.emit('voice_offer', { roomId, to: socketId, sdp: pc.localDescription });
+      } catch (err) { console.error('voice offer failed', err); }
+    };
     pc.onicecandidate = (e) => {
       if (e.candidate) socket.emit('voice_ice', { roomId, to: socketId, candidate: e.candidate });
+    };
+    pc.onconnectionstatechange = () => {
+      const st = pc.connectionState; // new | connecting | connected | disconnected | failed | closed
+      if (st === 'closed') return;
+      if (st === 'connected') {
+        const rt = restartTimersRef.current.get(socketId);
+        if (rt) { clearTimeout(rt); restartTimersRef.current.delete(socketId); }
+        setMemberState(socketId, 'connected');
+      } else if (st === 'disconnected' || st === 'failed') {
+        setMemberState(socketId, 'reconnecting');
+        // Give it a moment to recover on its own, then force an ICE restart
+        if (!restartTimersRef.current.has(socketId)) {
+          const t = setTimeout(() => {
+            restartTimersRef.current.delete(socketId);
+            const p = peersRef.current.get(socketId);
+            if (p && (p.connectionState === 'disconnected' || p.connectionState === 'failed')) {
+              restartPeer(socketId);
+            }
+          }, 2500);
+          restartTimersRef.current.set(socketId, t);
+        }
+      } else {
+        setMemberState(socketId, 'connecting');
+      }
     };
     pc.ontrack = (e) => {
       const stream = e.streams && e.streams[0];
@@ -56,6 +116,7 @@ export default function VoiceChat({ roomId, socket, meName }) {
       }
       audio.srcObject = stream;
       audio.play().catch(() => {});
+      setMemberState(socketId, 'connected');
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
         const ctx = new Ctx();
@@ -67,7 +128,6 @@ export default function VoiceChat({ roomId, socket, meName }) {
           ctx, analyser, data: new Uint8Array(analyser.frequencyBinCount)
         });
       } catch (_) { /* speaking indicator unavailable — voice still works */ }
-      setMembers(prev => prev.map(m => m.socketId === socketId ? { ...m, connected: true } : m));
     };
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(t => pc.addTrack(t, localStreamRef.current));
@@ -76,16 +136,11 @@ export default function VoiceChat({ roomId, socket, meName }) {
     return pc;
   }
 
-  async function connectTo(socketId) {
+  // The newcomer initiates offers (avoids glare). Adding tracks fires
+  // onnegotiationneeded, which sends the offer.
+  function connectTo(socketId) {
     if (peersRef.current.has(socketId)) return;
-    const pc = makePeer(socketId);
-    try {
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit('voice_offer', { roomId, to: socketId, sdp: pc.localDescription });
-    } catch (err) {
-      console.error('voice offer failed', err);
-    }
+    makePeer(socketId);
   }
 
   // ── Speaking detection (analyser per remote stream) ──────────────────
@@ -124,7 +179,7 @@ export default function VoiceChat({ roomId, socket, meName }) {
       setJoined(true);
       socket.emit('voice_join', { roomId }, (res) => {
         if (res && res.ok) {
-          setMembers(res.members.map(m => ({ socketId: m.socketId, name: m.name, connected: false })));
+          setMembers(res.members.map(m => ({ socketId: m.socketId, name: m.name, state: 'connecting' })));
           res.members.forEach(m => connectTo(m.socketId));
           startLevelMonitor();
         } else {
@@ -169,13 +224,13 @@ export default function VoiceChat({ roomId, socket, meName }) {
       // They'll send us an offer — show them as connecting until audio flows
       setMembers(prev => prev.some(m => m.socketId === socketId)
         ? prev
-        : [...prev, { socketId, name: name || 'Player', connected: false }]);
+        : [...prev, { socketId, name: name || 'Player', state: 'connecting' }]);
     };
     const onOffer = async ({ from, sdp }) => {
       if (!joinedRef.current || !sdp) return;
       setMembers(prev => prev.some(m => m.socketId === from)
         ? prev
-        : [...prev, { socketId: from, name: 'Player', connected: false }]);
+        : [...prev, { socketId: from, name: 'Player', state: 'connecting' }]);
       let pc = peersRef.current.get(from);
       if (!pc) pc = makePeer(from);
       try {
@@ -205,17 +260,27 @@ export default function VoiceChat({ roomId, socket, meName }) {
       closePeer(socketId);
       setMembers(prev => prev.filter(m => m.socketId !== socketId));
     };
+    // The socket dropped and reconnected (new socket id) — re-register in the
+    // room's voice chat and rebuild any peers the server no longer knows about.
+    const onSocketConnect = () => {
+      if (!joinedRef.current) return;
+      socket.emit('voice_join', { roomId }, (res) => {
+        if (res && res.ok) res.members.forEach(m => connectTo(m.socketId));
+      });
+    };
     socket.on('voice_joined', onJoined);
     socket.on('voice_offer', onOffer);
     socket.on('voice_answer', onAnswer);
     socket.on('voice_ice', onIce);
     socket.on('voice_left', onLeft);
+    socket.on('connect', onSocketConnect);
     return () => {
       socket.off('voice_joined', onJoined);
       socket.off('voice_offer', onOffer);
       socket.off('voice_answer', onAnswer);
       socket.off('voice_ice', onIce);
       socket.off('voice_left', onLeft);
+      socket.off('connect', onSocketConnect);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, socket]);
@@ -257,8 +322,9 @@ export default function VoiceChat({ roomId, socket, meName }) {
               <span className="voice-dot" />{meName || 'You'}{muted ? ' (muted)' : ''}
             </div>
             {members.map(m => (
-              <div key={m.socketId} className={`voice-member${speakers.has(m.socketId) ? ' speaking' : ''}`}>
-                <span className="voice-dot" />{m.name}{!m.connected ? ' (connecting…)' : ''}
+              <div key={m.socketId} className={`voice-member${m.state === 'reconnecting' ? ' reconnecting' : ''}${speakers.has(m.socketId) ? ' speaking' : ''}`}>
+                <span className="voice-dot" />{m.name}
+                {m.state === 'reconnecting' ? ' (reconnecting…)' : m.state !== 'connected' ? ' (connecting…)' : ''}
               </div>
             ))}
           </div>
