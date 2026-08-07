@@ -248,7 +248,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setSubmitting(true);
     socket.emit('choose_category', { roomId: room.id, category: cat }, (res) => {
       setSubmitting(false);
-      if (res && res.ok) { setPickedCat(cat); setChoices([]); }
+      if (res && res.ok) { setPickedCat(cat); }
       else if (res && res.error) showToast(res.error);
     });
   };
