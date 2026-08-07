@@ -1675,6 +1675,30 @@
 .pick-hint-note { font-size: 10px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
 
 .hint-action-card { max-width: 340px; }
+
+/* ── "Champ is choosing" popup (other players) ──────────────────────────── */
+.champ-choosing-card { max-width: 320px; padding: 28px 20px 24px; }
+.choosing-avatar { margin: 0 auto 12px; width: 64px; height: 64px; position: relative; }
+.choosing-avatar-img {
+  width: 64px; height: 64px; border-radius: 50%;
+  object-fit: cover; border: 2.5px solid var(--gold);
+  box-shadow: 0 0 0 5px rgba(255,197,61,0.15), 0 0 24px rgba(255,197,61,0.35);
+}
+.choosing-avatar-fallback {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--key-bg); border: 2.5px solid var(--gold);
+  display: flex; align-items: center; justify-content: center; font-size: 30px;
+}
+.champ-choosing-card h2 { font-size: 17px; line-height: 1.4; }
+.choosing-dots { display: flex; justify-content: center; gap: 7px; margin-top: 14px; }
+.choosing-dots span {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--gold);
+  animation: dotBounce 1.2s ease-in-out infinite;
+}
+.choosing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.choosing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes dotBounce { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-7px); opacity: 1; } }
 .hint-send-btn { width: 100%; padding: 13px; font-size: 13px; }
 .hint-clue-options { display: flex; flex-direction: column; gap: 8px; }
 .hint-clue-option {

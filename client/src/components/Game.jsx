@@ -207,6 +207,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
   }, [socket, showToast]);
 
+  // "Champ is choosing" popup sound for other players
+  useEffect(() => {
+    if (state === 'champ_pick' && !isChamp) playSound('popup');
+  }, [state, isChamp]);
+
   // 5s countdown for the hint window
   useEffect(() => {
     if (!hintAction) return;
@@ -344,6 +349,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {isChamp && state === 'champ_pick' && pickedCat && choices.length > 0 && (
         <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting}
           timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} />
+      )}
+
+      {/* ── "Champ is choosing" popup (shown to other players) ── */}
+      {!isChamp && state === 'champ_pick' && (
+        <div className="pick-popup-overlay">
+          <div className="pick-popup-card champ-choosing-card">
+            <div className="choosing-avatar">
+              {champAvatar ? <img src={champAvatar} alt="" className="choosing-avatar-img" /> : <div className="choosing-avatar-fallback">👑</div>}
+            </div>
+            <h2>{champPlayer?.name || 'The Champ'} is choosing a word…</h2>
+            <p className="pick-popup-sub">Get ready to guess on the grid!</p>
+            <div className="choosing-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
       )}
 
       {/* ── Champ hint action popup (40s category / 20s clue, 5s to act) ── */}
