@@ -505,6 +505,19 @@ function endRound(room) {
   clearTimer(room);
   room.state = 'round_over';
   const winner = playerById(room, room.roundWinnerId);
+  // Nobody found the word — the player who CHOSE it takes the points
+  let stumpPoints = null;
+  if (!winner) {
+    const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
+    const gained = Math.max(10, 100 - elapsed);
+    const picker = champOf(room);
+    if (picker) {
+      picker.score += gained;
+      room.roundScore = gained;
+      room.roundElapsed = elapsed;
+      stumpPoints = gained;
+    }
+  }
   const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
   scores.sort((a, b) => b.score - a.score);
   const champ = champOf(room);
@@ -515,6 +528,7 @@ function endRound(room) {
     totalRounds: room.totalRounds,
     champName: champ ? champ.name : '',
     winner: winner ? { id: winner.id, name: winner.name, score: room.roundScore, elapsed: room.roundElapsed } : null,
+    stumpPoints,
     finds: room.roundFinds,
     scores
   });

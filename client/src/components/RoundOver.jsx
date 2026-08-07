@@ -3,7 +3,7 @@ import { playSound } from '../sounds';
 
 export default function RoundOver({ result, room }) {
   useEffect(() => { playSound('roundover'); }, []);
-  const { word, winner, round, champName, scores, finds } = result;
+  const { word, winner, round, champName, scores, finds, stumpPoints } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const pickerName = champName || 'the picker';
@@ -34,9 +34,16 @@ export default function RoundOver({ result, room }) {
             {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
           </p>
         ) : (
-          <p className="round-winner-msg">
-            No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''} — the seat moves on!
-          </p>
+          <>
+            <p className="round-winner-msg">
+              No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''} — the seat moves on!
+            </p>
+            {stumpPoints ? (
+              <p className="round-winner-msg">
+                💪 {champName} takes <b>+{stumpPoints} pts</b> for stumping the guesser!
+              </p>
+            ) : null}
+          </>
         )}
 
         {finds && finds.length > 0 && (
