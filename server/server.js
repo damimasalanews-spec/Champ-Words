@@ -172,8 +172,10 @@ const ROUND_TIME_MS = Number(process.env.ROUND_TIME_MS) || 60 * 1000; // 1 minut
 const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 2200; // falling-word reveal window
 const ROUND_OVER_TO_NEXT_MS = Number(process.env.ROUND_OVER_TO_NEXT_MS) || 3500; // pause before next champ / game over
 const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 1200; // reveal pause on time-up
-const HINT1_MS = Number(process.env.HINT1_MS) || 20 * 1000; // category hint at 40s remaining
-const HINT2_MS = Number(process.env.HINT2_MS) || 40 * 1000; // word clue at 20s remaining
+const HINT1_MS = Number(process.env.HINT1_MS) || 20 * 1000; // category hint window at 40s remaining
+const HINT2_MS = Number(process.env.HINT2_MS) || 40 * 1000; // word clue window at 20s remaining
+const HINT_WINDOW_MS = Number(process.env.HINT_WINDOW_MS) || 5 * 1000; // champ has 5s to send each hint
+const HINT_PENALTY = 20; // points deducted when the champ misses a hint window
 const MAX_HINTS = 3;
 
 function createRoom(hostId, hostName, hostAvatar, totalRounds) {
@@ -192,12 +194,15 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     endedRound: false,
     pickStartedAt: null,
     category: null,           // chosen category for this round (null = not picked yet)
-    hintText: null,           // champ's one-line clue, revealed at 20s remaining
+    hintText: null,           // champ's manual one-line clue (optional override)
     choices: [],              // 6 word choices offered to champ (secret from guessers)
     grid: null,               // 4×4 letter grid (generated from chosen word)
+    hintWindow: null,         // open hint window: 'category' | 'clue' | null
+    offeredClues: [],         // 3 clue options offered to the champ at 20s
     timer: null,
-    hintTimer1: null,         // auto-reveal first letter after 20s
-    hintTimer2: null,         // auto-reveal second letter after 40s
+    hintTimer1: null,         // opens the category-hint window at 20s elapsed (40s left)
+    hintTimer2: null,         // opens the word-clue window at 40s elapsed (20s left)
+    hintWindowTimer: null,    // 5s timeout for the champ to send the hint
     champTimer: null          // 15s timeout for champ to pick a word
   };
   rooms.set(id, room);
@@ -227,6 +232,7 @@ function clearTimer(room) {
   if (room.timer) { clearTimeout(room.timer); room.timer = null; }
   if (room.hintTimer1) { clearTimeout(room.hintTimer1); room.hintTimer1 = null; }
   if (room.hintTimer2) { clearTimeout(room.hintTimer2); room.hintTimer2 = null; }
+  if (room.hintWindowTimer) { clearTimeout(room.hintWindowTimer); room.hintWindowTimer = null; }
   if (room.champTimer) { clearTimeout(room.champTimer); room.champTimer = null; }
 }
 
@@ -348,6 +354,8 @@ function beginChampTurn(room, champId) {
   room.endedRound = false;
   room.category = null;
   room.hintText = null;
+  room.hintWindow = null;
+  room.offeredClues = [];
   room.choices = [];
   room.pickStartedAt = Date.now();
   clearTimer(room);
@@ -395,29 +403,59 @@ function startRound(room) { // champ has picked their word
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
-  // Champ hints: category name at 40s remaining (20s elapsed), word clue at 20s remaining (40s elapsed)
-  room.hintTimer1 = setTimeout(() => sendCategoryHint(room), HINT1_MS);
-  room.hintTimer2 = setTimeout(() => sendWordHint(room), HINT2_MS);
+  // Champ hint windows: category at 40s remaining (20s elapsed), clue at 20s remaining (40s elapsed)
+  room.hintTimer1 = setTimeout(() => requestCategoryHint(room), HINT1_MS);
+  room.hintTimer2 = setTimeout(() => requestWordHint(room), HINT2_MS);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
-// ── Champ hint #1 (40s remaining): reveal the category name + 1 letter ────
-function sendCategoryHint(room) {
-  if (!room.word || room.state !== 'playing') return;
-  revealRandomHint(room); // one letter revealed at 40s remaining
-  // 'Surprise me' has no useful category — skip the label
-  const cat = CATEGORIES.list.find(c => c.id === room.category);
-  if (!cat || cat.id === 'mixed') return;
-  io.to(room.id).emit('category_hint', { label: cat.label });
+// ── Open a 5s window for the champ to send a hint; miss = −20 pts ─────────
+function openHintWindow(room, type) {
+  room.hintWindow = type;
+  if (room.hintWindowTimer) clearTimeout(room.hintWindowTimer);
+  room.hintWindowTimer = setTimeout(() => {
+    room.hintWindowTimer = null;
+    if (room.state !== 'playing' || room.hintWindow !== type) return; // already sent or round over
+    room.hintWindow = null;
+    room.offeredClues = [];
+    const champ = champOf(room);
+    if (!champ) return;
+    champ.score = Math.max(0, champ.score - HINT_PENALTY);
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(champ.id).emit('points_lost', {
+      amount: HINT_PENALTY,
+      reason: type === 'category' ? 'Missed the category hint' : 'Missed the word clue'
+    });
+  }, HINT_WINDOW_MS);
 }
 
-// ── Champ hint #2 (20s remaining): one-line clue + 1 letter ───────────────
-function sendWordHint(room) {
+// ── Hint window #1 (40s remaining): champ may send the category name ──────
+function requestCategoryHint(room) {
+  if (!room.word || room.state !== 'playing') return;
+  revealRandomHint(room); // one letter revealed at 40s remaining
+  // 'Surprise me' has no useful category — nothing to send
+  const cat = CATEGORIES.list.find(c => c.id === room.category);
+  if (!cat || cat.id === 'mixed') return;
+  openHintWindow(room, 'category');
+  io.to(room.champId).emit('hint_request', { type: 'category', label: cat.label, timeLeft: HINT_WINDOW_MS / 1000 });
+}
+
+// ── Hint window #2 (20s remaining): champ picks 1 of 3 clue lines ─────────
+function requestWordHint(room) {
   if (!room.word || room.state !== 'playing') return;
   revealRandomHint(room); // one more letter revealed at 20s remaining
-  const text = room.hintText || generateClue(room.word, room.category);
-  io.to(room.id).emit('word_hint', { text });
+  // Build 3 distinct clue options (never infinite-loop: bounded attempts,
+  // template fallback for uniqueness, duplicates only as a last resort)
+  const clues = [];
+  const add = c => { if (c && !clues.includes(c)) clues.push(c); };
+  add(room.hintText); // champ's manual clue first
+  for (let i = 0; clues.length < 3 && i < 20; i++) add(generateClue(room.word, room.category, false));
+  for (let i = 0; clues.length < 3 && i < 20; i++) add(generateClue(room.word, room.category, true));
+  while (clues.length < 3) clues.push(generateClue(room.word, room.category, true));
+  room.offeredClues = clues.slice(0, 3);
+  openHintWindow(room, 'clue');
+  io.to(room.champId).emit('hint_request', { type: 'clue', clues: room.offeredClues, timeLeft: HINT_WINDOW_MS / 1000 });
 }
 
 function onTimeUp(room) {
@@ -550,6 +588,33 @@ io.on('connection', socket => {
     cb && cb({ ok: true, wordLength: w.length });
   });
 
+  socket.on('send_category_hint', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can send hints' });
+    if (room.hintWindow !== 'category') return cb && cb({ ok: false, error: 'No category hint window open' });
+    const cat = CATEGORIES.list.find(c => c.id === room.category);
+    if (!cat || cat.id === 'mixed') return cb && cb({ ok: false, error: 'Nothing to reveal' });
+    clearTimeout(room.hintWindowTimer); room.hintWindowTimer = null;
+    room.hintWindow = null;
+    io.to(room.id).emit('category_hint', { label: cat.label });
+    cb && cb({ ok: true });
+  });
+
+  socket.on('send_word_hint', ({ roomId, text }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room) return cb && cb({ ok: false, error: 'Room not found' });
+    if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can send hints' });
+    if (room.hintWindow !== 'clue') return cb && cb({ ok: false, error: 'No clue window open' });
+    const t = String(text || '').trim();
+    if (!room.offeredClues.includes(t)) return cb && cb({ ok: false, error: 'Pick one of the offered clues' });
+    clearTimeout(room.hintWindowTimer); room.hintWindowTimer = null;
+    room.hintWindow = null;
+    room.offeredClues = [];
+    io.to(room.id).emit('word_hint', { text: t });
+    cb && cb({ ok: true });
+  });
+
   socket.on('submit_word', ({ roomId, word, path }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
@@ -618,6 +683,7 @@ io.on('connection', socket => {
       room.state = 'waiting'; room.round = 0; room.champId = null;
       room.word = null; room.wordRevealed = 0; room.endedRound = false;
       room.category = null; room.choices = [];
+      room.hintWindow = null; room.offeredClues = [];
       room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; });
       io.to(roomId).emit('room_update', sanitizeRoom(room));
     }

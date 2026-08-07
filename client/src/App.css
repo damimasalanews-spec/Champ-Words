@@ -947,6 +947,63 @@
   min-width: 40px; text-align: right; font-variant-numeric: tabular-nums;
 }
 
+/* ── Score board as letter-grid tiles (side panel) ──────────────────────── */
+.score-board-grid {
+  margin-top: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+.score-board-grid .score-board-title { margin-bottom: 6px; }
+.score-board-grid .score-board-row {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.score-board-grid .score-board-me {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: var(--green);
+  margin: 0 0 6px;
+  padding: 8px 12px;
+}
+.score-board-grid .score-board-rank { font-size: 18px; }
+.score-board-grid .score-board-name { font-size: 15px; }
+.score-board-grid .score-board-pts { font-size: 17px; }
+
+/* ── Champ hint action popup (5s window) ────────────────────────────────── */
+.hint-action-card { max-width: 320px; }
+.hint-send-btn { width: 100%; padding: 12px; font-size: 13px; }
+.hint-clue-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hint-clue-option {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.hint-clue-option:hover {
+  border-color: var(--green);
+  background: rgba(52, 211, 153, 0.08);
+  transform: scale(1.02);
+}
+.hint-clue-option:active { transform: scale(0.97); }
+.hint-clue-option:disabled { opacity: 0.5; cursor: default; transform: none; }
+.hint-skip-btn { width: 100%; margin-top: 12px; }
+
 /* ── Confetti + congratulations ─────────────────────────────────────────── */
 .confetti-overlay {
   position: fixed; inset: 0; z-index: 100;

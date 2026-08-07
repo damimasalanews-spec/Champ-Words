@@ -114,6 +114,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [pickedCat, setPickedCat] = useState(null);
   const [categoryHint, setCategoryHint] = useState('');
   const [wordClue, setWordClue] = useState('');
+  const [hintAction, setHintAction] = useState(null); // champ's 5s hint window: { type, label?, clues?, timeLeft }
+  const [hintActionLeft, setHintActionLeft] = useState(0);
+  const [hintSending, setHintSending] = useState(false);
   const [choices, setChoices] = useState([]);
   const [champWord, setChampWord] = useState('');
   const [solvedWord, setSolvedWord] = useState('');
@@ -157,6 +160,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Reset per round
   useEffect(() => {
     setCatChoices([]); setPickedCat(null); setCategoryHint(''); setWordClue('');
+    setHintAction(null); setHintActionLeft(0); setHintSending(false);
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); lastCellRef.current = null;
@@ -192,6 +196,43 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     socket.on('category_hint', onCatHint); socket.on('word_hint', onClue);
     return () => { socket.off('category_hint', onCatHint); socket.off('word_hint', onClue); };
   }, [socket]);
+
+  // Champ's 5s hint-action window (hint_request) + penalty notice (points_lost)
+  useEffect(() => {
+    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); };
+    const onLost = (data) => showToast(`−${data.amount} pts — ${data.reason}`, 'error');
+    socket.on('hint_request', onReq); socket.on('points_lost', onLost);
+    return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
+  }, [socket, showToast]);
+
+  // 5s countdown for the hint window
+  useEffect(() => {
+    if (!hintAction) return;
+    const iv = setInterval(() => {
+      setHintActionLeft(prev => {
+        if (prev <= 1) { clearInterval(iv); setHintAction(null); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+  }, [hintAction]);
+
+  const sendCategoryHint = () => {
+    setHintSending(true);
+    socket.emit('send_category_hint', { roomId: room.id }, (res) => {
+      setHintSending(false);
+      if (res && res.ok) setHintAction(null);
+      else if (res && res.error) showToast(res.error);
+    });
+  };
+  const sendClue = (text) => {
+    setHintSending(true);
+    socket.emit('send_word_hint', { roomId: room.id, text }, (res) => {
+      setHintSending(false);
+      if (res && res.ok) setHintAction(null);
+      else if (res && res.error) showToast(res.error);
+    });
+  };
 
   // ── Drag: cell under a pointer ───────────────────────────────────
   const cellUnderPoint = (clientX, clientY) => {
@@ -301,6 +342,30 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           timeLeft={pickTimeLeft} categoryLabel={pickedCatObj?.label} />
       )}
 
+      {/* ── Champ hint action popup (40s category / 20s clue, 5s to act) ── */}
+      {hintAction && (
+        <div className="pick-popup-overlay">
+          <div className="pick-popup-card hint-action-card">
+            <h2>{hintAction.type === 'category' ? 'Send the category hint?' : 'Send a clue to players?'}</h2>
+            <p className="pick-popup-sub">{hintActionLeft}s left — miss it and you lose 20 pts</p>
+            {hintAction.type === 'category' ? (
+              <button className="btn btn-primary hint-send-btn" disabled={hintSending} onClick={sendCategoryHint}>
+                🏷️ Send "It's a {hintAction.label} word!"
+              </button>
+            ) : (
+              <div className="hint-clue-options">
+                {hintAction.clues.map((c, i) => (
+                  <button key={i} className="hint-clue-option" disabled={hintSending} onClick={() => sendClue(c)}>
+                    💡 {c}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button className="btn btn-danger hint-skip-btn" onClick={() => setHintAction(null)}>Skip (−20 pts)</button>
+          </div>
+        </div>
+      )}
+
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
       <div className="game-header">
@@ -405,6 +470,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="side-status-text">{banner}</div>
           </div>
 
+          {/* ── Score board (tiles, like the grid) ── */}
+          <div className="score-board score-board-grid">
+            <div className="score-board-title">SCORES</div>
+            {sortedPlayers.map((p, i) => (
+              <div key={p.id} className={`score-board-row ${p.id === socket.id ? 'score-board-me' : ''}`}>
+                <span className="score-board-rank">{i + 1}</span>
+                <span className="score-board-name">
+                  {p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}
+                </span>
+                <span className="score-board-pts">{p.score}</span>
+              </div>
+            ))}
+          </div>
+
           {categoryHint && state === 'playing' && (
             <div className="hint-category">🏷️ It's a {categoryHint} category!</div>
           )}
@@ -416,20 +495,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="champ-watching">Waiting for someone to drag the right word...</div>
           )}
         </div>
-      </div>
-
-      {/* ── Score board ── */}
-      <div className="score-board">
-        <div className="score-board-title">SCORES</div>
-        {sortedPlayers.map((p, i) => (
-          <div key={p.id} className={`score-board-row ${p.id === socket.id ? 'score-board-me' : ''}`}>
-            <span className="score-board-rank">{i + 1}</span>
-            <span className="score-board-name">
-              {p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}
-            </span>
-            <span className="score-board-pts">{p.score}</span>
-          </div>
-        ))}
       </div>
 
     </div>

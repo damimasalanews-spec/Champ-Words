@@ -723,9 +723,9 @@ const CATEGORY_PLACES = {
 };
 
 // Return a one-line clue for the 20s hint: curated if available, else a template
-function generateClue(word, categoryId) {
+function generateClue(word, categoryId, templateOnly) {
   const curated = CLUES[word];
-  if (curated && curated.length) {
+  if (!templateOnly && curated && curated.length) {
     return curated[Math.floor(Math.random() * curated.length)];
   }
   const cat = CATEGORY_NOUNS[categoryId] || 'word';
