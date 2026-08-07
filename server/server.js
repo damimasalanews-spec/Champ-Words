@@ -544,12 +544,18 @@ function endRound(room) {
       beginChampTurn(room, nextPicker ? nextPicker.id : room.host);
     } else {
       // The guesser failed — the seat passes to the PICKER who made them
-      // fail ("the one who made the other player fail is asked next"),
-      // and the failed guesser becomes the picker for them
+      // fail ("the one who made the other player fail is asked next").
+      // The FAILED player does NOT ask the next word — the next player
+      // in the queue does ("switch it back to the player in the queue").
       const failed = guesserOf(room);
       room.guesserId = room.champId; // the picker is on the spot now
       room.failStreak = 0;
-      beginChampTurn(room, failed ? failed.id : room.host);
+      let nextPicker = nextPlayerAfter(room, room.champId, failed ? failed.id : null);
+      if (!nextPicker || nextPicker.id === room.guesserId) {
+        // Only 2 players: the failed player must pick (roles swap)
+        nextPicker = failed;
+      }
+      beginChampTurn(room, nextPicker ? nextPicker.id : room.host);
     }
   }, ROUND_OVER_TO_NEXT_MS);
 }

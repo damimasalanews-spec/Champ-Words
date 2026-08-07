@@ -9,7 +9,7 @@ export default function RoundOver({ result, room }) {
   const pickerName = champName || 'the picker';
   const nextNote = winner
     ? `Next up: ${winner.name} is on the spot again — the others pick the next word!`
-    : `The hot seat passes to ${pickerName} — they set the word that stumped the guesser!`;
+    : `The hot seat passes to ${pickerName}! The next word comes from the player in the queue.`;
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;
