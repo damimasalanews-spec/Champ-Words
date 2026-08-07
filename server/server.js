@@ -301,50 +301,55 @@ function generateWordGrid(word) {
   const letters = word.split('');
   const GRID = 4;
 
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const grid = Array.from({ length: GRID }, () => Array(GRID).fill(''));
-    const used = new Set();
-    const startR = Math.floor(Math.random() * GRID);
-    const startC = Math.floor(Math.random() * GRID);
-    grid[startR][startC] = letters[0];
-    used.add(`${startR},${startC}`);
+  // Backtracking placement — GUARANTEES the word is embedded in the grid
+  // (the old greedy random-walk could fail for 7-8 letter words and returned
+  //  a random grid WITHOUT the word, making every correct answer rejected)
+  const grid = Array.from({ length: GRID }, () => Array(GRID).fill(''));
+  const used = new Set();
 
-    let r = startR, c = startC;
-    let placed = 1;
-    for (let li = 1; li < letters.length; li++) {
-      const adj = [];
-      for (let dr = -1; dr <= 1; dr++)
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && !used.has(`${nr},${nc}`))
-            adj.push([nr, nc]);
-        }
-      if (adj.length === 0) break;
-      const [nr, nc] = adj[Math.floor(Math.random() * adj.length)];
-      grid[nr][nc] = letters[li];
-      used.add(`${nr},${nc}`);
-      r = nr; c = nc;
-      placed++;
+  function place(li, r, c) {
+    grid[r][c] = letters[li];
+    used.add(`${r},${c}`);
+    if (li === letters.length - 1) return true;
+    const candidates = [];
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID && !used.has(`${nr},${nc}`))
+          candidates.push([nr, nc]);
+      }
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    if (placed < letters.length) continue;
-
-    // Fill remaining cells with random letters
-    const chars = 'abcdefghijklmnopqrstuvwxyz';
-    for (let rr = 0; rr < GRID; rr++)
-      for (let cc = 0; cc < GRID; cc++)
-        if (!grid[rr][cc])
-          grid[rr][cc] = chars[Math.floor(Math.random() * chars.length)];
-
-    return grid;
+    for (const [nr, nc] of candidates) {
+      if (place(li + 1, nr, nc)) return true;
+    }
+    used.delete(`${r},${c}`);
+    grid[r][c] = '';
+    return false;
   }
-  // Fallback: just fill the grid
-  const g = Array.from({ length: GRID }, () => Array(GRID).fill(''));
+
+  const starts = [];
+  for (let r = 0; r < GRID; r++) for (let c = 0; c < GRID; c++) starts.push([r, c]);
+  for (let i = starts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [starts[i], starts[j]] = [starts[j], starts[i]];
+  }
+  for (const [r, c] of starts) {
+    if (place(0, r, c)) break;
+    used.clear();
+  }
+
+  // Fill remaining cells with random letters
   const chars = 'abcdefghijklmnopqrstuvwxyz';
-  for (let r = 0; r < GRID; r++)
-    for (let c = 0; c < GRID; c++)
-      g[r][c] = chars[Math.floor(Math.random() * chars.length)];
-  return g;
+  for (let rr = 0; rr < GRID; rr++)
+    for (let cc = 0; cc < GRID; cc++)
+      if (!grid[rr][cc])
+        grid[rr][cc] = chars[Math.floor(Math.random() * chars.length)];
+
+  return grid;
 }
 
 function validatePath(grid, path, word) {

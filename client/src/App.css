@@ -1514,6 +1514,22 @@
 }
 .drag-word-display { font-size: 17px; font-weight: 800; color: var(--green); letter-spacing: 3px; text-transform: uppercase; animation: fadeIn 0.15s ease; margin: 4px 0; }
 
+/* ── Type-the-answer input (hot-seat guesser) ──────────────────────────── */
+.type-answer {
+  display: flex; gap: 8px;
+  max-width: 280px; margin: 8px auto 0;
+}
+.type-answer input {
+  flex: 1; min-width: 0; padding: 10px 12px;
+  background: rgba(10,17,36,0.7);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--text); font-size: 15px;
+  text-transform: uppercase; letter-spacing: 1.5px; text-align: center;
+}
+.type-answer input:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px rgba(47,224,164,0.12); }
+.type-answer input::placeholder { text-transform: none; letter-spacing: 0; color: var(--text-dim); }
+
 /* ── Who found the word (live chips during the round) ──────────────────── */
 .found-now { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 8px; }
 .found-chip {

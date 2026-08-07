@@ -132,6 +132,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Drag state
   const [dragPath, setDragPath] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [typedWord, setTypedWord] = useState('');
   const gridRef = useRef(null);
   const lastCellRef = useRef(null);
 
@@ -166,7 +167,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFoundList([]);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
-    setDragPath([]); setIsDragging(false); lastCellRef.current = null;
+    setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
   }, [room.round, room.champId]);
 
   // Countdown
@@ -304,6 +305,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       setDragPath([]);
     });
   }, [isDragging, dragPath, submitting, grid, room.id, socket, showToast]);
+
+  // ── Type the answer (text fallback, same validation as drag) ────────────
+  const submitTyped = (e) => {
+    e.preventDefault();
+    const w = typedWord.trim().toLowerCase();
+    if (w.length < 3 || submitting) return;
+    setSubmitting(true);
+    socket.emit('submit_word', { roomId: room.id, word: w, path: [] }, (res) => {
+      setSubmitting(false);
+      if (res.ok) { setTypedWord(''); }
+      else if (res.error) showToast(res.error);
+    });
+  };
 
   // Drag global listeners
   useEffect(() => {
@@ -464,6 +478,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
           )}
         </div>
+      )}
+
+      {/* ── Type the answer (hot-seat guesser) ── */}
+      {isGuesser && state === 'playing' && !solvedWord && (
+        <form className="type-answer" onSubmit={submitTyped}>
+          <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
+            placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
+          <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
+        </form>
       )}
 
       {/* ── Who found the word (round keeps going until everyone gets it) ── */}
