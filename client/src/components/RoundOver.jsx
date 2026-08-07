@@ -6,9 +6,10 @@ export default function RoundOver({ result, room }) {
   const { word, winner, round, champName, scores, finds } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
+  const pickerName = champName || 'the picker';
   const nextNote = winner
     ? `Next up: ${winner.name} is on the spot again — the others pick the next word!`
-    : 'The hot seat passes to the next player!';
+    : `The hot seat passes to ${pickerName} — they set the word that stumped the guesser!`;
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;

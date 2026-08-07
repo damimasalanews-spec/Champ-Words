@@ -202,6 +202,7 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     roundFinds: [],           // ordered list of correct guessers this round: {id, name, score, elapsed}
     allFound: false,          // every guesser found the word → round ends early
     guesserId: null,          // hot-seat: the player who must find the word this round
+    failStreak: 0,
     timer: null,
     hintTimer1: null,         // opens the category-hint window at 20s elapsed (40s left)
     hintTimer2: null,         // opens the word-clue window at 40s elapsed (20s left)
@@ -535,16 +536,19 @@ function endRound(room) {
       return;
     }
     if (room.roundWinnerId && playerById(room, room.roundWinnerId)) {
-      // The guesser found it — they keep the hot seat; the picker rotates
-      // to the next non-guesser player ("the others" keep setting words for them)
+      // The guesser found it — they keep the hot seat, streak resets;
+      // the picker rotates to the next non-guesser ("the others" keep
+      // setting words for them)
+      room.failStreak = 0;
       const nextPicker = nextPlayerAfter(room, room.champId, room.guesserId);
       beginChampTurn(room, nextPicker ? nextPicker.id : room.host);
     } else {
-      // The guesser failed — the seat passes to the next player, and the
-      // failed guesser becomes the picker for them
+      // The guesser failed — the seat passes to the PICKER who made them
+      // fail ("the one who made the other player fail is asked next"),
+      // and the failed guesser becomes the picker for them
       const failed = guesserOf(room);
-      const nextGuesser = nextPlayerAfter(room, room.guesserId || room.champId);
-      if (nextGuesser) room.guesserId = nextGuesser.id;
+      room.guesserId = room.champId; // the picker is on the spot now
+      room.failStreak = 0;
       beginChampTurn(room, failed ? failed.id : room.host);
     }
   }, ROUND_OVER_TO_NEXT_MS);
@@ -731,7 +735,7 @@ io.on('connection', socket => {
       room.word = null; room.wordRevealed = 0; room.endedRound = false;
       room.category = null; room.choices = [];
       room.hintWindow = null; room.offeredClues = [];
-      room.guesserId = null;
+      room.guesserId = null; room.failStreak = 0;
       room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; });
       io.to(roomId).emit('room_update', sanitizeRoom(room));
     }
