@@ -27,8 +27,9 @@ function CategoryPickPopup({ categories, onPick, disabled, timeLeft }) {
   );
 }
 
-// ── Word Pick Popup (6 choices) ───────────────────────────────────────────
+// ── Word Pick Popup (6 choices + optional champ clue) ─────────────────────
 function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
+  const [hint, setHint] = useState('');
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
@@ -40,11 +41,19 @@ function WordPickPopup({ choices, onPick, disabled, timeLeft, categoryLabel }) {
         <div className="pick-popup-choices">
           {choices.map((w, i) => (
             <button key={i} className="pick-popup-word" disabled={disabled}
-              onClick={() => onPick(w)}>
+              onClick={() => onPick(w, hint)}>
               <span className="pick-popup-text">{w.toUpperCase()}</span>
               <span className="pick-popup-len">{w.length} letters</span>
             </button>
           ))}
+        </div>
+        <div className="pick-hint-box">
+          <label className="pick-hint-label">20s clue (optional)</label>
+          <input className="pick-hint-input" value={hint}
+            onChange={e => setHint(e.target.value)}
+            placeholder="e.g. it grows tall in the forest"
+            maxLength={60} />
+          <p className="pick-hint-note">Shown to everyone at 20s left — the category is revealed at 40s left</p>
         </div>
       </div>
     </div>
@@ -103,6 +112,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   const [catChoices, setCatChoices] = useState([]);
   const [pickedCat, setPickedCat] = useState(null);
+  const [categoryHint, setCategoryHint] = useState('');
+  const [wordClue, setWordClue] = useState('');
   const [choices, setChoices] = useState([]);
   const [champWord, setChampWord] = useState('');
   const [solvedWord, setSolvedWord] = useState('');
@@ -145,7 +156,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // Reset per round
   useEffect(() => {
-    setCatChoices([]); setPickedCat(null); setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
+    setCatChoices([]); setPickedCat(null); setCategoryHint(''); setWordClue('');
+    setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); lastCellRef.current = null;
   }, [room.round, room.champId]);
@@ -171,6 +183,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     const onTimeUp = (data) => { setSolvedWord(data.word); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
     return () => { socket.off('word_found', onFound); socket.off('time_up', onTimeUp); };
+  }, [socket]);
+
+  // Champ hints: category at 40s remaining, one-line clue at 20s remaining
+  useEffect(() => {
+    const onCatHint = (data) => setCategoryHint(data.label || '');
+    const onClue = (data) => setWordClue(data.text || '');
+    socket.on('category_hint', onCatHint); socket.on('word_hint', onClue);
+    return () => { socket.off('category_hint', onCatHint); socket.off('word_hint', onClue); };
   }, [socket]);
 
   // ── Drag: cell under a pointer ───────────────────────────────────
@@ -237,9 +257,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   }, [continueDrag, endDrag]);
 
   // ── Champ pick ────────────────────────────────────────────────────
-  const submitPick = (w) => {
+  const submitPick = (w, hint) => {
     setSubmitting(true);
-    onChooseWord(w);
+    onChooseWord(w, hint);
     setChampWord(w);
     setTimeout(() => setSubmitting(false), 500);
   };
@@ -343,6 +363,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="hint-text">
               HINT: {room.revealedLetters.map((l, i) => l ? l.toUpperCase() : '_').join(' ')}
             </div>
+          )}
+          {/* Champ hints: category (40s) then one-line clue (20s) */}
+          {categoryHint && state === 'playing' && (
+            <div className="hint-category">🏷️ It's a {categoryHint} category!</div>
+          )}
+          {wordClue && state === 'playing' && (
+            <div className="hint-clue">💡 {wordClue}</div>
           )}
           {falling && solvedWord && (
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>

@@ -757,6 +757,66 @@
   color: var(--gold);
   margin: 8px 0 2px;
 }
+.hint-category {
+  text-align: center;
+  font-size: 15px; font-weight: 800;
+  color: var(--gold);
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  border-radius: 20px;
+  padding: 6px 14px;
+  margin: 10px auto 0;
+  width: fit-content;
+  max-width: 100%;
+  animation: popIn 0.3s ease-out;
+}
+.hint-clue {
+  text-align: center;
+  font-size: 15px; font-weight: 700;
+  color: var(--text);
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  border-radius: 20px;
+  padding: 7px 14px;
+  margin: 8px auto 0;
+  width: fit-content;
+  max-width: 100%;
+  animation: popIn 0.3s ease-out;
+}
+
+/* ── Champ clue input (word pick popup) ─────────────────────────────────── */
+.pick-hint-box {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  text-align: left;
+}
+.pick-hint-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.pick-hint-input {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+.pick-hint-input:focus { border-color: var(--gold); outline: none; }
+.pick-hint-input::placeholder { color: var(--text-dim); font-size: 13px; }
+.pick-hint-note {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.5;
+}
 
 /* ── Score Board ────────────────────────────────────────────────────────── */
 .score-board {

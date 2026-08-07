@@ -86,9 +86,9 @@ export default function App() {
       if (!res.ok) showToast(res.error || 'Cannot start game');
     });
   };
-  const handleChooseWord = (word) => {
+  const handleChooseWord = (word, hintText) => {
     if (!room) return;
-    socket.emit('choose_word', { roomId: room.id, word }, (res) => {
+    socket.emit('choose_word', { roomId: room.id, word, hintText }, (res) => {
       if (res.ok) showToast(`Word set! ${res.wordLength} letters`, 'success');
       else showToast(res.error);
     });
