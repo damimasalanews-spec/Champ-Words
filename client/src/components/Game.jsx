@@ -459,7 +459,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       )}
       {state === 'playing' && guesserName && (
         <div className="spot-banner">
-          {`${guesserName.toUpperCase()} IS GUESSING THE WORD — ${guesserName.toUpperCase()}, PLEASE FIND THE ANSWER!`.split('').map((ch, i) => (
+          {`${(champPlayer?.name || 'CHAMP').toUpperCase()} IS ASKING TO ${guesserName.toUpperCase()}`.split('').map((ch, i) => (
             <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
           ))}
         </div>
