@@ -1401,6 +1401,36 @@
 .guesser-dot { font-size: 12px; animation: champPulse 1.2s ease-in-out infinite; }
 .player-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 8px 0; }
 
+/* ── Champ on the spot banner (jiggling letters) ───────────────────────── */
+.spot-banner {
+  text-align: center;
+  font-size: 25px; font-weight: 900;
+  letter-spacing: 2px; line-height: 1.5;
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  background: linear-gradient(90deg, rgba(255,197,61,0.10), rgba(47,224,164,0.10), rgba(255,197,61,0.10));
+  border: 1px solid rgba(255,197,61,0.4);
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+.spot-banner span {
+  display: inline-block;
+  background: linear-gradient(180deg, #ffe08a, #ffc53d);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: jiggle 1.3s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.07s);
+}
+@keyframes jiggle {
+  0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+  25% { transform: translateY(-4px) rotate(-4deg) scale(1.06); }
+  50% { transform: translateY(1px) rotate(3deg) scale(1); }
+  75% { transform: translateY(-2px) rotate(-2deg) scale(1.03); }
+}
+@media (max-width: 480px) {
+  .spot-banner { font-size: 17px; padding: 10px 8px; letter-spacing: 1px; }
+}
+
 /* ── Game header ───────────────────────────────────────────────────────── */
 .game-area { flex: 1; display: flex; flex-direction: column; padding-bottom: 20px; }
 .game-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 6px; }

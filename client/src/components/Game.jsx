@@ -449,6 +449,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       <PlayerList players={room.players} host={room.host} champId={room.champId} guesserId={room.guesserId} myId={socket.id} />
 
+      {/* ── Big jiggling banner for the champ on the spot ── */}
+      {isGuesser && state === 'playing' && (
+        <div className="spot-banner">
+          {"CHAMP IS ON THE SPOT — FIND ANOTHER PLAYER'S WORD!".split('').map((ch, i) => (
+            <span key={i} style={{ '--i': i }}>{ch === ' ' ? '\u00A0' : ch}</span>
+          ))}
+        </div>
+      )}
+
       <div className="game-layout">
         {/* ── Left: play field ── */}
         <div className="game-col-left">
