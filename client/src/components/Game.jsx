@@ -509,6 +509,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         {/* ── Right: notifications ── */}
         <div className="game-col-right">
+          {/* ── Live drawing of the word (Pictionary-style reveal) ── */}
+          {state === 'playing' && (
+            <div key={room.round} className="art-board">
+              {room.art ? (
+                <>
+                  <div className="art-canvas">
+                    <span className="art-emoji">{room.art}</span>
+                  </div>
+                  <div className="art-progress"><div className="art-progress-fill" /></div>
+                  <div className="art-label">The artist is drawing…</div>
+                </>
+              ) : (
+                <div className="art-label">✏️ No drawing for this word — watch the letters!</div>
+              )}
+            </div>
+          )}
+
           <div className={`side-status-card ${isChamp ? 'side-status-me' : ''}`}>
             <div className="side-avatar">
               {champAvatar ? <img src={champAvatar} alt="" className="side-avatar-img" /> : <div className="side-avatar-fallback">🎯</div>}

@@ -164,6 +164,11 @@ const CATEGORY_IDS = new Set(CATEGORIES.list.map(c => c.id));
 // ── 20s hint clues (curated + templates) ─────────────────────────────────
 const { generateClue } = require('./clues.js');
 
+// ── Live drawing clipart (Pictionary-style hint) ─────────────────────────
+const { WORD_ART, getWordArt } = require('./wordArt.js');
+// Words that both exist in the dictionary AND have clipart — preferred picks
+const WORD_ART_POOL = Object.fromEntries(Object.entries(WORD_ART).filter(([w]) => DICT.has(w)));
+
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
 const rooms = new Map();
@@ -226,6 +231,7 @@ function sanitizeRoom(room) {
     endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
     finds: room.roundFinds || [],
+    art: room.state === 'playing' ? getWordArt(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
   };
@@ -257,9 +263,11 @@ function clearTimer(room) {
 }
 
 // ── System-picked word: no champ, the game chooses randomly ──────────────
+// Prefer words that have a live drawing (clipart) so the drawing hint is useful
 function pickRandomWord() {
-  const all = [...DICT];
-  return all[Math.floor(Math.random() * all.length)];
+  const artWords = Object.keys(WORD_ART_POOL);
+  const pool = artWords.length > 0 ? artWords : [...DICT];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function startSystemRound(room) {

@@ -140,6 +140,63 @@
   line-height: 1.4;
 }
 
+/* ── Live drawing board (Pictionary-style reveal) ──────────────────────── */
+.art-board {
+  text-align: center;
+  background: linear-gradient(170deg, rgba(26,40,80,0.85), rgba(14,22,45,0.9));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+.art-canvas {
+  position: relative;
+  width: 64px; height: 64px;
+  margin: 0 auto 8px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+}
+.art-emoji {
+  font-size: 46px;
+  line-height: 64px;
+  display: block;
+}
+/* the "pencil" cover that sweeps away as the artist draws */
+.art-canvas::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, #0a1124 0%, #101a36 90%);
+  animation: artWipe 35s linear forwards;
+  pointer-events: none;
+}
+@keyframes artWipe {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(102%); }
+}
+.art-progress {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.art-progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #2fe0a4, #ffc53d);
+  animation: artProgress 35s linear forwards;
+}
+@keyframes artProgress { to { width: 100%; } }
+.art-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
 /* ── Single column on small screens ────────────────────────────────────── */
 @media (max-width: 640px) {
   .game-layout { flex-direction: column; }
