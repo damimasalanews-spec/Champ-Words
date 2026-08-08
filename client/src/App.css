@@ -2448,3 +2448,14 @@
 @keyframes meGlow { 0%, 100% { box-shadow: 0 0 6px rgba(47,224,164,0.15); } 50% { box-shadow: 0 0 16px rgba(47,224,164,0.45); } }
 /* Footer bar gets depth */
 .tiktok-half .game-header { box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+
+/* ── Grid + TOP 5 in one border; below section attached with small gap ── */
+.tiktok-half .game-frame { padding: 12px; }
+.tiktok-half .grid-score-row { gap: 6px; }
+/* TOP 5 blends into the frame — grid and leaderboard share the one border */
+.tiktok-half .top10-board { background: none; border: none; padding: 0; }
+.tiktok-half .top10-title { padding-bottom: 4px; margin-bottom: 3px; }
+.tiktok-half .top10-row + .top10-row { margin-top: 3px; }
+/* Below section attaches directly to the grid/TOP 5 border */
+.tiktok-half .answer-art-box { border: none; background: none; padding: 0; margin-top: 2px; }
+.tiktok-half .answer-art-box .answer-art-side { gap: 6px; }
