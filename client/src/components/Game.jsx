@@ -158,10 +158,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   useEffect(() => {
     const onFound = (data) => {
       playSound('found');
+      // Everyone learns WHO solved it (green name in the TOP 5)…
+      if (data.winnerId) {
+        setSolvedBy(data.winnerId);
+        setSolvedByName(data.winnerName || '');
+      }
+      // …but only the finder sees the word fall into the brackets
       if (data.word) {
         setSolvedWord(data.word);
-        setSolvedBy(data.winnerId);
-        setSolvedByName(data.winnerName);
         setFalling(true);
         setTimeout(() => setFalling(false), 1800);
         if (data.winnerId === socket.id) {
@@ -500,7 +504,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
-                    <span className="top10-name">{p.id === room.champId && <span className="champ-crown">👑</span>} {p.name.split(' ')[0]}</span>
+                    <span className={`top10-name${p.id === solvedBy ? ' solver' : ''}`}>
+                      {p.id === room.champId && <span className="champ-crown">👑</span>}
+                      {p.id === solvedBy ? '✓ ' : ''}{p.name.split(' ')[0]}
+                    </span>
                     <span className="top10-pts">{p.score}</span>
                   </>
                 ) : (

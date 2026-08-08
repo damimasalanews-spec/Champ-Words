@@ -2459,3 +2459,9 @@
 /* Below section attaches directly to the grid/TOP 5 border */
 .tiktok-half .answer-art-box { border: none; background: none; padding: 0; margin-top: 2px; }
 .tiktok-half .answer-art-box .answer-art-side { gap: 6px; }
+
+/* ── Correct-answer highlight: solver's name turns green in the TOP 5 ─── */
+.tiktok-half .top10-name.solver {
+  color: var(--green);
+  text-shadow: 0 0 10px rgba(47,224,164,0.7);
+}

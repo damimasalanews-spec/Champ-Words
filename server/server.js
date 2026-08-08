@@ -695,6 +695,8 @@ io.on('connection', socket => {
       room.roundWinnerId = socket.id;
       room.roundScore = gained;
       room.roundElapsed = elapsed;
+      // Skribbl-style: announce the correct answer in the chat for everyone
+      io.to(roomId).emit('chat', { system: true, text: `${player.name} guessed it! The word was: ${room.word.toUpperCase()}` });
     }
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
 
