@@ -2362,3 +2362,23 @@
 .tiktok-half .top10-pts { font-size: 24px; font-weight: 800; color: var(--green); min-width: 40px; text-align: right; }
 
 
+
+/* ── Answer + artist drawing in one bordered box (half-size) ──────────── */
+.tiktok-half .grid-score-row { flex-wrap: wrap; gap: 10px; }
+.tiktok-half .leader-col { width: 180px; }
+.tiktok-half .answer-art-box {
+  display: flex; align-items: center; justify-content: center;
+  gap: 18px; width: 100%;
+  border: 1px solid var(--border); border-radius: 14px;
+  background: var(--bg-light);
+  padding: 12px 10px;
+}
+.tiktok-half .answer-art-box .art-board-inline {
+  width: 150px; flex: none; padding: 8px;
+  border: none; background: none;
+}
+.tiktok-half .answer-art-box .art-canvas { width: 100px; height: 100px; }
+.tiktok-half .answer-art-box .art-emoji { font-size: 40px; }
+.tiktok-half .answer-art-box .brackets-section { margin: 0; }
+.tiktok-half .answer-art-box .bracket-box { width: 28px; height: 28px; border-width: 1.5px; border-radius: 7px; }
+.tiktok-half .answer-art-box .bracket-letter { font-size: 14px; }
