@@ -2243,8 +2243,11 @@
   border: 1px solid var(--border); border-radius: 12px;
   background: var(--bg-light);
 }
-.tiktok-half .round-info { font-size: 11px; padding: 4px 12px; letter-spacing: 1px; }
+.tiktok-half .round-info { font-size: 12px; padding: 4px 12px; letter-spacing: 1px; }
 .tiktok-half .chat-toggle { font-size: 10px; padding: 3px 10px; }
+
+/* Voice widget floats above the footer so it never covers the round pill */
+.tiktok-half .voice-chat { bottom: 54px; }
 
 /* Popups + overlays + chat */
 .tiktok-half .pick-popup-card { padding: 12px; max-height: 42vh; overflow-y: auto; }
