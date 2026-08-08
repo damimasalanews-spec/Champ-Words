@@ -521,11 +521,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className="art-emoji">{room.art}</span>
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>
-                  <div className="art-label">The artist is drawing…</div>
                 </>
-              ) : (
-                <div className="art-label">✏️ No drawing for this word — watch the letters!</div>
-              )}
+              ) : null}
             </div>
           )}
 
@@ -579,11 +576,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className="art-emoji">{room.art}</span>
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>
-                  <div className="art-label">The artist is drawing…</div>
                 </>
-              ) : (
-                <div className="art-label">✏️ No drawing for this word — watch the letters!</div>
-              )}
+              ) : null}
             </div>
           )}
 
