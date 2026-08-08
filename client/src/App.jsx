@@ -30,8 +30,17 @@ export default function App() {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // Check auth on mount
+  // Check auth on mount (or auto-guest via URL: ?auto=1 / ?guest=Name — used by
+  // studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
+    if (autoGuest) {
+      setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
+      setLoading(false);
+      socket.connect();
+      return;
+    }
     fetch('/auth/me')
       .then(r => r.json())
       .then(data => {
@@ -45,6 +54,30 @@ export default function App() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  // Auto-join a room as spectator (?room=CODE) — no clicks needed, works even
+  // when the game is already in progress.
+  useEffect(() => {
+    if (!user || !user.isGuest) return;
+    const params = new URLSearchParams(window.location.search);
+    const roomCode = String(params.get('room') || '').toUpperCase().trim();
+    if (!roomCode) return;
+    const doJoin = () => {
+      socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: true }, (res) => {
+        if (res && res.ok) {
+          setRoom(res.room);
+          setScreen(res.room.state === 'playing' || res.room.state === 'champ_pick' ? 'playing' : 'waiting');
+          setGameResult(null);
+          setMessages([]);
+        } else {
+          showToast((res && res.error) || 'Cannot join room');
+        }
+      });
+    };
+    if (socket.connected) doJoin();
+    else socket.on('connect', doJoin);
+    return () => socket.off('connect', doJoin);
+  }, [user, socket, showToast]);
 
   // Socket events (only after auth/guest)
   useEffect(() => {
