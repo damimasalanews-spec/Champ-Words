@@ -2358,3 +2358,10 @@
 .tiktok-half .top10-rank.rank-3 { color: #cd7f32; }
 .tiktok-half .top10-name { flex: 1; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tiktok-half .top10-pts { font-size: 13px; font-weight: 800; color: var(--green); min-width: 24px; text-align: right; }
+
+/* Score board copy shown in the half-size right frame (below the clipart) */
+.score-board-inline-right { display: none; }
+.tiktok-half .score-board-inline-right {
+  display: flex; flex-direction: column;
+  width: 100%; flex: 1;
+}
