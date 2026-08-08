@@ -700,8 +700,8 @@ io.on('connection', socket => {
       room.roundScore = gained;
       room.roundElapsed = elapsed;
     }
-    // Correct guess — celebrate in chat WITHOUT revealing the answer
-    io.to(roomId).emit('chat', { system: true, text: `${player.name} guessed the word!` });
+    // Correct guess — celebrate in chat (green) WITHOUT revealing the answer
+    io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
 
     // Round ends early only when EVERYONE has found the word
@@ -751,6 +751,8 @@ io.on('connection', socket => {
     const word = (path || []).map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
     if (word === room.word) return; // never show the correct answer on a finished drag
     socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
+    // Skribbl-style: completed drags (wrong words) appear in the chat
+    io.to(roomId).emit('chat', { system: true, text: `${player.name} dragged: ${word.toUpperCase()}` });
   });
 
   socket.on('use_hint', ({ roomId }, cb) => {

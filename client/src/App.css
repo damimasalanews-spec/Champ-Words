@@ -2484,3 +2484,10 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
 .tiktok-half .inline-chat-msg.system { color: var(--text); }
+
+/* Correct guess text turns green in the inline chat */
+.tiktok-half .inline-chat-msg.success {
+  color: var(--green);
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(47,224,164,0.5);
+}
