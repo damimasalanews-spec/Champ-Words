@@ -400,6 +400,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       <div className="game-layout">
         {/* ── Left: play field ── */}
         <div className="game-col-left">
+        <div className="game-frame">
         <div className="grid-score-row">
         <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
@@ -561,6 +562,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
           </div>
+        </div>
         </div>
         </div>
         </div>
