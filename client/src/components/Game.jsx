@@ -533,7 +533,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
-                    <span className="top10-name">{p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}</span>
+                    <span className="top10-name">{p.id === room.champId && <span className="champ-crown">👑</span>} {p.name.split(' ')[0]}</span>
                     <span className="top10-pts">{p.score}</span>
                   </>
                 ) : (
