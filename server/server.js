@@ -601,11 +601,18 @@ io.on('connection', socket => {
     cb && cb({ ok: true, room: sanitizeRoom(room) });
   });
 
-  socket.on('join_room', ({ roomId, name, avatar }, cb) => {
+  socket.on('join_room', ({ roomId, name, avatar, spectator }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
-    if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game in progress' });
     if (room.players.find(p => p.id === socket.id)) return cb && cb({ ok: false, error: 'Already joined' });
+    // Spectators (e.g. a studio browser source) may watch at any time —
+    // even mid-game. They join the room channel but are NOT players.
+    if (spectator) {
+      socket.join(roomId);
+      cb && cb({ ok: true, room: sanitizeRoom(room) });
+      return;
+    }
+    if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game in progress' });
     room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0 });
     socket.join(roomId);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
