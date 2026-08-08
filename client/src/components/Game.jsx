@@ -426,6 +426,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="game-col-left">
         <div className="game-frame">
         <div className="grid-score-row">
+        {/* ── Grid + TOP 5 share ONE bordered panel (TikTok half view) ── */}
+        <div className="grid-leader-panel">
         <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
@@ -527,6 +529,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </div>
             );
           })}
+        </div>
         </div>
         </div>
 
