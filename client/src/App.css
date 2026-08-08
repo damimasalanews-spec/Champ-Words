@@ -2382,3 +2382,18 @@
 .tiktok-half .answer-art-box .brackets-section { margin: 0; }
 .tiktok-half .answer-art-box .bracket-box { width: 28px; height: 28px; border-width: 1.5px; border-radius: 7px; }
 .tiktok-half .answer-art-box .bracket-letter { font-size: 14px; }
+
+/* ── Final polish — sizes & alignment only, sections stay in place ────── */
+.tiktok-half .app-header { padding: 8px 12px; }
+.tiktok-half .app-header .brand-name { font-size: 14px; }
+.tiktok-half .timer-display { font-weight: 700; letter-spacing: 1px; }
+.tiktok-half .top10-title { font-size: 13px; }
+.tiktok-half .congrats-line { font-size: 16px; padding: 9px 10px; }
+.tiktok-half .game-header { padding: 8px 10px; }
+.tiktok-half .round-info { padding: 5px 14px; }
+.tiktok-half .chat-toggle { padding: 4px 12px; }
+/* The shared answer+art box spans the full row width symmetrically */
+.tiktok-half .answer-art-box { margin-left: -26px; width: calc(100% + 26px); }
+.tiktok-half .art-label { font-size: 10px; }
+.tiktok-half .brackets-label { font-size: 9px; }
+.tiktok-half .solved-text { font-size: 12px; }
