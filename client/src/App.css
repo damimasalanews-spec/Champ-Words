@@ -2327,12 +2327,12 @@
 }
 .tiktok-half .auto-status { font-size: 10px; padding: 5px 10px; max-width: 320px; }
 
-/* ── TOP 1–10 leaderboard (half-size right frame) ─────────────────────── */
+/* ── TOP 1–10 leaderboard (half-size, right next to the grid) ─────────── */
 .top10-board { display: none; }
 .tiktok-half .top10-board {
   display: flex; flex-direction: column;
-  flex: 1;
-  justify-content: space-evenly;
+  flex: none; width: 185px; margin-top: 6px;
+  justify-content: flex-start;
   background: var(--bg-light);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -2359,9 +2359,4 @@
 .tiktok-half .top10-name { flex: 1; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tiktok-half .top10-pts { font-size: 13px; font-weight: 800; color: var(--green); min-width: 24px; text-align: right; }
 
-/* Score board copy shown in the half-size right frame (below the clipart) */
-.score-board-inline-right { display: none; }
-.tiktok-half .score-board-inline-right {
-  display: flex; flex-direction: column;
-  width: 100%; flex: 1;
-}
+
