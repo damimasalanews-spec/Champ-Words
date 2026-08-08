@@ -31,11 +31,12 @@ export default function App() {
     setTimeout(() => setToast(null), 2500);
   }, []);
 
-  // Check auth on mount (or auto-guest via URL: ?auto=1 / ?guest=Name — used by
-  // studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
+  // Check auth on mount (or auto-guest via /tiktok path, ?auto=1 / ?guest=Name —
+  // used by studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
+    const isTiktokPath = window.location.pathname.startsWith('/tiktok');
+    const autoGuest = params.get('guest') || (params.has('auto') || isTiktokPath ? 'Guest' : null);
     if (autoGuest) {
       setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
       setLoading(false);

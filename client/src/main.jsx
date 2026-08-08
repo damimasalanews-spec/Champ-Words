@@ -3,17 +3,17 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-// TikTok half-screen browser: links open in a webview that shows only the
-// top ~50% of the screen (TikTok UI covers the bottom half). Detect it via
-// the user agent + a short viewport and compact the whole game to fit that
-// half from the top — the area below stays empty.
-// `?half=1` forces the mode anywhere; `?auto=1` (studio mode) uses it by default.
+// TikTok half-screen layout: the whole game compacts to fit the top half of
+// the screen. Activated by: the /tiktok path (dedicated half-size link),
+// `?half=1` anywhere, `?auto=1` (studio mode), or TikTok's own webview
+// (user agent + short viewport).
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;
   const params = new URLSearchParams(window.location.search);
-  const forced = params.has('half');
-  const studioMode = params.has('auto'); // studio sources default to the half layout
+  const isTiktokPath = window.location.pathname.startsWith('/tiktok');
+  const forced = params.has('half') || isTiktokPath;
+  const studioMode = params.has('auto') || isTiktokPath;
   document.documentElement.classList.toggle('tiktok-half', forced || studioMode || (isTikTok && isHalfScreen));
 }
 applyTiktokHalfMode();
