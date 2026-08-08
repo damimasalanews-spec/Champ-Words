@@ -16,8 +16,16 @@ function applyTiktokHalfMode() {
   const studioMode = params.has('auto') || isTiktokPath;
   document.documentElement.classList.toggle('tiktok-half', forced || studioMode || (isTikTok && isHalfScreen));
 }
+
+// The half-size layout is a FIXED 540×960 design canvas. It scales down to
+// fit smaller screens/studios (never up), so the design always looks identical.
+function applyHalfScale() {
+  const s = Math.min(1, window.innerWidth / 540, window.innerHeight / 960);
+  document.documentElement.style.setProperty('--half-scale', s.toFixed(4));
+}
 applyTiktokHalfMode();
-window.addEventListener('resize', applyTiktokHalfMode);
+applyHalfScale();
+window.addEventListener('resize', () => { applyTiktokHalfMode(); applyHalfScale(); });
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
