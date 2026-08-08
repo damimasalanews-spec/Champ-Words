@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import socket from './socket';
 import Logo from './components/Logo';
 import { playSound, toggleMute, isMuted } from './sounds';
@@ -46,6 +46,18 @@ export default function App() {
     setToast({ text, type });
     playSound('toast');
     setTimeout(() => setToast(null), 2500);
+  }, []);
+
+  // 30s grace period on the join page: the player gets time to write their
+  // name before being auto-returned to their last room.
+  const REJOIN_DELAY_MS = 30000;
+  const [rejoinIn, setRejoinIn] = useState(null);     // countdown seconds
+  const [pendingRoom, setPendingRoom] = useState(''); // room we're waiting to return to
+  const rejoinTimerRef = useRef(null);
+
+  const cancelAutoRejoin = useCallback(() => {
+    if (rejoinTimerRef.current) { clearInterval(rejoinTimerRef.current); rejoinTimerRef.current = null; }
+    setRejoinIn(null); setPendingRoom('');
   }, []);
 
   // Shared handling of a join/create response: store the room for rejoin and
@@ -128,8 +140,9 @@ export default function App() {
     };
   }, [user, socket]);
 
-  // Auto-rejoin the last room: if the player left the page by mistake (or
-  // reloaded), bring them straight back with their points and progress.
+  // Auto-rejoin the last room — but only after a 30s grace period on the
+  // join page, so the player has time to write their name first. Manual
+  // join/create cancels it. (Studio ?room= spectator join stays instant.)
   useEffect(() => {
     if (!user) return;
     const params = new URLSearchParams(window.location.search);
@@ -137,20 +150,45 @@ export default function App() {
     const lastRoom = localStorage.getItem('cw_last_room');
     if (!lastRoom) return;
     let stopped = false;
-    const tryJoin = () => {
-      socket.emit('join_room', { roomId: lastRoom, name: user.name, avatar: user.avatar, playerKey: getPlayerKey() }, (res) => {
+    const doJoin = () => {
+      if (stopped) return;
+      cancelAutoRejoin();
+      // No name sent — the server keeps the player's existing name/points
+      socket.emit('join_room', { roomId: lastRoom, playerKey: getPlayerKey() }, (res) => {
         if (stopped) return;
-        if (res && res.ok) {
-          applyJoinedRoom(res);
-        } else {
-          localStorage.removeItem('cw_last_room'); // room is gone — forget it
-        }
+        if (res && res.ok) applyJoinedRoom(res);
+        else localStorage.removeItem('cw_last_room'); // room is gone — forget it
       });
     };
-    if (socket.connected) tryJoin();
-    else socket.on('connect', tryJoin);
-    return () => { stopped = true; socket.off('connect', tryJoin); };
-  }, [user, socket, applyJoinedRoom]);
+    const start = () => {
+      setPendingRoom(lastRoom);
+      setRejoinIn(Math.round(REJOIN_DELAY_MS / 1000));
+      rejoinTimerRef.current = setInterval(() => {
+        setRejoinIn(prev => {
+          if (prev <= 1) {
+            clearInterval(rejoinTimerRef.current); rejoinTimerRef.current = null;
+            doJoin();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+    if (socket.connected) start();
+    else socket.on('connect', start);
+    return () => { stopped = true; cancelAutoRejoin(); socket.off('connect', start); };
+  }, [user, socket, applyJoinedRoom, cancelAutoRejoin]);
+
+  // Skip the remaining wait and return to the pending room right now
+  const handleRejoinNow = useCallback(() => {
+    const code = pendingRoom;
+    if (!code) return;
+    cancelAutoRejoin();
+    socket.emit('join_room', { roomId: code, playerKey: getPlayerKey() }, (res) => {
+      if (res && res.ok) applyJoinedRoom(res);
+      else { localStorage.removeItem('cw_last_room'); showToast('Room no longer available'); }
+    });
+  }, [pendingRoom, cancelAutoRejoin, applyJoinedRoom, showToast]);
 
   // Socket events (only after auth/guest)
   useEffect(() => {
@@ -178,6 +216,7 @@ export default function App() {
   }, [user, showToast]);
 
   const handleCreateRoom = (name, totalRounds) => {
+    cancelAutoRejoin();
     socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey() }, (res) => {
       if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
       else showToast(res.error);
@@ -185,6 +224,7 @@ export default function App() {
   };
 
   const handleJoinRoom = (roomId, name) => {
+    cancelAutoRejoin();
     socket.emit('join_room', { roomId, name: name || user?.name, avatar: user?.avatar, playerKey: getPlayerKey() }, (res) => {
       if (res.ok) { applyJoinedRoom(res); setMessages([]); }
       else showToast(res.error);
@@ -220,6 +260,7 @@ export default function App() {
     });
   };
   const handleLeave = () => {
+    cancelAutoRejoin();
     if (room) socket.emit('leave_room', { roomId: room.id });
     localStorage.removeItem('cw_last_room'); // intentional leave — no auto-rejoin
     setRoom(null); setScreen('lobby'); setRoundResult(null); setGameResult(null); setMessages([]); setChatOpen(false);
@@ -285,6 +326,12 @@ export default function App() {
 
       {screen === 'lobby' && (
         <>
+          {rejoinIn !== null && (
+            <div className="auto-status">
+              ⏳ Returning to room {pendingRoom} in {rejoinIn}s — write your name below or{' '}
+              <button className="btn btn-small btn-primary" style={{ marginLeft: 4 }} onClick={handleRejoinNow}>Join now</button>
+            </div>
+          )}
           {autoStatus && <div className="auto-status">{autoStatus}</div>}
           <Lobby onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom} userName={user.name} />
         </>
