@@ -23,6 +23,7 @@ export default function App() {
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
   const [muted, setMuted] = useState(() => isMuted());
+  const [autoStatus, setAutoStatus] = useState('');
 
   const showToast = useCallback((text, type = 'error') => {
     setToast({ text, type });
@@ -61,23 +62,39 @@ export default function App() {
     if (!user || !user.isGuest) return;
     const params = new URLSearchParams(window.location.search);
     const roomCode = String(params.get('room') || '').toUpperCase().trim();
-    if (!roomCode) return;
-    const doJoin = () => {
+    if (!roomCode) {
+      setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
+      return;
+    }
+    let stopped = false;
+    let retryTimer = null;
+    const tryJoin = () => {
       socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: true }, (res) => {
+        if (stopped) return;
         if (res && res.ok) {
+          setAutoStatus('');
           setRoom(res.room);
           setScreen(res.room.state === 'playing' || res.room.state === 'champ_pick' ? 'playing' : 'waiting');
           setGameResult(null);
           setMessages([]);
         } else {
-          showToast((res && res.error) || 'Cannot join room');
+          const err = (res && res.error) || 'Cannot join room';
+          setAutoStatus(err === 'Room not found'
+            ? `Room ${roomCode} not found — create it on your phone, connecting automatically…`
+            : err);
+          retryTimer = setTimeout(tryJoin, 4000); // keep retrying until the room exists
         }
       });
     };
-    if (socket.connected) doJoin();
-    else socket.on('connect', doJoin);
-    return () => socket.off('connect', doJoin);
-  }, [user, socket, showToast]);
+    const start = () => { if (!stopped) tryJoin(); };
+    if (socket.connected) start();
+    else socket.on('connect', start);
+    return () => {
+      stopped = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      socket.off('connect', start);
+    };
+  }, [user, socket]);
 
   // Socket events (only after auth/guest)
   useEffect(() => {
@@ -209,7 +226,12 @@ export default function App() {
         </div>
       </div>
 
-      {screen === 'lobby' && <Lobby onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom} userName={user.name} />}
+      {screen === 'lobby' && (
+        <>
+          {autoStatus && <div className="auto-status">{autoStatus}</div>}
+          <Lobby onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom} userName={user.name} />
+        </>
+      )}
 
       {screen === 'waiting' && room && (
         <div className="waiting-host">

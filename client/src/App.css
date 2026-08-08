@@ -2274,3 +2274,14 @@
   .tiktok-half .score-board-inline .score-board-row { padding: 6px 8px; }
   .tiktok-half .score-board-inline .score-board-name { font-size: 12px; }
 }
+
+/* Studio auto-join status banner */
+.auto-status {
+  max-width: 380px; margin: 8px auto 0; text-align: center;
+  font-size: 12px; font-weight: 600; line-height: 1.5;
+  color: var(--gold);
+  background: rgba(255, 197, 61, 0.08);
+  border: 1px solid rgba(255, 197, 61, 0.45);
+  border-radius: 12px; padding: 8px 12px;
+}
+.tiktok-half .auto-status { font-size: 10px; padding: 5px 10px; max-width: 320px; }
