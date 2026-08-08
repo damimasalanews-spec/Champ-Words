@@ -2525,3 +2525,11 @@
 .tiktok-half .round-winner-msg { font-size: 19px; }
 /* Remove the "✓ name +points" found chips (redundant with the chat + TOP 5) */
 .tiktok-half .found-now { display: none; }
+
+/* ── Grid + TOP 5 leaderboard: same height ───────────────────────────── */
+/* Stretch the row so the leader column reaches the grid column's height */
+.tiktok-half .grid-score-row { align-items: stretch; }
+/* TOP 5 board fills the whole leader column height */
+.tiktok-half .top10-board { height: 100%; }
+/* The 5 rows share the extra height evenly so the board looks filled */
+.tiktok-half .top10-row { flex: 1; }
