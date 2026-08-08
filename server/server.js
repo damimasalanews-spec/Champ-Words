@@ -581,8 +581,8 @@ function endRound(room) {
   setTimeout(() => {
     if (room.players.length === 0) return;
     room.round++;
-    // ── Game over: all rounds played, or not enough players left ──
-    if (room.round > room.totalRounds || room.players.length < 2) {
+    // ── Game over: all rounds played (solo games run the full set too) ──
+    if (room.round > room.totalRounds || room.players.length < 1) {
       finishGame(room);
       return;
     }
@@ -624,7 +624,8 @@ io.on('connection', socket => {
     const room = rooms.get(roomId);
     if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Only the host can start' });
     if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game already started' });
-    if (room.players.length < 2) return cb && cb({ ok: false, error: 'Need at least 2 players to start' });
+    // Solo start is allowed (studio / practice mode) — the system picks the word
+    // and the single player guesses. Friends may join before starting.
     room.round = 1;
     // The system picks a random word and everyone guesses together
     startSystemRound(room);
@@ -835,9 +836,9 @@ function leaveRoom(socket, roomId) {
   }
   if (room.players.length === 0) { clearTimer(room); rooms.delete(roomId); return; }
   if (room.host === socket.id) room.host = room.players[0].id;
-  // Fewer than 2 players left mid-game — end it instead of breaking the
-  // picker/guesser roles (this used to make one player both choose AND guess)
-  if (room.players.length < 2 && room.state !== 'waiting') {
+  // A single remaining player can keep playing (solo/studio mode) — only end
+  // when nobody is left (handled above).
+  if (room.players.length < 1 && room.state !== 'waiting') {
     finishGame(room);
     return;
   }
