@@ -425,12 +425,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         {/* ── Left: play field ── */}
         <div className="game-col-left">
         <div className="game-frame">
-        <div className="grid-score-row">
-        <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
           )}
 
+      {/* ── Grid + TOP 5 in one bordered box (equal height) ── */}
+      <div className="grid-top-box">
+        <div className="grid-col">
       {state === 'playing' && (
         <>
           <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
@@ -482,26 +483,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Who found the word (round keeps going until everyone gets it) ── */}
-      {foundList.length > 0 && state === 'playing' && (
-        <div className="found-now">
-          {foundList.map((f, i) => (
-            <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
-              ✅ {f.name} +{f.score}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* ── Live activity: what a player just drew ── */}
-      {spectDrawn && state === 'playing' && (
-        <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
-      )}
-
-      {wordClue && state === 'playing' && (
-        <div className="hint-clue">💡 {wordClue}</div>
-      )}
-
         </div>
 
         {/* ── TOP 5 (half-size right side) ── */}
@@ -529,6 +510,27 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           })}
         </div>
         </div>
+        </div>
+
+      {/* ── Who found the word (round keeps going until everyone gets it) ── */}
+      {foundList.length > 0 && state === 'playing' && (
+        <div className="found-now">
+          {foundList.map((f, i) => (
+            <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
+              ✅ {f.name} +{f.score}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── Live activity: what a player just drew ── */}
+      {spectDrawn && state === 'playing' && (
+        <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
+      )}
+
+      {wordClue && state === 'playing' && (
+        <div className="hint-clue">💡 {wordClue}</div>
+      )}
 
         {/* ── Answer brackets + artist drawing in one bordered box ── */}
         <div className="answer-art-box">
@@ -580,7 +582,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
           </div>
-        </div>
         </div>
         </div>
         </div>
