@@ -2491,3 +2491,16 @@
   font-weight: 700;
   text-shadow: 0 0 10px rgba(47,224,164,0.5);
 }
+
+/* ── Bottom row: voice (left corner), answer box (middle), round (right) ─ */
+/* Hide the old in-column answer box in the half layout; the footer copy shows */
+.tiktok-half .type-answer { display: none; }
+.tiktok-half .footer-answer { display: flex; flex: 0 1 320px; margin: 0; }
+.tiktok-half .game-header {
+  justify-content: center;
+  gap: 10px;
+  padding-left: 96px; /* leave the corner for the voice tab */
+}
+.tiktok-half .round-info { margin-left: auto; }
+/* Voice tab sits in the bottom-left corner, same row as the round bar */
+.tiktok-half .voice-chat { bottom: 12px; left: 12px; }

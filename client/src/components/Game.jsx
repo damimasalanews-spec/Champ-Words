@@ -382,6 +382,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
       <div className="game-header">
+        {/* Answer box in the bottom round row (half-size layout) */}
+        {state === 'playing' && !solvedWord && (
+          <form className="type-answer footer-answer" onSubmit={submitTyped}>
+            <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
+              placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
+            <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
+          </form>
+        )}
         <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
