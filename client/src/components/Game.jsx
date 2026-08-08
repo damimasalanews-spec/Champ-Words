@@ -381,23 +381,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
-      {/* Round-end pop-out: focused scoreboard in one border, top area */}
-      {solvedBy && state === 'round_over' && (() => {
-        const w = room.players.find(p => p.id === solvedBy);
-        if (!w) return null;
-        const rank = sortedPlayers.findIndex(p => p.id === solvedBy) + 1;
-        return (
-          <div className="answer-pop">
-            <div className="answer-pop-title">🎉 CORRECT! 🎉</div>
-            <div className="answer-pop-row">
-              <span className="answer-pop-rank">#{rank}</span>
-              <span className="answer-pop-name">{w.id === room.champId ? '👑 ' : ''}{w.name.split(' ')[0]}</span>
-              <span className="answer-pop-pts">+{w.roundScore}</span>
-            </div>
-          </div>
-        );
-      })()}
-
       <div className="game-header">
         {/* Remaining chat info — right above the answer box (half-size layout) */}
         {messages.length > 0 && (
