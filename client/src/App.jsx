@@ -12,6 +12,23 @@ import VoiceChat from './components/VoiceChat';
 import Toast from './components/Toast';
 import './App.css';
 
+// Persistent identity for this browser — lets a player rejoin their room
+// after a reload/accidental leave and keep their points and progress.
+function getPlayerKey() {
+  try {
+    let k = localStorage.getItem('cw_player_key');
+    if (!k) {
+      k = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : 'k' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('cw_player_key', k);
+    }
+    return k;
+  } catch (_) {
+    return 'k' + Math.random().toString(36).slice(2);
+  }
+}
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null); // { name, avatar }
@@ -29,6 +46,20 @@ export default function App() {
     setToast({ text, type });
     playSound('toast');
     setTimeout(() => setToast(null), 2500);
+  }, []);
+
+  // Shared handling of a join/create response: store the room for rejoin and
+  // pick the right screen (works for waiting rooms AND mid-game joins).
+  const applyJoinedRoom = useCallback((res) => {
+    if (!res || !res.ok) return false;
+    setRoom(res.room);
+    localStorage.setItem('cw_last_room', res.room.id);
+    const st = res.room.state;
+    if (st === 'round_over' && res.lastRound) { setRoundResult(res.lastRound); setGameResult(null); setScreen('round_over'); }
+    else if (st === 'game_over' && res.lastGame) { setGameResult(res.lastGame); setRoundResult(null); setScreen('game_over'); }
+    else if (st === 'playing' || st === 'champ_pick' || st === 'round_over') { setRoundResult(null); setGameResult(null); setScreen('playing'); }
+    else { setRoundResult(null); setGameResult(null); setScreen('waiting'); }
+    return true;
   }, []);
 
   // Check auth on mount (or auto-guest via /tiktok path, ?auto=1 / ?guest=Name —
@@ -97,6 +128,30 @@ export default function App() {
     };
   }, [user, socket]);
 
+  // Auto-rejoin the last room: if the player left the page by mistake (or
+  // reloaded), bring them straight back with their points and progress.
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('room')) return; // explicit studio ?room= takes priority
+    const lastRoom = localStorage.getItem('cw_last_room');
+    if (!lastRoom) return;
+    let stopped = false;
+    const tryJoin = () => {
+      socket.emit('join_room', { roomId: lastRoom, name: user.name, avatar: user.avatar, playerKey: getPlayerKey() }, (res) => {
+        if (stopped) return;
+        if (res && res.ok) {
+          applyJoinedRoom(res);
+        } else {
+          localStorage.removeItem('cw_last_room'); // room is gone — forget it
+        }
+      });
+    };
+    if (socket.connected) tryJoin();
+    else socket.on('connect', tryJoin);
+    return () => { stopped = true; socket.off('connect', tryJoin); };
+  }, [user, socket, applyJoinedRoom]);
+
   // Socket events (only after auth/guest)
   useEffect(() => {
     if (!user) return;
@@ -123,15 +178,15 @@ export default function App() {
   }, [user, showToast]);
 
   const handleCreateRoom = (name, totalRounds) => {
-    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds }, (res) => {
-      if (res.ok) { setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
+    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey() }, (res) => {
+      if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
       else showToast(res.error);
     });
   };
 
   const handleJoinRoom = (roomId, name) => {
-    socket.emit('join_room', { roomId, name: name || user?.name, avatar: user?.avatar }, (res) => {
-      if (res.ok) { setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([]); }
+    socket.emit('join_room', { roomId, name: name || user?.name, avatar: user?.avatar, playerKey: getPlayerKey() }, (res) => {
+      if (res.ok) { applyJoinedRoom(res); setMessages([]); }
       else showToast(res.error);
     });
   };
@@ -166,6 +221,7 @@ export default function App() {
   };
   const handleLeave = () => {
     if (room) socket.emit('leave_room', { roomId: room.id });
+    localStorage.removeItem('cw_last_room'); // intentional leave — no auto-rejoin
     setRoom(null); setScreen('lobby'); setRoundResult(null); setGameResult(null); setMessages([]); setChatOpen(false);
   };
   const handlePlayAgain = () => {

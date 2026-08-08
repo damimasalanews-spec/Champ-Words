@@ -182,12 +182,13 @@ const HINT2_MS = Number(process.env.HINT2_MS) || 40 * 1000; // word clue window 
 const HINT_WINDOW_MS = Number(process.env.HINT_WINDOW_MS) || 5 * 1000; // champ has 5s to send each hint
 const HINT_PENALTY = 20; // points deducted when the champ misses a hint window
 const MAX_HINTS = 3;
+const ROOM_CLEANUP_MS = Number(process.env.ROOM_CLEANUP_MS) || 120 * 1000; // drop a room ~2 min after everyone leaves (allows rejoin)
 
-function createRoom(hostId, hostName, hostAvatar, totalRounds) {
+function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
   const id = makeRoomId();
   const room = {
     id, host: hostId,
-    players: [{ id: hostId, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS }],
+    players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS }],
     state: 'waiting', round: 0, totalRounds: totalRounds || 5,
     champId: null,
     word: null,            // mystery word — NEVER sent to clients
@@ -213,7 +214,12 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds) {
     hintTimer2: null,         // opens the word-clue window at 40s elapsed (20s left)
     hintWindowTimer: null,    // 5s timeout for the champ to send the hint
     champTimer: null,         // 15s timeout for champ to pick a word
-    voiceUsers: []            // socket ids currently in the voice chat (WebRTC mesh)
+    voiceUsers: [],           // socket ids currently in the voice chat (WebRTC mesh)
+    pendingHostKey: null,     // playerKey of a dropped host — reclaimed on rejoin
+    advanceScheduled: false,  // round-over → next round timer is pending
+    lastRoundResult: null,    // last round-over payload (so rejoining players see it)
+    lastGameResult: null,     // final scores (so rejoining players see it)
+    cleanupTimer: null        // deletes the room after everyone leaves
   };
   rooms.set(id, room);
   return room;
@@ -242,7 +248,24 @@ function playerById(room, id) { return room.players.find(p => p.id === id); }
 function champOf(room) { return playerById(room, room.champId); }
 function guesserOf(room) { return playerById(room, room.guesserId); }
 
-// Next player in seat order, optionally skipping one id (wraps around)
+// Players whose socket is currently online (disconnected players keep their
+// record + points so they can rejoin, but are skipped by game logic)
+function connectedPlayers(room) { return room.players.filter(p => io.sockets.sockets.has(p.id)); }
+
+function cancelRoomCleanup(room) {
+  if (room.cleanupTimer) { clearTimeout(room.cleanupTimer); room.cleanupTimer = null; }
+}
+// After everyone leaves, keep the room alive briefly so players can rejoin
+function scheduleRoomCleanup(room) {
+  cancelRoomCleanup(room);
+  room.cleanupTimer = setTimeout(() => {
+    room.cleanupTimer = null;
+    if (connectedPlayers(room).length === 0) { clearTimer(room); rooms.delete(room.id); }
+  }, ROOM_CLEANUP_MS);
+}
+
+// Next player in seat order, optionally skipping one id (wraps around);
+// disconnected players are skipped so the turn goes to someone online.
 function nextPlayerAfter(room, id, skipId) {
   const list = room.players;
   if (list.length === 0) return null;
@@ -250,6 +273,7 @@ function nextPlayerAfter(room, id, skipId) {
   for (let i = 1; i <= list.length; i++) {
     const p = list[(idx + i) % list.length];
     if (skipId && p.id === skipId) continue;
+    if (!io.sockets.sockets.has(p.id)) continue;
     return p;
   }
   return null;
@@ -418,9 +442,8 @@ function beginChampTurn(room, champId) {
   // 15s auto-pass if champ doesn't pick a category/word
   room.champTimer = setTimeout(() => {
     if (room.state !== 'champ_pick') return;
-    const idx = room.players.findIndex(p => p.id === room.champId);
-    const nextId = room.players[(idx + 1) % room.players.length].id;
-    beginChampTurn(room, nextId);
+    const next = nextPlayerAfter(room, room.champId, null) || champOf(room) || room.players[0];
+    beginChampTurn(room, next.id);
   }, 15000);
   const champ = champOf(room);
   // Broadcast the turn to everyone (no word info)
@@ -540,6 +563,7 @@ function finishGame(room) {
   const finalScores = room.players
     .map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score }))
     .sort((a, b) => b.score - a.score);
+  room.lastGameResult = { scores: finalScores, winner: finalScores[0] || null };
   io.to(room.id).emit('game_over', {
     room: sanitizeRoom(room),
     scores: finalScores,
@@ -571,7 +595,7 @@ function endRound(room) {
   const champ = champOf(room);
   // Reveal the answer in chat (the round-over pop-out is hidden in the half layout)
   io.to(room.id).emit('chat', { system: true, text: `The word was: ${room.word.toUpperCase()}` });
-  io.to(room.id).emit('round_over', {
+  const payload = {
     room: sanitizeRoom(room),
     word: room.word,
     round: room.round,
@@ -581,17 +605,34 @@ function endRound(room) {
     stumpPoints,
     finds: room.roundFinds,
     scores
-  });
+  };
+  room.lastRoundResult = payload; // keep it so players who rejoin see this round's result
+  io.to(room.id).emit('round_over', payload);
+  scheduleAdvance(room);
+}
+
+// Advance to the next round (or finish the game) after the round-over pause
+function advanceRound(room) {
+  room.round++;
+  // ── Game over: all rounds played (solo games run the full set too) ──
+  if (room.round > room.totalRounds || room.players.length < 1) {
+    finishGame(room);
+    return;
+  }
+  // The system picks a fresh random word for the next round
+  startSystemRound(room);
+}
+
+// Wait the standard pause, then start the next round. If everyone is offline
+// at that moment, hold the room in round_over until someone rejoins.
+function scheduleAdvance(room) {
+  if (room.advanceScheduled) return;
+  room.advanceScheduled = true;
   setTimeout(() => {
-    if (room.players.length === 0) return;
-    room.round++;
-    // ── Game over: all rounds played (solo games run the full set too) ──
-    if (room.round > room.totalRounds || room.players.length < 1) {
-      finishGame(room);
-      return;
-    }
-    // The system picks a fresh random word for the next round
-    startSystemRound(room);
+    room.advanceScheduled = false;
+    if (!rooms.has(room.id) || room.state !== 'round_over') return;
+    if (connectedPlayers(room).length === 0) return; // nobody online — wait for a rejoin
+    advanceRound(room);
   }, ROUND_OVER_TO_NEXT_MS);
 }
 
@@ -599,13 +640,13 @@ function endRound(room) {
 io.on('connection', socket => {
   console.log(`[connect] ${socket.id}`);
 
-  socket.on('create_room', ({ name, avatar, totalRounds }, cb) => {
-    const room = createRoom(socket.id, name || 'Host', avatar || '', totalRounds);
+  socket.on('create_room', ({ name, avatar, totalRounds, playerKey }, cb) => {
+    const room = createRoom(socket.id, name || 'Host', avatar || '', totalRounds, playerKey);
     socket.join(room.id);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
   });
 
-  socket.on('join_room', ({ roomId, name, avatar, spectator }, cb) => {
+  socket.on('join_room', ({ roomId, name, avatar, spectator, playerKey }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
     if (room.players.find(p => p.id === socket.id)) return cb && cb({ ok: false, error: 'Already joined' });
@@ -616,10 +657,36 @@ io.on('connection', socket => {
       cb && cb({ ok: true, room: sanitizeRoom(room) });
       return;
     }
-    if (room.state !== 'waiting') return cb && cb({ ok: false, error: 'Game in progress' });
-    room.players.push({ id: socket.id, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0 });
+    // Rejoin: same browser key → restore the player record with their
+    // points, hints and round state (page reload / accidental leave).
+    if (playerKey) {
+      const existing = room.players.find(p => p.playerKey === playerKey);
+      if (existing) {
+        existing.id = socket.id;               // re-associate the new socket
+        if (name) existing.name = name;
+        if (avatar !== undefined) existing.avatar = avatar;
+        socket.join(roomId);
+        cancelRoomCleanup(room);
+        // A dropped host reclaims host (solo/studio flow survives reloads)
+        if (room.pendingHostKey === playerKey) { room.host = socket.id; room.pendingHostKey = null; }
+        // A stuck round-over room (nobody was online) resumes now
+        if (room.state === 'round_over') scheduleAdvance(room);
+        // Re-send the pick popup if this player is the champ mid-pick
+        if (room.state === 'champ_pick' && room.champId === socket.id && room.choices.length) {
+          setTimeout(() => io.to(socket.id).emit('word_choices', { choices: room.choices }), 150);
+        }
+        cb && cb({ ok: true, rejoined: true, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
+        io.to(roomId).emit('room_update', sanitizeRoom(room));
+        io.to(roomId).emit('chat', { system: true, text: `${existing.name} rejoined` });
+        return;
+      }
+    }
+    // New player — allowed at ANY game state (mid-game join)
+    room.players.push({ id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0 });
     socket.join(roomId);
-    cb && cb({ ok: true, room: sanitizeRoom(room) });
+    cancelRoomCleanup(room);
+    if (room.state === 'round_over') scheduleAdvance(room);
+    cb && cb({ ok: true, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
     io.to(roomId).emit('chat', { system: true, text: `${name || 'Player'} joined` });
   });
@@ -708,8 +775,9 @@ io.on('connection', socket => {
     io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
 
-    // Round ends early only when EVERYONE has found the word
-    const allFound = room.players.length > 0 && room.players.every(p => p.foundWord);
+    // Round ends early only when EVERY ONLINE player has found the word
+    const active = connectedPlayers(room);
+    const allFound = active.length > 0 && active.every(p => p.foundWord);
     room.allFound = allFound;
 
     // Only the finder gets the word revealed — others keep guessing
@@ -831,9 +899,16 @@ io.on('connection', socket => {
 
   socket.on('leave_room', ({ roomId }, cb) => { leaveRoom(socket, roomId); cb && cb({ ok: true }); });
   socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: player.name, text }); });
-  socket.on('disconnect', () => { for (const [id, room] of rooms.entries()) { if (room.players.find(p => p.id === socket.id)) leaveRoom(socket, id); } });
+  socket.on('disconnect', () => {
+    // Accidental leave (page close / reload): KEEP the player record + points
+    // so they can rejoin. Only explicit "Leave" removes the player.
+    for (const [id, room] of rooms.entries()) {
+      if (room.players.find(p => p.id === socket.id)) keepPlayerOnDisconnect(socket, id);
+    }
+  });
 });
 
+// Explicit leave (Leave button) — removes the player from the room for good
 function leaveRoom(socket, roomId) {
   const room = rooms.get(roomId);
   if (!room) return;
@@ -844,26 +919,57 @@ function leaveRoom(socket, roomId) {
   // Leave voice chat too (so other players drop the WebRTC connection)
   if (room.voiceUsers.includes(socket.id)) {
     room.voiceUsers = room.voiceUsers.filter(id => id !== socket.id);
-    socket.to(roomId).emit('voice_left', { socketId: socket.id });
+    io.to(roomId).emit('voice_left', { socketId: socket.id });
   }
   if (room.players.length === 0) { clearTimer(room); rooms.delete(roomId); return; }
-  if (room.host === socket.id) room.host = room.players[0].id;
-  // A single remaining player can keep playing (solo/studio mode) — only end
-  // when nobody is left (handled above).
-  if (room.players.length < 1 && room.state !== 'waiting') {
-    finishGame(room);
-    return;
-  }
+  const active = connectedPlayers(room);
+  if (active.length === 0) { scheduleRoomCleanup(room); return; }
+  if (room.host === socket.id) room.host = active[0].id;
   // If the hot-seat guesser leaves, the next player takes their place
   if (room.guesserId === socket.id) {
     const next = nextPlayerAfter(room, socket.id, room.champId);
-    room.guesserId = next ? next.id : room.players[0].id;
+    room.guesserId = next ? next.id : active[0].id;
   }
   // If the champ leaves while still picking their word, hand the turn to the next player
   if (room.champId === socket.id && room.state === 'champ_pick') {
     clearTimer(room);
-    beginChampTurn(room, room.players[0].id);
+    beginChampTurn(room, active[0].id);
   }
+  io.to(roomId).emit('room_update', sanitizeRoom(room));
+  io.to(roomId).emit('chat', { system: true, text: `${p.name} left` });
+}
+
+// Accidental disconnect: keep the player (score/hints/round state) so they can
+// rejoin with the same browser key. Only room/seat bookkeeping changes.
+function keepPlayerOnDisconnect(socket, roomId) {
+  const room = rooms.get(roomId);
+  if (!room) return;
+  const p = playerById(room, socket.id);
+  if (!p) return;
+  socket.leave(roomId);
+  // Leave voice chat too (so other players drop the WebRTC connection)
+  if (room.voiceUsers.includes(socket.id)) {
+    room.voiceUsers = room.voiceUsers.filter(id => id !== socket.id);
+    io.to(roomId).emit('voice_left', { socketId: socket.id });
+  }
+  const active = connectedPlayers(room);
+  // Host dropped → remember who they were so they can reclaim the host seat
+  if (room.host === socket.id) {
+    room.pendingHostKey = p.playerKey;
+    if (active.length > 0) room.host = active[0].id;
+  }
+  // If the hot-seat guesser leaves, the next online player takes their place
+  if (room.guesserId === socket.id && active.length > 0) {
+    const next = nextPlayerAfter(room, socket.id, room.champId);
+    room.guesserId = next ? next.id : active[0].id;
+  }
+  // If the champ leaves while still picking, hand the turn to the next online player
+  if (room.champId === socket.id && room.state === 'champ_pick' && active.length > 0) {
+    clearTimer(room);
+    beginChampTurn(room, active[0].id);
+  }
+  // Nobody online → keep the room alive for a bit so players can rejoin
+  if (active.length === 0) scheduleRoomCleanup(room);
   io.to(roomId).emit('room_update', sanitizeRoom(room));
   io.to(roomId).emit('chat', { system: true, text: `${p.name} left` });
 }
