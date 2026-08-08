@@ -457,13 +457,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── One-line congrats (replaces the typing bar in the half-size layout) ── */}
-      {showLeader && topPlayer && (
-        <div className="congrats-line">
-          <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
-        </div>
-      )}
-
       {/* ── Type the answer ── */}
       {state === 'playing' && !solvedWord && (
         <form className="type-answer" onSubmit={submitTyped}>
@@ -536,6 +529,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
+          <div className="answer-art-side">
+          {showLeader && topPlayer && (
+            <div className="congrats-line">
+              <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
+            </div>
+          )}
+
           {wordLen > 0 && state === 'playing' && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
@@ -563,6 +563,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               )}
             </div>
           )}
+          </div>
         </div>
         </div>
         </div>

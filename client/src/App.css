@@ -2397,3 +2397,12 @@
 .tiktok-half .art-label { font-size: 10px; }
 .tiktok-half .brackets-label { font-size: 9px; }
 .tiktok-half .solved-text { font-size: 12px; }
+
+/* ── Congrats lives inside the shared answer+art box ──────────────────── */
+.tiktok-half .answer-art-box .answer-art-side {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px;
+}
+.tiktok-half .answer-art-box .congrats-line {
+  width: 100%; margin: 0; padding: 8px 10px; font-size: 15px;
+}
