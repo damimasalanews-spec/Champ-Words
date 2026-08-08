@@ -2528,13 +2528,16 @@
 
 /* ── Grid + TOP 5 leaderboard: same height ───────────────────────────── */
 /* Leader column: exactly the grid box height, top aligned with the grid
-   (the timer block sits above the grid, so offset the column by it) */
+   (the timer block sits above the grid, so offset the column by it).
+   --cell/--gap/--pad repeat the play-col values (CSS vars don't flow
+   between siblings) so the calc matches the grid box 1:1. */
 .tiktok-half .leader-col {
-  margin-top: 31px; /* timer-display + timer-bar block above the grid */
+  --cell: 52px; --gap: 10px; --pad: 12px;
+  margin-top: 36px; /* timer-display + timer-bar block above the grid */
   height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2); /* = grid box height */
 }
 /* The champ also sees a "Your word" line above the timer → shift down too */
-.tiktok-half .grid-score-row:has(.champ-word-display) .leader-col { margin-top: 55px; }
+.tiktok-half .grid-score-row:has(.champ-word-display) .leader-col { margin-top: 60px; }
 /* TOP 5 board fills the leader column */
 .tiktok-half .top10-board { height: 100%; }
 /* The 5 rows share the extra height evenly so the board looks filled */
