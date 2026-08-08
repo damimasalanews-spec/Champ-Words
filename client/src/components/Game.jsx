@@ -496,6 +496,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
       )}
 
+      {wordClue && state === 'playing' && (
+        <div className="hint-clue">💡 {wordClue}</div>
+      )}
+
       {wordLen > 0 && state === 'playing' && (
         <div className="brackets-section">
           <div className="brackets-label">ANSWER</div>
@@ -564,10 +568,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </>
             )}
           </div>
-
-          {wordClue && state === 'playing' && (
-            <div className="hint-clue">💡 {wordClue}</div>
-          )}
 
           {isChamp && state === 'playing' && (
             <div className="champ-watching">Waiting for someone to drag the right word...</div>
