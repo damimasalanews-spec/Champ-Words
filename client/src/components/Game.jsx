@@ -546,12 +546,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           )}
 
           <div className="answer-art-side">
-          {showLeader && topPlayer && (
-            <div className="congrats-line">
-              <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
-            </div>
-          )}
-
           {wordLen > 0 && state === 'playing' && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
