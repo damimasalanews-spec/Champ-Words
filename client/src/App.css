@@ -2260,8 +2260,12 @@
 .tiktok-half .bracket-row { gap: 6px; }
 .tiktok-half .bracket-box { width: 44px; height: 44px; border-width: 2px; border-radius: 10px; }
 .tiktok-half .bracket-letter { font-size: 20px; }
-/* Typing bar replaced by the one-line congrats in the half-size layout */
-.tiktok-half .type-answer { display: none; }
+/* Inline chat bar (half-size): type the answer, keyboard opens on click */
+.tiktok-half .type-answer { display: flex; width: 100%; max-width: 100%; margin: 6px 0 0; }
+.tiktok-half .type-answer input { flex: 1; min-width: 0; }
+/* No pop-up chat in the half-size layout — the inline bar replaces it */
+.tiktok-half .chat-toggle { display: none; }
+.tiktok-half .chat-panel { display: none; }
 .tiktok-half .found-now { margin-top: 2px; }
 .tiktok-half .found-chip { font-size: 10px; padding: 2px 8px; }
 .tiktok-half .solved-text { font-size: 11px; }
@@ -2465,3 +2469,18 @@
   color: var(--green);
   text-shadow: 0 0 10px rgba(47,224,164,0.7);
 }
+
+/* ── Inline chat strip: recent guesses above the answer bar ───────────── */
+.inline-chat { display: none; }
+.tiktok-half .inline-chat {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  width: 100%; margin-top: 8px; padding: 6px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px;
+  max-height: 78px; overflow: hidden;
+}
+.tiktok-half .inline-chat-msg {
+  font-size: 11px; color: var(--text-dim);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+.tiktok-half .inline-chat-msg.system { color: var(--text); }

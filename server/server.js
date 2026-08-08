@@ -675,8 +675,12 @@ io.on('connection', socket => {
     } else {
       // Text fallback
       guessWord = String(word || '').toLowerCase().trim();
-      if (!guessWord || guessWord !== room.word)
+      if (!guessWord || guessWord !== room.word) {
+        // Skribbl-style: show the guessed word in chat — never the answer
+        const p = playerById(room, socket.id);
+        io.to(roomId).emit('chat', { system: true, text: `${p ? p.name : 'Player'} guessed: ${String(word || '').trim().toUpperCase()}` });
         return cb && cb({ ok: false, error: 'Not the word - try again!' });
+      }
     }
 
     // Correct guess! Everyone guesses the system's word — score by speed
@@ -695,9 +699,9 @@ io.on('connection', socket => {
       room.roundWinnerId = socket.id;
       room.roundScore = gained;
       room.roundElapsed = elapsed;
-      // Skribbl-style: announce the correct answer in the chat for everyone
-      io.to(roomId).emit('chat', { system: true, text: `${player.name} guessed it! The word was: ${room.word.toUpperCase()}` });
     }
+    // Correct guess — celebrate in chat WITHOUT revealing the answer
+    io.to(roomId).emit('chat', { system: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
 
     // Round ends early only when EVERYONE has found the word
