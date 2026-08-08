@@ -382,19 +382,31 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
       <div className="game-header">
-        {/* Answer box in the bottom round row (half-size layout) */}
-        {state === 'playing' && !solvedWord && (
-          <form className="type-answer footer-answer" onSubmit={submitTyped}>
-            <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
-              placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
-            <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
-          </form>
+        {/* Remaining chat info — right above the answer box (half-size layout) */}
+        {messages.length > 0 && (
+          <div className="inline-chat footer-chat">
+            {messages.slice(-3).map((m, i) => (
+              <div key={i} className={`inline-chat-msg${m.system ? ' system' : ''}${m.green ? ' success' : ''}`}>
+                {m.system ? m.text : `${m.name}: ${m.text}`}
+              </div>
+            ))}
+          </div>
         )}
-        <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
-            {chatOpen ? 'Close Chat' : 'Chat'}
-          </button>
+        <div className="game-header-row">
+          {/* Answer box in the bottom round row (half-size layout) */}
+          {state === 'playing' && !solvedWord && (
+            <form className="type-answer footer-answer" onSubmit={submitTyped}>
+              <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
+                placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
+              <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
+            </form>
+          )}
+          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
+              {chatOpen ? 'Close Chat' : 'Chat'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -488,26 +500,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {wordClue && state === 'playing' && (
         <div className="hint-clue">💡 {wordClue}</div>
-      )}
-
-      {/* ── Inline chat: dragged/guessed words (bottom of the play column) ── */}
-      {messages.length > 0 && (
-        <div className="inline-chat">
-          {messages.slice(-3).map((m, i) => (
-            <div key={i} className={`inline-chat-msg${m.system ? ' system' : ''}${m.green ? ' success' : ''}`}>
-              {m.system ? m.text : `${m.name}: ${m.text}`}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Type the answer (below the chat) ── */}
-      {state === 'playing' && !solvedWord && (
-        <form className="type-answer" onSubmit={submitTyped}>
-          <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
-            placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
-          <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
-        </form>
       )}
 
         </div>
