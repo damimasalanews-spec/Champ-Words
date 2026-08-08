@@ -558,25 +558,18 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
-          {/* ── Top 1–10 leaderboard (live) — fills the right frame ── */}
-          <div className="top10-board">
-            <div className="top10-title">TOP 10</div>
-            {Array.from({ length: 10 }, (_, i) => {
-              const p = sortedPlayers[i];
-              return (
-                <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
-                  <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
-                  {p ? (
-                    <>
-                      <span className="top10-name">{p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}</span>
-                      <span className="top10-pts">{p.score}</span>
-                    </>
-                  ) : (
-                    <span className="top10-name">—</span>
-                  )}
-                </div>
-              );
-            })}
+          {/* ── Score board (fills the half-size right frame below the clipart) ── */}
+          <div className="score-board score-board-grid score-board-inline score-board-inline-right">
+            <div className="score-board-title">SCORES</div>
+            {sortedPlayers.map((p, i) => (
+              <div key={p.id} className={`score-board-row ${p.id === socket.id ? 'score-board-me' : ''}`}>
+                <span className="score-board-rank">{i + 1}</span>
+                <span className="score-board-name">
+                  {p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}
+                </span>
+                <span className="score-board-pts">{p.score}</span>
+              </div>
+            ))}
           </div>
 
           <div className={`side-status-card ${showLeader ? 'side-status-win' : ''}`}>
