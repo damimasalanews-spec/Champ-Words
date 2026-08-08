@@ -21,7 +21,7 @@ export default function RoundOver({ result, room }) {
   };
 
   return (
-    <div className="overlay">
+    <div className="overlay roundover-overlay">
       <div className="overlay-card">
         <h2>Round {round} Over</h2>
 

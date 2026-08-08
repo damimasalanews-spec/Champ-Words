@@ -528,6 +528,8 @@ function onTimeUp(room) {
     totalRounds: room.totalRounds,
     champId: room.champId
   });
+  // Reveal the answer in chat (the round-over pop-out is hidden in the half layout)
+  io.to(room.id).emit('chat', { system: true, text: `The word was: ${room.word.toUpperCase()}` });
   setTimeout(() => endRound(room), TIME_UP_TO_ROUND_OVER_MS);
 }
 
@@ -567,6 +569,8 @@ function endRound(room) {
   const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
   scores.sort((a, b) => b.score - a.score);
   const champ = champOf(room);
+  // Reveal the answer in chat (the round-over pop-out is hidden in the half layout)
+  io.to(room.id).emit('chat', { system: true, text: `The word was: ${room.word.toUpperCase()}` });
   io.to(room.id).emit('round_over', {
     room: sanitizeRoom(room),
     word: room.word,
