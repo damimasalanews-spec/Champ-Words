@@ -2504,3 +2504,16 @@
 .tiktok-half .round-info { margin-left: auto; }
 /* Voice tab sits in the bottom-left corner, same row as the round bar */
 .tiktok-half .voice-chat { bottom: 12px; left: 12px; }
+/* ── Chat info sits right above the answer box in the bottom bar ──────── */
+.tiktok-half .game-header { flex-direction: column; align-items: stretch; gap: 6px; padding-left: 0; }
+.tiktok-half .game-header-row {
+  display: flex; align-items: center; gap: 10px;
+  padding-left: 96px; /* leave the corner for the voice tab */
+}
+.tiktok-half .footer-chat {
+  border: none; background: none; padding: 0 4px;
+  max-height: none; margin-top: 0;
+}
+/* Bigger fonts in the chat info box */
+.tiktok-half .inline-chat-msg { font-size: 13px; }
+.tiktok-half .inline-chat-msg.system { font-size: 13px; }
