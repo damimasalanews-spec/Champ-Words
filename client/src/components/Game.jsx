@@ -381,8 +381,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
-      {/* Correct-answer pop-out: focused scoreboard in one border, upper game area */}
-      {solvedBy && state === 'playing' && (() => {
+      {/* Round-end pop-out: focused scoreboard in one border, top area */}
+      {solvedBy && state === 'round_over' && (() => {
         const w = room.players.find(p => p.id === solvedBy);
         if (!w) return null;
         const rank = sortedPlayers.findIndex(p => p.id === solvedBy) + 1;
