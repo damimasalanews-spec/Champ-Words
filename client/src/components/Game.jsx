@@ -82,7 +82,7 @@ function Confetti({ word, onDone, msg }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [] }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -459,6 +459,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {falling && solvedWord && (
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
           )}
+        </div>
+      )}
+
+      {/* ── Inline chat (half-size): recent guesses, no pop-up ── */}
+      {messages.length > 0 && (
+        <div className="inline-chat">
+          {messages.slice(-3).map((m, i) => (
+            <div key={i} className={`inline-chat-msg${m.system ? ' system' : ''}`}>
+              {m.system ? m.text : `${m.name}: ${m.text}`}
+            </div>
+          ))}
         </div>
       )}
 
