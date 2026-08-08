@@ -400,6 +400,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       <div className="game-layout">
         {/* ── Left: play field ── */}
         <div className="game-col-left">
+        <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
           )}
@@ -528,6 +529,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
+        </div>
         </div>
 
         {/* ── Right: notifications ── */}
