@@ -2406,3 +2406,18 @@
 .tiktok-half .answer-art-box .congrats-line {
   width: 100%; margin: 0; padding: 8px 10px; font-size: 15px;
 }
+
+/* ── One unified frame around all the game sections (half-size) ───────── */
+.tiktok-half .game-frame {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(170deg, rgba(24,37,72,0.55), rgba(13,21,44,0.85));
+  padding: 14px;
+}
+/* Remove the old container offsets; content centers inside the frame */
+.tiktok-half .grid-score-row { padding-left: 0; }
+.tiktok-half .answer-art-box { margin-left: 0; width: 100%; }
+/* Inner sections become borderless so the frame reads as ONE border */
+.tiktok-half .top10-board { border: none; background: rgba(255,255,255,0.04); }
+.tiktok-half .answer-art-box { border: none; background: rgba(255,255,255,0.04); }
