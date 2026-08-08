@@ -2519,5 +2519,3 @@
 .tiktok-half .inline-chat-msg.system { font-size: 13px; }
 /* ── Round-over / game-over pop-out sits at the TOP of the game area ──── */
 .tiktok-half .overlay { align-items: flex-start; padding-top: 76px; }
-/* ── Round-over pop-out (name + score card) hidden in the half layout ── */
-.tiktok-half .roundover-overlay { display: none; }
