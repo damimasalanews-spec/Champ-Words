@@ -2206,7 +2206,7 @@
 .play-col { flex: 1; min-width: 0; }
 .tiktok-half .play-col {
   /* width = 4 cells + 3 gaps + 2 paddings — exactly the grid's width */
-  --cell: 52px; --gap: 6px; --pad: 10px;
+  --cell: 52px; --gap: 10px; --pad: 12px;
   width: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2);
   flex: none;
   display: flex; flex-direction: column; align-items: center;
@@ -2252,18 +2252,39 @@
 .tiktok-half .score-board-inline .score-board-me { margin: 0 0 7px; }
 .tiktok-half .drag-word-display { font-size: 14px; letter-spacing: 2px; }
 
-/* Brackets + input + chips — aligned to the grid width below */
-.tiktok-half .brackets-section { margin-top: 4px; }
-.tiktok-half .brackets-label { font-size: 8px; letter-spacing: 2px; margin-bottom: 2px; }
-.tiktok-half .bracket-row { gap: 5px; }
-.tiktok-half .bracket-box { width: 26px; height: 26px; border-width: 1.5px; border-radius: 6px; }
-.tiktok-half .bracket-letter { font-size: 14px; }
-.tiktok-half .type-answer { width: 100%; max-width: 100%; margin: 4px 0 0; }
-.tiktok-half .type-answer input { padding: 8px 10px; font-size: 14px; }
-.tiktok-half .type-answer .btn { padding: 8px 14px; font-size: 12px; }
+/* Brackets (big) + chips — aligned to the grid width below */
+.tiktok-half .brackets-section { margin-top: 6px; }
+.tiktok-half .brackets-label { font-size: 9px; letter-spacing: 2px; margin-bottom: 4px; }
+.tiktok-half .bracket-row { gap: 6px; }
+.tiktok-half .bracket-box { width: 44px; height: 44px; border-width: 2px; border-radius: 10px; }
+.tiktok-half .bracket-letter { font-size: 20px; }
+/* Typing bar replaced by the one-line congrats in the half-size layout */
+.tiktok-half .type-answer { display: none; }
 .tiktok-half .found-now { margin-top: 2px; }
 .tiktok-half .found-chip { font-size: 10px; padding: 2px 8px; }
 .tiktok-half .solved-text { font-size: 11px; }
+
+/* One-line congrats with waving hands (half-size layout) */
+.congrats-line { display: none; }
+.tiktok-half .congrats-line {
+  display: block; width: 100%;
+  text-align: center;
+  font-size: 15px; font-weight: 800; letter-spacing: 1px;
+  color: var(--gold);
+  background: linear-gradient(170deg, rgba(255,197,61,0.14), rgba(255,197,61,0.05));
+  border: 1px solid rgba(255,197,61,0.45);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin: 6px 0 0;
+  text-shadow: 0 0 14px rgba(255,197,61,0.35);
+}
+.tiktok-half .congrats-line .wave-hand {
+  font-size: 18px; display: inline-block;
+  animation: wave 1.4s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+/* Avoid duplicating the congrats text inside the status card */
+.tiktok-half .side-status-card .congrats { display: none; }
 
 /* Round + chat moved to the bottom as a footer bar */
 .tiktok-half .game-header {

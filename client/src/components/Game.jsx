@@ -400,6 +400,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       <div className="game-layout">
         {/* ── Left: play field ── */}
         <div className="game-col-left">
+        <div className="grid-score-row">
         <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
@@ -415,8 +416,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </>
       )}
 
-      {/* ── 4×4 Grid + inline score board (side by side) ── */}
-      <div className="grid-score-row">
+      {/* ── 4×4 Grid (play column) ── */}
       {state === 'playing' && grid.length > 0 && (
         <div className="grid-drag-wrapper" ref={gridRef}>
           <div className="grid-4x4">
@@ -457,20 +457,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Score board — always visible, right next to the grid ── */}
-      <div className="score-board score-board-grid score-board-inline">
-        <div className="score-board-title">SCORES</div>
-        {sortedPlayers.map((p, i) => (
-          <div key={p.id} className={`score-board-row ${p.id === socket.id ? 'score-board-me' : ''}`}>
-            <span className="score-board-rank">{i + 1}</span>
-            <span className="score-board-name">
-              {p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}
-            </span>
-            <span className="score-board-pts">{p.score}</span>
-          </div>
-        ))}
-      </div>
-      </div>
+      {/* ── One-line congrats (replaces the typing bar in the half-size layout) ── */}
+      {showLeader && topPlayer && (
+        <div className="congrats-line">
+          <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
+        </div>
+      )}
 
       {/* ── Type the answer ── */}
       {state === 'playing' && !solvedWord && (
@@ -529,6 +521,21 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
+        </div>
+
+        {/* ── Score board — always visible, right next to the grid ── */}
+        <div className="score-board score-board-grid score-board-inline">
+          <div className="score-board-title">SCORES</div>
+          {sortedPlayers.map((p, i) => (
+            <div key={p.id} className={`score-board-row ${p.id === socket.id ? 'score-board-me' : ''}`}>
+              <span className="score-board-rank">{i + 1}</span>
+              <span className="score-board-name">
+                {p.id === room.champId && <span className="champ-crown">👑</span>} {p.name}
+              </span>
+              <span className="score-board-pts">{p.score}</span>
+            </div>
+          ))}
+        </div>
         </div>
         </div>
 
