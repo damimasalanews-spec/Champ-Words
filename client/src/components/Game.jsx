@@ -462,26 +462,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Inline chat (half-size): recent guesses, no pop-up ── */}
-      {messages.length > 0 && (
-        <div className="inline-chat">
-          {messages.slice(-3).map((m, i) => (
-            <div key={i} className={`inline-chat-msg${m.system ? ' system' : ''}`}>
-              {m.system ? m.text : `${m.name}: ${m.text}`}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── Type the answer ── */}
-      {state === 'playing' && !solvedWord && (
-        <form className="type-answer" onSubmit={submitTyped}>
-          <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
-            placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
-          <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
-        </form>
-      )}
-
       {/* ── Who found the word (round keeps going until everyone gets it) ── */}
       {foundList.length > 0 && state === 'playing' && (
         <div className="found-now">
@@ -500,6 +480,26 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {wordClue && state === 'playing' && (
         <div className="hint-clue">💡 {wordClue}</div>
+      )}
+
+      {/* ── Inline chat: dragged/guessed words (bottom of the play column) ── */}
+      {messages.length > 0 && (
+        <div className="inline-chat">
+          {messages.slice(-3).map((m, i) => (
+            <div key={i} className={`inline-chat-msg${m.system ? ' system' : ''}${m.green ? ' success' : ''}`}>
+              {m.system ? m.text : `${m.name}: ${m.text}`}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Type the answer (below the chat) ── */}
+      {state === 'playing' && !solvedWord && (
+        <form className="type-answer" onSubmit={submitTyped}>
+          <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
+            placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
+          <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
+        </form>
       )}
 
         </div>
