@@ -248,11 +248,11 @@ export default function App() {
           </div>
           {socket.id === room.host ? (
             <>
-              <button className="btn btn-primary" style={{ maxWidth: 280, marginTop: 24 }} onClick={handleStartGame} disabled={room.players.length < 2}>
+              <button className="btn btn-primary" style={{ maxWidth: 280, marginTop: 24 }} onClick={handleStartGame}>
                 Start Game
               </button>
               {room.players.length < 2 && (
-                <p style={{ color: 'var(--text-dim)', marginTop: 8, fontSize: 11 }}>Need at least 2 players to start</p>
+                <p style={{ color: 'var(--text-dim)', marginTop: 8, fontSize: 11 }}>Solo mode — friends can join before you start</p>
               )}
             </>
           ) : (
