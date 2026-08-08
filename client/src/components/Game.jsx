@@ -523,7 +523,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         </div>
 
-        {/* ── Top 1–5 leaderboard (live) — right next to the grid ── */}
+        {/* ── TOP 5 + artist drawing (half-size right side, stacked) ── */}
+        <div className="leader-col">
         <div className="top10-board">
           <div className="top10-title">TOP 5</div>
           {Array.from({ length: 5 }, (_, i) => {
@@ -542,6 +543,24 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </div>
             );
           })}
+        </div>
+
+        {/* ── Artist drawing — right below the TOP 5 ── */}
+        {state === 'playing' && (
+          <div key={`inline-${room.round}`} className="art-board art-board-inline">
+            {room.art ? (
+              <>
+                <div className="art-canvas">
+                  <span className="art-emoji">{room.art}</span>
+                </div>
+                <div className="art-progress"><div className="art-progress-fill" /></div>
+                <div className="art-label">The artist is drawing…</div>
+              </>
+            ) : (
+              <div className="art-label">✏️ No drawing for this word — watch the letters!</div>
+            )}
+          </div>
+        )}
         </div>
         </div>
         </div>
