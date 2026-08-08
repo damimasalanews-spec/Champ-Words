@@ -48,11 +48,13 @@ export default function RoundOver({ result, room }) {
 
         {finds && finds.length > 0 && (
           <>
-            <p className="gameover-final-title" style={{ marginTop: 14 }}>Who found the word</p>
+            <p className="gameover-final-title" style={{ marginTop: 14 }}>Top 5 fastest</p>
             <div className="score-list" style={{ marginTop: 4 }}>
-              {finds.map((f, i) => (
+              {finds.slice(0, 5).map((f, i) => (
                 <div key={i} className="score-item" style={{ padding: '7px 12px' }}>
-                  <span className="rank">✅</span>
+                  <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
+                    {rankEmoji[i] || `#${i + 1}`}
+                  </span>
                   <div className="player-info">
                     <div className="player-name">{f.name}</div>
                   </div>
@@ -62,22 +64,6 @@ export default function RoundOver({ result, room }) {
             </div>
           </>
         )}
-
-        <div className="score-list" style={{ marginTop: 14 }}>
-          {sorted.map((p, i) => (
-            <div key={p.id} className="score-item">
-              <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
-                {rankEmoji[i] || `#${i + 1}`}
-              </span>
-              <div className="player-info">
-                <div className="player-name">
-                  {p.id === room?.champId && <span className="champ-crown">👑</span>} {p.name}
-                </div>
-              </div>
-              <span className="player-score">{p.score}</span>
-            </div>
-          ))}
-        </div>
 
         <p className="next-champ-note">
           {nextNote}
