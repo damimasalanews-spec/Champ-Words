@@ -523,10 +523,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         </div>
 
-        {/* ── Top 1–10 leaderboard (live) — right next to the grid ── */}
+        {/* ── Top 1–5 leaderboard (live) — right next to the grid ── */}
         <div className="top10-board">
-          <div className="top10-title">TOP 10</div>
-          {Array.from({ length: 10 }, (_, i) => {
+          <div className="top10-title">TOP 5</div>
+          {Array.from({ length: 5 }, (_, i) => {
             const p = sortedPlayers[i];
             return (
               <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
