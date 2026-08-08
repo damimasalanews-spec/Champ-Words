@@ -2517,3 +2517,34 @@
 /* Bigger fonts in the chat info box */
 .tiktok-half .inline-chat-msg { font-size: 13px; }
 .tiktok-half .inline-chat-msg.system { font-size: 13px; }
+/* ── Correct-answer pop-out: focused scoreboard, one border, upper half ── */
+.answer-pop { display: none; }
+.tiktok-half .answer-pop {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
+  z-index: 70;
+  min-width: 300px;
+  border: 2px solid var(--green);
+  border-radius: 16px;
+  background: linear-gradient(170deg, rgba(22,38,74,0.97), rgba(11,19,40,0.97));
+  padding: 14px 20px 16px;
+  box-shadow: 0 0 30px rgba(47,224,164,0.35), 0 12px 34px rgba(0,0,0,0.5);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.5, 0.64, 1);
+  text-align: center;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateX(-50%) scale(0.7); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+.tiktok-half .answer-pop-title { font-size: 15px; font-weight: 800; letter-spacing: 2px; color: var(--green); }
+.tiktok-half .answer-pop-row {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  background: linear-gradient(170deg, rgba(26,40,80,0.9), rgba(14,22,45,0.9));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.tiktok-half .answer-pop-rank { font-size: 20px; font-weight: 800; color: var(--gold); }
+.tiktok-half .answer-pop-name { flex: 1; font-size: 22px; font-weight: 800; color: var(--text); text-align: left; }
+.tiktok-half .answer-pop-pts { font-size: 26px; font-weight: 800; color: var(--green); }
