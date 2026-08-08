@@ -2519,3 +2519,5 @@
 .tiktok-half .inline-chat-msg.system { font-size: 13px; }
 /* ── Round-over / game-over pop-out sits at the TOP of the game area ──── */
 .tiktok-half .overlay { align-items: flex-start; padding-top: 76px; }
+/* Remove the "✓ name +points" found chips (redundant with the chat + TOP 5) */
+.tiktok-half .found-now { display: none; }
