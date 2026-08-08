@@ -2190,16 +2190,15 @@
 .tiktok-half .spot-banner { display: none; }
 .tiktok-half .champ-word-display { font-size: 11px; padding: 3px 8px; margin: 2px 0 3px; }
 .tiktok-half .champ-word-display b { font-size: 13px; }
-.tiktok-half .game-layout { flex-wrap: wrap; gap: 10px; padding-top: 2px; }
-/* Art board (clipart) + congrats card come back: shown in a row below the grid */
+.tiktok-half .game-layout { flex-wrap: nowrap; gap: 10px; padding-top: 2px; }
+/* Right frame: clipart on the top corner, TOP 10 list below filling the frame */
 .tiktok-half .game-col-right {
-  order: 3; width: 100%;
-  display: flex; flex-direction: row; justify-content: center; align-items: stretch;
-  gap: 14px;
+  order: 0; width: 195px; flex: none;
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 10px;
 }
-.tiktok-half .art-board { width: 190px; padding: 10px; }
-.tiktok-half .side-status-card { width: 190px; padding: 10px; }
-.tiktok-half .champ-watching { width: 100%; text-align: center; }
+.tiktok-half .art-board { width: 100%; padding: 10px; }
+.tiktok-half .side-status-card, .tiktok-half .champ-watching { display: none; }
 .tiktok-half .hint-clue { font-size: 10px; padding: 4px 8px; margin-top: 3px; }
 
 /* Play column: timer, grid, brackets and input all align to the grid width */
@@ -2230,7 +2229,9 @@
 .tiktok-half .timer-bar { width: 100%; max-width: 100%; height: 4px; margin: 0 0 4px; }
 
 /* Grid (bigger tiles) + score board (original tile design) */
-.tiktok-half .grid-score-row { gap: 12px; }
+.tiktok-half .grid-score-row { gap: 12px; padding-left: 26px; }
+/* The TOP 10 list on the right frame replaces the small SCORES board */
+.tiktok-half .score-board-inline { display: none; }
 .tiktok-half .grid-4x4 { padding: var(--pad); gap: var(--gap); margin: 0 auto; }
 .tiktok-half .grid-row { gap: var(--gap); }
 .tiktok-half .grid-4x4 .grid-cell { width: var(--cell); height: var(--cell); font-size: 22px; border-radius: 11px; }
@@ -2325,3 +2326,35 @@
   border-radius: 12px; padding: 8px 12px;
 }
 .tiktok-half .auto-status { font-size: 10px; padding: 5px 10px; max-width: 320px; }
+
+/* ── TOP 1–10 leaderboard (half-size right frame) ─────────────────────── */
+.top10-board { display: none; }
+.tiktok-half .top10-board {
+  display: flex; flex-direction: column;
+  flex: 1;
+  justify-content: space-evenly;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 10px 6px;
+}
+.tiktok-half .top10-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 3px;
+  color: var(--text-dim); text-align: center;
+  padding-bottom: 4px; margin-bottom: 2px;
+  border-bottom: 1px solid var(--border);
+}
+.tiktok-half .top10-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 9px;
+  background: linear-gradient(170deg, rgba(26,40,80,0.85), rgba(14,22,45,0.9));
+  border: 1px solid var(--border);
+}
+.tiktok-half .top10-row.top10-me { border-color: var(--green); box-shadow: 0 0 8px rgba(47,224,164,0.25); }
+.tiktok-half .top10-row.top10-empty { opacity: 0.3; }
+.tiktok-half .top10-rank { font-size: 13px; font-weight: 800; min-width: 18px; color: var(--text-dim); }
+.tiktok-half .top10-rank.rank-1 { color: var(--gold); }
+.tiktok-half .top10-rank.rank-2 { color: #c0c0c0; }
+.tiktok-half .top10-rank.rank-3 { color: #cd7f32; }
+.tiktok-half .top10-name { flex: 1; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tiktok-half .top10-pts { font-size: 13px; font-weight: 800; color: var(--green); min-width: 24px; text-align: right; }
