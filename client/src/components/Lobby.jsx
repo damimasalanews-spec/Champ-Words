@@ -3,14 +3,29 @@ import Logo from './Logo';
 import { playSound } from '../sounds';
 
 export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
-  // The host opens the game with ?host=1 on the URL — only the host can
-  // create a room. Everyone else gets the one-tap "JOIN THE ROOM" page.
-  const isOwner = new URLSearchParams(window.location.search).has('host');
   // step: 'intro' (Get Started landing) → 'form' (create or join)
   const [step, setStep] = useState('intro');
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [rounds, setRounds] = useState(30);
   const nameRef = useRef(null);
+  // Host mode (?host=1): shows the CREATE ROOM form. Players (default) get
+  // the one-tap "JOIN THE ROOM" page, with a clear link to become the host.
+  const [isOwner, setIsOwner] = useState(() => new URLSearchParams(window.location.search).has('host'));
+
+  const enterHostMode = () => {
+    playSound('click');
+    const url = new URL(window.location.href);
+    url.searchParams.set('host', '1');
+    window.history.replaceState({}, '', url);
+    setIsOwner(true);
+  };
+  const exitHostMode = () => {
+    playSound('click');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('host');
+    window.history.replaceState({}, '', url);
+    setIsOwner(false);
+  };
 
   useEffect(() => { nameRef.current?.focus(); }, [step]);
   useEffect(() => { localStorage.setItem('champWordsName', name); }, [name]);
@@ -48,7 +63,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
           onClick={() => { playSound('click'); setStep('form'); }}>
           Get Started
         </button>
-        <p className="intro-foot">Create a new room or join your friends with a code</p>
+        <p className="intro-foot">Host a game or join your friends — one tap either way</p>
       </div>
     );
   }
@@ -87,6 +102,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
             </div>
             <button type="submit" className="btn btn-primary">Create Room</button>
           </form>
+          <button className="btn-link" onClick={exitHostMode}>← I'm a player, join instead</button>
         </>
       ) : (
         <>
@@ -102,6 +118,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
             </div>
             <button type="submit" className="btn btn-primary">Join the Room</button>
           </form>
+          <button className="btn-link" onClick={enterHostMode}>🎮 Host a game? Create a room here</button>
         </>
       )}
     </div>

@@ -2684,6 +2684,13 @@
   color: #04251a;
   box-shadow: 0 4px 14px rgba(47,224,164,0.35);
 }
+/* Ghost link for switching host/player mode */
+.btn-link {
+  background: transparent; border: none; color: var(--text-dim);
+  font-size: 12px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px;
+  cursor: pointer; padding: 6px 10px;
+}
+.btn-link:hover { color: var(--accent); }
 
 /* TikTok half-screen overrides */
 .tiktok-half .lobby-intro { min-height: 900px; padding: 8px 0; gap: 8px; }
