@@ -188,7 +188,7 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
   const id = makeRoomId();
   const room = {
     id, host: hostId,
-    players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS }],
+    players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0 }],
     state: 'waiting', round: 0, totalRounds: totalRounds || 5,
     champId: null,
     word: null,            // mystery word — NEVER sent to clients
@@ -240,7 +240,7 @@ function sanitizeRoom(room) {
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? getWordArt(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, connected: io.sockets.sockets.has(p.id) }))
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -688,7 +688,7 @@ io.on('connection', socket => {
       }
     }
     // New player — allowed at ANY game state (mid-game join)
-    room.players.push({ id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0 });
+    room.players.push({ id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0 });
     socket.join(roomId);
     cancelRoomCleanup(room);
     if (room.state === 'round_over') scheduleAdvance(room);
@@ -772,6 +772,7 @@ io.on('connection', socket => {
     player.foundWord = true;
     player.roundFoundAt = elapsed;
     player.roundScore = gained;
+    player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed); // fastest correct answer
     if (!room.roundWinnerId) { // the fastest finder
       room.roundWinnerId = socket.id;
       room.roundScore = gained;
@@ -856,7 +857,7 @@ io.on('connection', socket => {
       room.category = null; room.choices = [];
       room.hintWindow = null; room.offeredClues = [];
       room.guesserId = null; room.failStreak = 0;
-      room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; });
+      room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; p.bestTime = 0; });
       io.to(roomId).emit('room_update', sanitizeRoom(room));
     }
     cb && cb({ ok: true });

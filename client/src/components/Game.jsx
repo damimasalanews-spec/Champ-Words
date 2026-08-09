@@ -328,7 +328,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
-  const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
+  // TOP 5: only players who have made a correct answer, fastest solver first
+  const sortedPlayers = room.players
+    .filter(p => (p.bestTime || 0) > 0)
+    .sort((a, b) => (a.bestTime || 0) - (b.bestTime || 0) || b.score - a.score);
   const totalRounds = room.totalRounds || 5;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
