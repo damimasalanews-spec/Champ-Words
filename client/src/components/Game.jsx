@@ -458,9 +458,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 {row.map((ch, c) => {
                   const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
                   const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
-                  const spectSel = spectPath.some(([pr, pc]) => pr === r && pc === c);
                   return (
-                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''} ${spectSel && !sel ? 'spect-cell' : ''}`}
+                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}`}
                       data-row={r} data-col={c}
                       onMouseDown={(e) => startDrag(r, c, e)}
                       onTouchStart={(e) => startDrag(r, c, e)}>
@@ -478,15 +477,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
-          {/* Live activity: other players' drags shown to everyone */}
-          {state === 'playing' && spectPath.length > 0 && (
-            <div className="spect-drag-live">
-              ✏️ {spectName} is drawing: <b>{spectWord.toUpperCase()}</b>
-            </div>
-          )}
           {falling && solvedWord && (
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
           )}
+        </div>
+      )}
+
+      {/* ── CONGRATS — replaces the old "is drawing" chip (no answer letters) ── */}
+      {showLeader && topPlayer && state === 'playing' && (
+        <div className="congrats-line">
+          <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
         </div>
       )}
 
@@ -499,11 +499,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </span>
           ))}
         </div>
-      )}
-
-      {/* ── Live activity: what a player just drew ── */}
-      {spectDrawn && state === 'playing' && (
-        <div className="spect-drawn-chip">✏️ {spectDrawn.name} drew: <b>{spectDrawn.word.toUpperCase()}</b></div>
       )}
 
       {wordClue && state === 'playing' && (
@@ -559,12 +554,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           )}
 
           <div className="answer-art-side">
-          {showLeader && topPlayer && (
-            <div className="congrats-line">
-              <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
-            </div>
-          )}
-
           {wordLen > 0 && (state === 'playing' || state === 'round_over') && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
