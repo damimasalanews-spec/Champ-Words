@@ -328,10 +328,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
-  // TOP 5: only players who have made a correct answer, fastest solver first
+  // TOP 5: players who made a correct answer THIS round, fastest solver
+  // first — each shows their current round score (resets every round)
   const sortedPlayers = room.players
-    .filter(p => (p.bestTime || 0) > 0)
-    .sort((a, b) => (a.bestTime || 0) - (b.bestTime || 0) || b.score - a.score);
+    .filter(p => p.foundWord && (p.roundScore || 0) > 0)
+    .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0));
   const totalRounds = room.totalRounds || 5;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
@@ -438,7 +439,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
           )}
 
-      {state === 'playing' && (
+      {(state === 'playing' || state === 'round_over') && (
         <>
           <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
           <div className="timer-bar">
@@ -448,8 +449,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </>
       )}
 
-      {/* ── 4×4 Grid (play column) ── */}
-      {state === 'playing' && grid.length > 0 && (
+      {/* ── 4×4 Grid (play column) — stays visible the 6s after the round ends ── */}
+      {(state === 'playing' || state === 'round_over') && grid.length > 0 && (
         <div className="grid-drag-wrapper" ref={gridRef}>
           <div className="grid-4x4">
             {grid.map((row, r) => (
@@ -526,7 +527,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
                       {p.id === solvedBy ? '✓ ' : ''}{p.name.split(' ')[0]}
                     </span>
-                    <span className="top10-pts">{p.score}</span>
+                    <span className="top10-pts">{p.roundScore}</span>
                   </>
                 ) : (
                   <span className="top10-name">—</span>
@@ -540,7 +541,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         {/* ── Answer brackets + artist drawing in one bordered box ── */}
         <div className="answer-art-box">
-          {state === 'playing' && (
+          {(state === 'playing' || state === 'round_over') && (
             <div key={`inline-${room.round}`} className="art-board art-board-inline">
               {room.art ? (
                 <>
@@ -564,7 +565,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </div>
           )}
 
-          {wordLen > 0 && state === 'playing' && (
+          {wordLen > 0 && (state === 'playing' || state === 'round_over') && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
               <div className="bracket-row">

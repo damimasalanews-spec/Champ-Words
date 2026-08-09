@@ -1,15 +1,35 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { playSound } from '../sounds';
 
 export default function RoundOver({ result, room }) {
   useEffect(() => { playSound('roundover'); }, []);
-  const { word, winner, round, champName, scores, finds, stumpPoints } = result;
+  const { word, winner, round, champName, scores, stumpPoints } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
   const pickerName = champName || 'the picker';
   const nextNote = winner
     ? `${winner.name} was the fastest! A new word comes in a moment…`
     : `No one found it — a new word comes in a moment…`;
+
+  // ── Top 5 by TOTAL points, revealed with a typewriter animation ──
+  const topRows = useMemo(
+    () => sorted.slice(0, 5).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length })),
+    [result]
+  );
+  const [typed, setTyped] = useState({ row: 0, chars: 0 });
+  useEffect(() => {
+    if (!topRows.length) return;
+    const iv = setInterval(() => {
+      setTyped(prev => {
+        const t = topRows[prev.row];
+        if (!t) return prev;
+        if (prev.chars < t.nameLen) return { ...prev, chars: prev.chars + 1 };
+        if (prev.row < topRows.length - 1) return { row: prev.row + 1, chars: 0 };
+        return prev;
+      });
+    }, 55);
+    return () => clearInterval(iv);
+  }, [topRows]);
 
   const shareText = () => {
     let text = `🔤 Champ Words — Round ${round}\n\n`;
@@ -46,21 +66,30 @@ export default function RoundOver({ result, room }) {
           </>
         )}
 
-        {finds && finds.length > 0 && (
+        {topRows.length > 0 && (
           <>
-            <p className="gameover-final-title" style={{ marginTop: 14 }}>Top 5 fastest</p>
+            <p className="gameover-final-title" style={{ marginTop: 14 }}>Top 5 — total points</p>
             <div className="score-list" style={{ marginTop: 4 }}>
-              {finds.slice(0, 5).map((f, i) => (
-                <div key={i} className="score-item" style={{ padding: '7px 12px' }}>
-                  <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
-                    {rankEmoji[i] || `#${i + 1}`}
-                  </span>
-                  <div className="player-info">
-                    <div className="player-name">{f.name}</div>
+              {topRows.map((r, i) => {
+                const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;
+                const typing = i === typed.row && typedLen < r.nameLen;
+                return (
+                  <div key={r.id || i} className="score-item" style={{ padding: '7px 12px' }}>
+                    <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
+                      {rankEmoji[i] || `#${i + 1}`}
+                    </span>
+                    <div className="player-info">
+                      <div className="player-name">
+                        {r.name.slice(0, typedLen)}
+                        {typing && <span className="typewriter-caret" />}
+                      </div>
+                    </div>
+                    <span className="player-score" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
+                      {r.score} pts
+                    </span>
                   </div>
-                  <span className="player-score">+{f.score}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}

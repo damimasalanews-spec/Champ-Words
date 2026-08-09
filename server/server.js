@@ -174,9 +174,9 @@ function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCas
 const rooms = new Map();
 
 const ROUND_TIME_MS = Number(process.env.ROUND_TIME_MS) || 60 * 1000; // 1 minute to guess each word
-const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 2200; // falling-word reveal window
+const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 6000; // grid stays visible 6s after everyone finds the word
 const ROUND_OVER_TO_NEXT_MS = Number(process.env.ROUND_OVER_TO_NEXT_MS) || 6000; // 6s scoreboard pause before the next round
-const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 1200; // reveal pause on time-up
+const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 6000; // grid stays visible 6s after time-up
 const HINT1_MS = Number(process.env.HINT1_MS) || 20 * 1000; // category hint window at 40s remaining
 const HINT2_MS = Number(process.env.HINT2_MS) || 40 * 1000; // word clue window at 20s remaining
 const HINT_WINDOW_MS = Number(process.env.HINT_WINDOW_MS) || 5 * 1000; // champ has 5s to send each hint
@@ -240,7 +240,7 @@ function sanitizeRoom(room) {
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? getWordArt(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, connected: io.sockets.sockets.has(p.id) }))
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -806,7 +806,7 @@ io.on('connection', socket => {
 
     if (allFound) {
       clearTimer(room);
-      setTimeout(() => endRound(room), 1800);
+      setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
     }
   });
 

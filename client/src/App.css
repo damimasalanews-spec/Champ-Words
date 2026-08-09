@@ -2605,3 +2605,11 @@
 /* Round section indicator ("Section 2/3") in the footer */
 .round-info .round-section { font-style: normal; color: var(--accent); font-weight: 700; }
 .round-selector-hint-inline { font-size: 10px; color: var(--text-dim); margin-left: 6px; }
+
+/* ── Typewriter effect for the round-over Top 5 list ──────────────────── */
+.typewriter-caret {
+  display: inline-block; width: 8px; height: 15px; margin-left: 2px;
+  background: var(--accent); vertical-align: -2px;
+  animation: caretBlink 0.8s steps(1) infinite;
+}
+@keyframes caretBlink { 50% { opacity: 0; } }
