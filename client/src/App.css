@@ -2617,17 +2617,37 @@
 /* ── Top 5 overall players in ONE row (replaces the congrats banner) ──── */
 .top5-row { display: none; }
 .tiktok-half .top5-row {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 2px 8px;
+  display: flex; align-items: center;
   width: 100%;
   margin-top: 8px;
-  padding: 6px 10px;
+  padding: 7px 10px;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 12px;
   background: rgba(255,255,255,0.05);
+  overflow: hidden;
 }
-.tiktok-half .top5-item { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #cfe0ff; }
-.tiktok-half .top5-sep { color: var(--text-dim); }
+/* Names styled like the solved answer-bracket letters (green, 800 weight) */
+.tiktok-half .top5-track {
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap;
+  min-width: 100%;
+  justify-content: center;
+}
+.tiktok-half .top5-item { display: inline-flex; align-items: center; gap: 8px; }
+.tiktok-half .top5-name {
+  font-size: 15px; font-weight: 800; color: var(--green);
+  text-shadow: 0 0 10px rgba(0, 230, 118, 0.35);
+}
+.tiktok-half .top5-sep { color: var(--text-dim); font-size: 13px; font-weight: 700; }
+/* Left→right timeline when the names overflow the row */
+.tiktok-half .top5-row.top5-scroll .top5-track {
+  justify-content: flex-start;
+  animation: top5marquee 16s linear infinite;
+}
+@keyframes top5marquee {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
 
 /* ── Round-over popup: Top 5 total points prominent + compact (TikTok) ── */
 .tiktok-half .roundover-overlay .overlay-card { max-height: 76%; }

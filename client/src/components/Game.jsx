@@ -334,11 +334,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     .filter(p => p.foundWord && (p.roundScore || 0) > 0)
     .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0));
 
-  // Top 5 OVERALL players by total score — shown as one small row below the grid
+  // Top 5 OVERALL players by total score — shown as one row below the grid.
+  // If the names don't fit, the row becomes a left→right scrolling timeline.
   const top5Row = room.players
     .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
+  const top5Ref = useRef(null);
+  const [top5Scroll, setTop5Scroll] = useState(false);
+  useEffect(() => {
+    const el = top5Ref.current;
+    if (!el) return;
+    const update = () => setTop5Scroll(el.scrollWidth > el.clientWidth + 2);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [top5Row]);
   const totalRounds = room.totalRounds || 5;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
@@ -489,15 +501,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Top 5 overall players in one row (small fonts, no "CONGRATS") ── */}
+      {/* ── Top 5 overall players in one row (bracket-letter style; scrolls if too long) ── */}
       {(state === 'playing' || state === 'round_over') && top5Row.length > 0 && (
-        <div className="top5-row">
-          {top5Row.map((p, i) => (
-            <span key={p.id} className="top5-item">
-              {i > 0 && <span className="top5-sep">·</span>}
-              <span className="top5-name">{p.name}</span>
-            </span>
-          ))}
+        <div className={`top5-row ${top5Scroll ? 'top5-scroll' : ''}`} ref={top5Ref}>
+          <div className="top5-track">
+            {top5Row.map((p, i) => (
+              <span key={p.id} className="top5-item">
+                {i > 0 && <span className="top5-sep">·</span>}
+                <span className="top5-name">{p.name}</span>
+              </span>
+            ))}
+            {top5Scroll && top5Row.map((p, i) => (
+              <span key={`dup-${p.id}`} className="top5-item" aria-hidden="true">
+                {i > 0 && <span className="top5-sep">·</span>}
+                <span className="top5-name">{p.name}</span>
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
