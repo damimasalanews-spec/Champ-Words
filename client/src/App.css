@@ -2614,6 +2614,21 @@
 }
 @keyframes caretBlink { 50% { opacity: 0; } }
 
+/* ── Top 5 overall players in ONE row (replaces the congrats banner) ──── */
+.top5-row { display: none; }
+.tiktok-half .top5-row {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 2px 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+}
+.tiktok-half .top5-item { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #cfe0ff; }
+.tiktok-half .top5-sep { color: var(--text-dim); }
+
 /* ── Round-over popup: Top 5 total points prominent + compact (TikTok) ── */
 .tiktok-half .roundover-overlay .overlay-card { max-height: 76%; }
 .tiktok-half .roundover-overlay h2 { font-size: 17px; }

@@ -333,6 +333,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const sortedPlayers = room.players
     .filter(p => p.foundWord && (p.roundScore || 0) > 0)
     .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0));
+
+  // Top 5 OVERALL players by total score — shown as one small row below the grid
+  const top5Row = room.players
+    .filter(p => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
   const totalRounds = room.totalRounds || 5;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
@@ -483,10 +489,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── CONGRATS — replaces the old "is drawing" chip (no answer letters) ── */}
-      {showLeader && topPlayer && state === 'playing' && (
-        <div className="congrats-line">
-          <span className="wave-hand">🎉</span> CONGRATS {topPlayer.name}! <span className="wave-hand">🎉</span>
+      {/* ── Top 5 overall players in one row (small fonts, no "CONGRATS") ── */}
+      {(state === 'playing' || state === 'round_over') && top5Row.length > 0 && (
+        <div className="top5-row">
+          {top5Row.map((p, i) => (
+            <span key={p.id} className="top5-item">
+              {i > 0 && <span className="top5-sep">·</span>}
+              <span className="top5-name">{p.name}</span>
+            </span>
+          ))}
         </div>
       )}
 
