@@ -217,11 +217,26 @@ export default function App() {
 
   const handleCreateRoom = (name, totalRounds) => {
     cancelAutoRejoin();
-    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey() }, (res) => {
+    const adminToken = localStorage.getItem('cw_admin_token') || '';
+    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey(), adminToken }, (res) => {
       if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
       else showToast(res.error);
     });
   };
+
+  // Admin login — returns { ok } / { ok:false, error }; stores the session token
+  const handleAdminLogin = useCallback((adminId, password) => {
+    return new Promise(resolve => {
+      socket.emit('admin_login', { adminId, password }, (res) => {
+        if (res && res.ok) {
+          localStorage.setItem('cw_admin_token', res.token);
+          resolve({ ok: true });
+        } else {
+          resolve({ ok: false, error: (res && res.error) ? res.error : 'Login failed' });
+        }
+      });
+    });
+  }, [socket]);
 
   const handleJoinRoom = (roomId, name) => {
     cancelAutoRejoin();
@@ -342,7 +357,7 @@ export default function App() {
             </div>
           )}
           {autoStatus && <div className="auto-status">{autoStatus}</div>}
-          <Lobby onCreateRoom={handleCreateRoom} onJoinActive={handleJoinActiveRoom} userName={user.name} />
+          <Lobby onCreateRoom={handleCreateRoom} onJoinActive={handleJoinActiveRoom} onAdminLogin={handleAdminLogin} userName={user.name} />
         </>
       )}
 

@@ -2691,6 +2691,8 @@
   cursor: pointer; padding: 6px 10px;
 }
 .btn-link:hover { color: var(--accent); }
+/* Inline form error (admin login) */
+.form-error { color: #ff6b6b; font-size: 12px; font-weight: 600; margin: 0; text-align: center; }
 
 /* TikTok half-screen overrides */
 .tiktok-half .lobby-intro { min-height: 900px; padding: 8px 0; gap: 8px; }

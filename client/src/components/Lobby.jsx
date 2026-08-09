@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Logo from './Logo';
 import { playSound } from '../sounds';
 
-export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
+export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userName }) {
   // step: 'intro' (Get Started landing) → 'form' (create or join)
   const [step, setStep] = useState('intro');
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
@@ -11,6 +11,12 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
   // Host mode (?host=1): shows the CREATE ROOM form. Players (default) get
   // the one-tap "JOIN THE ROOM" page, with a clear link to become the host.
   const [isOwner, setIsOwner] = useState(() => new URLSearchParams(window.location.search).has('host'));
+  // Admin login gates the create form
+  const [adminStep, setAdminStep] = useState(null); // null | 'login'
+  const [adminId, setAdminId] = useState('');
+  const [adminPass, setAdminPass] = useState('');
+  const [loginBusy, setLoginBusy] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const enterHostMode = () => {
     playSound('click');
@@ -27,7 +33,23 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
     setIsOwner(false);
   };
 
-  useEffect(() => { nameRef.current?.focus(); }, [step]);
+  const handleHostClick = () => {
+    playSound('click');
+    if (localStorage.getItem('cw_admin_token')) enterHostMode();
+    else { setLoginError(''); setAdminStep('login'); }
+  };
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    if (!adminId.trim() || !adminPass.trim() || loginBusy) return;
+    setLoginBusy(true); setLoginError('');
+    const res = await onAdminLogin(adminId.trim(), adminPass.trim());
+    setLoginBusy(false);
+    if (res.ok) { setAdminStep(null); enterHostMode(); }
+    else setLoginError(res.error || 'Login failed');
+  };
+
+  useEffect(() => { nameRef.current?.focus(); }, [step, adminStep]);
   useEffect(() => { localStorage.setItem('champWordsName', name); }, [name]);
 
   const handleCreate = (e) => {
@@ -104,6 +126,30 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
           </form>
           <button className="btn-link" onClick={exitHostMode}>← I'm a player, join instead</button>
         </>
+      ) : adminStep === 'login' ? (
+        <>
+          <h2 className="form-heading">Admin Login</h2>
+          <p className="form-sub">Only hosts can create a room</p>
+          <form className="lobby-card" onSubmit={handleAdminLogin}>
+            <h2>Host Access</h2>
+            <p className="subtitle">Enter your admin details to create a room</p>
+            <div className="form-group">
+              <label>Admin ID</label>
+              <input ref={nameRef} value={adminId} onChange={e => setAdminId(e.target.value)}
+                placeholder="Admin ID" autoComplete="username" required />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input value={adminPass} onChange={e => setAdminPass(e.target.value)}
+                type="password" placeholder="Password" autoComplete="current-password" required />
+            </div>
+            {loginError && <p className="form-error">{loginError}</p>}
+            <button type="submit" className="btn btn-primary" disabled={loginBusy}>
+              {loginBusy ? 'Checking…' : 'Login & Create Room'}
+            </button>
+          </form>
+          <button className="btn-link" onClick={() => { playSound('click'); setAdminStep(null); }}>← Back</button>
+        </>
       ) : (
         <>
           <h2 className="form-heading">Join the Game</h2>
@@ -118,7 +164,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, userName }) {
             </div>
             <button type="submit" className="btn btn-primary">Join the Room</button>
           </form>
-          <button className="btn-link" onClick={enterHostMode}>🎮 Host a game? Create a room here</button>
+          <button className="btn-link" onClick={handleHostClick}>🎮 Host a game? Log in to create a room</button>
         </>
       )}
     </div>

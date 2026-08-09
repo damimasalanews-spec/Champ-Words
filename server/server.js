@@ -184,6 +184,25 @@ const HINT_PENALTY = 20; // points deducted when the champ misses a hint window
 const MAX_HINTS = 3;
 const ROOM_CLEANUP_MS = Number(process.env.ROOM_CLEANUP_MS) || 120 * 1000; // drop a room ~2 min after everyone leaves (allows rejoin)
 
+// ── Admin (host) credentials — only an admin can create a room ───────────
+// Override on Render via env vars: ADMIN_ID / ADMIN_PASSWORD
+const ADMIN_ID = process.env.ADMIN_ID || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'champ2026';
+const adminTokens = new Map(); // login token -> expiry (ms)
+const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+function isAdmin(socket, token) {
+  if (socket.adminAuthorized) return true;
+  if (token && adminTokens.has(token)) {
+    const exp = adminTokens.get(token);
+    if (exp > Date.now()) {
+      adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS); // sliding expiry
+      return true;
+    }
+    adminTokens.delete(token);
+  }
+  return false;
+}
+
 function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
   const id = makeRoomId();
   const room = {
@@ -676,7 +695,19 @@ io.on('connection', socket => {
     return { rejoined: false, player: p };
   }
 
-  socket.on('create_room', ({ name, avatar, totalRounds, playerKey }, cb) => {
+  // Admin login — required before anyone can create a room
+  socket.on('admin_login', ({ adminId, password }, cb) => {
+    if (adminId === ADMIN_ID && password === ADMIN_PASSWORD) {
+      socket.adminAuthorized = true;
+      const token = crypto.randomBytes(24).toString('hex');
+      adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
+      return cb && cb({ ok: true, token });
+    }
+    cb && cb({ ok: false, error: 'Invalid admin ID or password' });
+  });
+
+  socket.on('create_room', ({ name, avatar, totalRounds, playerKey, adminToken }, cb) => {
+    if (!isAdmin(socket, adminToken)) return cb && cb({ ok: false, error: 'Admin login required to create a room' });
     const room = createRoom(socket.id, name || 'Host', avatar || '', totalRounds, playerKey);
     socket.join(room.id);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
