@@ -2572,3 +2572,36 @@
 .tiktok-half .top10-rank { font-size: 17px; font-weight: 800; min-width: 24px; }
 .tiktok-half .top10-name { font-size: 15px; }
 .tiktok-half .top10-pts { font-size: 17px; min-width: 34px; }
+
+/* ═══ Answer brackets (LEFT) + artist drawing (RIGHT) in ONE border ═════ */
+.tiktok-half .answer-art-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin-top: 6px;
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(170deg, rgba(24,37,72,0.55), rgba(13,21,44,0.85));
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+/* Brackets on the left, drawing on the right */
+.tiktok-half .answer-art-box .answer-art-side {
+  order: 0; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+}
+.tiktok-half .answer-art-box .art-board-inline {
+  order: 1; flex: none; width: 130px; padding: 6px;
+  border: none; background: none;
+}
+.tiktok-half .answer-art-box .art-canvas { width: 96px; height: 96px; }
+.tiktok-half .answer-art-box .art-emoji { font-size: 76px; line-height: 96px; }
+/* Adaptive bracket boxes — fit 8-letter words and words with spaces */
+.tiktok-half .answer-art-box .bracket-box { width: auto; min-width: 22px; height: 30px; padding: 0 3px; }
+.tiktok-half .answer-art-box .bracket-letter { font-size: 15px; }
+.tiktok-half .answer-art-box .bracket-gap { width: 12px; }
+/* Round section indicator ("Section 2/3") in the footer */
+.round-info .round-section { font-style: normal; color: var(--accent); font-weight: 700; }
+.round-selector-hint-inline { font-size: 10px; color: var(--text-dim); margin-left: 6px; }

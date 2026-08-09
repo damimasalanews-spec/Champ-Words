@@ -8,7 +8,8 @@ const path = require('path');
 
 const src = fs.readFileSync(path.join(__dirname, 'words.txt'), 'utf-8');
 const allWords = [...new Set(
-  src.split(/\r?\n/).map(w => w.trim().toLowerCase()).filter(w => w.length >= 3 && w.length <= 8)
+  src.split(/\r?\n/).map(w => w.trim().toLowerCase())
+    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 5 && l.length <= 8; })
 )];
 
 // Curated exact-word lists (every word below exists in words.txt).

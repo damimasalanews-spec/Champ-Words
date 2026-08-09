@@ -6,7 +6,7 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   const [mode, setMode] = useState('create'); // create | join
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [roomCode, setRoomCode] = useState('');
-  const [rounds, setRounds] = useState(5);
+  const [rounds, setRounds] = useState(30);
   const nameRef = useRef(null);
   const codeRef = useRef(null);
 
@@ -53,13 +53,14 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
           <div className="form-group">
             <label>Rounds</label>
             <div className="round-selector">
-              {[3, 5, 10, 15, 20].map(n => (
+              {[5, 10, 15, 20, 30].map(n => (
                 <button key={n} type="button"
                   className={`round-option ${rounds === n ? 'selected' : ''}`}
                   onClick={() => setRounds(n)}>
                   {n}
                 </button>
               ))}
+              <span className="round-selector-hint-inline">30 = 3 sections × 10</span>
             </div>
             <p className="round-selector-hint">Number of rounds before the winner is crowned</p>
           </div>

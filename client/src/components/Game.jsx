@@ -401,7 +401,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
             </form>
           )}
-          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
+          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em>
+            {totalRounds >= 20 && <em className="round-section"> · Section {Math.ceil(room.round / 10)}/{Math.ceil(totalRounds / 10)}</em>}
+          </span>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}
@@ -544,7 +546,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>
                 </>
-              ) : null}
+              ) : (
+                <div className="art-canvas">
+                  <span className="art-emoji art-emoji-fallback">🎨</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -565,6 +571,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                   const hintChar = (hintLetters[i] !== undefined && hintLetters[i] !== '') ? hintLetters[i] : '';
                   const solvedChar = solvedWord ? solvedWord[i] || '' : '';
                   const l = solvedChar || hintChar;
+                  // Spaces ("hot dog") render as a gap between words
+                  if (l === ' ') return <div key={i} className="bracket-gap" />;
                   let cls = '';
                   if (solvedWord && solvedByName) cls = wonRound ? 'found-me' : 'found-other';
                   else if (l) cls = 'hint-revealed';

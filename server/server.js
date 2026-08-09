@@ -153,7 +153,7 @@ const DICT = new Set();
 try {
   const txt = fs.readFileSync(path.join(__dirname, 'words.txt'), 'utf-8');
   txt.split(/\r?\n/).map(w => w.trim().toLowerCase())
-    .filter(w => w.length >= 3 && w.length <= 8)
+    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 5 && l.length <= 8; }) // 5-8 letters, spaces allowed
     .forEach(w => DICT.add(w));
 } catch (_) {}
 
@@ -233,7 +233,7 @@ function sanitizeRoom(room) {
     champId: room.champId,
     wordLength: room.word ? room.word.length : 0,
     revealedLetters: room.word && room.revealedMask
-      ? room.word.split('').map((ch, i) => room.revealedMask[i] ? ch : '')
+      ? room.word.split('').map((ch, i) => ch === ' ' ? ' ' : room.revealedMask[i] ? ch : '')
       : [],
     endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
@@ -288,10 +288,14 @@ function clearTimer(room) {
 }
 
 // ── System-picked word: no champ, the game chooses randomly ──────────────
-// Prefer words that have a live drawing (clipart) so the drawing hint is useful
+// ~40% of the time use a word with live drawing (clipart) so the drawing
+// hint stays useful; otherwise any word from the full dictionary.
 function pickRandomWord() {
   const artWords = Object.keys(WORD_ART_POOL);
-  const pool = artWords.length > 0 ? artWords : [...DICT];
+  if (artWords.length > 0 && Math.random() < 0.4) {
+    return artWords[Math.floor(Math.random() * artWords.length)];
+  }
+  const pool = [...DICT];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -351,7 +355,7 @@ function isAdjacent(r1, c1, r2, c2) {
 }
 
 function generateWordGrid(word) {
-  const letters = word.split('');
+  const letters = word.replace(/\s+/g, '').split(''); // spaces are not grid cells
   const GRID = 4;
 
   // Backtracking placement — GUARANTEES the word is embedded in the grid
@@ -407,7 +411,8 @@ function generateWordGrid(word) {
 
 function validatePath(grid, path, word) {
   if (!path || !Array.isArray(path) || path.length < 3) return false;
-  if (path.length !== word.length) return false;
+  const letters = word.replace(/\s+/g, ''); // spaces are not grid cells
+  if (path.length !== letters.length) return false;
   const GRID = 4;
   for (let i = 1; i < path.length; i++) {
     const [pr, pc] = path[i - 1], [cr, cc] = path[i];
@@ -415,7 +420,7 @@ function validatePath(grid, path, word) {
     if (cr < 0 || cr >= GRID || cc < 0 || cc >= GRID) return false;
   }
   const formed = path.map(([r, c]) => grid[r][c]).join('');
-  return formed === word;
+  return formed === letters;
 }
 
 // ── Round state machine ──────────────────────────────────────────────────
@@ -459,9 +464,10 @@ function beginChampTurn(room, champId) {
 // ── Auto-reveal a hint at a random still-hidden position ──────────────────
 function revealRandomHint(room) {
   if (!room.word || room.state !== 'playing') return;
-  // Find all unrevealed positions
+  // Find all unrevealed positions (spaces are never revealed — they're gaps)
   const hidden = [];
   for (let i = 0; i < room.word.length; i++) {
+    if (room.word[i] === ' ') continue;
     if (!room.revealedMask[i]) hidden.push(i);
   }
   if (hidden.length === 0) return;
@@ -744,9 +750,9 @@ io.on('connection', socket => {
         return cb && cb({ ok: false, error: 'Not the word - try dragging again!' });
       guessWord = room.word;
     } else {
-      // Text fallback
-      guessWord = String(word || '').toLowerCase().trim();
-      if (!guessWord || guessWord !== room.word) {
+      // Text fallback (spaces optional — "hot dog" or "hotdog" both work)
+      guessWord = String(word || '').toLowerCase().trim().replace(/\s+/g, '');
+      if (!guessWord || guessWord !== room.word.replace(/\s+/g, '')) {
         // Skribbl-style: show the guessed word in chat — never the answer
         const p = playerById(room, socket.id);
         io.to(roomId).emit('chat', { system: true, text: `${p ? p.name : 'Player'} guessed: ${String(word || '').trim().toUpperCase()}` });
@@ -811,7 +817,7 @@ io.on('connection', socket => {
     const player = playerById(room, socket.id);
     if (!player || player.foundWord) return;
     const word = path.map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
-    if (word === room.word) return; // never show the correct answer mid-drag
+    if (word === room.word.replace(/\s+/g, '')) return; // never show the correct answer mid-drag
     socket.to(roomId).emit('guess_drag', { playerId: player.id, playerName: player.name, path, word });
   });
 
@@ -821,7 +827,7 @@ io.on('connection', socket => {
     const player = playerById(room, socket.id);
     if (!player || player.foundWord) return;
     const word = (path || []).map(([r, c]) => room.grid?.[r]?.[c] || '').join('');
-    if (word === room.word) return; // never show the correct answer on a finished drag
+    if (word === room.word.replace(/\s+/g, '')) return; // never show the correct answer on a finished drag
     socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
     // Skribbl-style: completed drags (wrong words) appear in the chat
     io.to(roomId).emit('chat', { system: true, text: `${player.name} dragged: ${word.toUpperCase()}` });
@@ -988,3 +994,6 @@ server.listen(PORT, () => {
   console.log(`Champ Words on http://localhost:${PORT}  |  ${DICT.size} words`);
   console.log(`TikTok auth: ${TIKTOK_CLIENT_KEY === 'YOUR_CLIENT_KEY' ? 'NOT CONFIGURED — set TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET / TIKTOK_REDIRECT_URI env vars' : 'configured'}`);
 });
+
+// Exposed for tests
+module.exports = { generateWordGrid, validatePath, pickRandomWord, DICT };

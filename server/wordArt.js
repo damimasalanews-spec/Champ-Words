@@ -124,7 +124,41 @@ const WORD_ART = {
 
   // ── Everyday words ──
   city: '🏙️', day: '☀️', home: '🏠', hour: '⏰', love: '❤️', money: '💵',
-  month: '📅', night: '🌙', school: '🏫', time: '⏰', week: '📅', year: '🗓️'
+  month: '📅', night: '🌙', school: '🏫', time: '⏰', week: '📅', year: '🗓️',
+
+  // ── Two-word phrases (words with spaces) ──
+  'hot dog': '🌭', 'ice cream': '🍨', 'star fish': '⭐', 'sea horse': '🐴', 'fire fly': '✨',
+  'honey bee': '🐝', 'lady bug': '🐞', 'bull dog': '🐶', 'night owl': '🦉', 'pine tree': '🌲',
+  'oak tree': '🌳', 'palm tree': '🌴', 'rain coat': '🧥', 'sun glass': '🕶️', 'tea cup': '🍵',
+  'pea nut': '🥜', 'pop corn': '🍿', 'sea food': '🦞', 'fast food': '🍔', 'junk food': '🍟',
+  'ice cube': '🧊', 'snow man': '⛄', 'snow ball': '⚪', 'sand box': '🏖️', 'tool box': '🧰',
+  'trash can': '🗑️', 'mail box': '📮', 'note book': '📓', 'text book': '📚', 'bed room': '🛏️',
+  'bath tub': '🛁', 'rain bow': '🌈', 'time out': '⏱️', 'work out': '🏋️', 'stand up': '🧍',
+  'sit down': '🪑', 'come back': '🔙', 'go home': '🏠', 'take off': '✈️', 'show off': '😎',
+  'look out': '👀', 'no body': '👤', 'some one': '🙋', 'any one': '👤', 'every one': '👥',
+  'some day': '📅', 'birth day': '🎂', 'week end': '🏖️', 'week day': '📅', 'home work': '📝',
+  'key board': '⌨️', 'mouse pad': '🖱️', 'hair cut': '💇', 'make up': '💄', 'wake up': '⏰',
+  'hold on': '✋', 'get out': '🚪', 'run away': '🏃', 'walk away': '🚶', 'fall down': '🤕',
+  'calm down': '🧘', 'slow down': '🐢', 'turn off': '🔌', 'turn on': '💡', 'log in': '🔑',
+  'log out': '🚪', 'sign in': '✍️', 'sign up': '📝', 'log off': '🖥️', 'check in': '🛎️',
+  'drop out': '🎓', 'fill in': '📝', 'hand out': '🤝', 'hang up': '📞', 'look for': '🔍',
+  'wait for': '⏳', 'ask for': '🙏', 'pay for': '💳', 'care for': '💗', 'hope for': '🙏',
+  'wait up': '⏳', 'hurry up': '🏃', 'speak up': '🗣️', 'cheer up': '🎉', 'dress up': '👗',
+  'clean up': '🧹', 'warm up': '🔥', 'cool down': '❄️', 'pipe line': '🛢️', 'ice tea': '🧊',
+  'hot tea': '☕', 'green tea': '🍵', 'black tea': '☕', 'milk tea': '🧋', 'sun set': '🌇',
+  'sun rise': '🌅', 'sea shell': '🐚', 'star dust': '✨', 'day time': '☀️', 'bed time': '🛏️',
+  'tea time': '🍵', 'play time': '🎮', 'game time': '🎲', 'rock star': '🎸', 'pop star': '⭐',
+  'snow day': '⛄', 'rain day': '☔', 'sun hat': '👒', 'top hat': '🎩', 'bow tie': '🎀',
+  'neck tie': '👔', 'bee hive': '🐝', 'ant hill': '🐜', 'pig pen': '🐷', 'cow boy': '🤠',
+  'cow girl': '🤠', 'fire man': '🚒', 'mail man': '📬', 'milk man': '🥛', 'space man': '👨‍🚀',
+  'bat man': '🦇', 'iron man': '🤖', 'hot sun': '☀️', 'dog house': '🐶', 'light up': '💡',
+  'sit up': '🧎', 'mix up': '🔀', 'end up': '🏁', 'line up': '📏', 'set up': '⚙️',
+  'pick up': '🤲', 'back up': '🔙', 'stand by': '⏸️', 'log on': '💻', 'jump in': '🏊',
+  'jump out': '😲', 'run in': '🏃', 'walk in': '🚶', 'step up': '🪜', 'speed up': '🚀',
+  'tune in': '📻', 'move on': '➡️', 'get on': '🚌', 'get up': '🛏️', 'give up': '🏳️',
+  'go out': '🌃', 'eat out': '🍽️', 'dine out': '🍽️', 'head up': '⬆️', 'hold up': '✋',
+  'keep up': '💪', 'tune up': '🎻', 'wash up': '🧼', 'wipe out': '🌊', 'zip up': '🤐',
+  'zoom in': '🔍', 'cheer on': '📣', 'call out': '📢', 'bow wow': '🐶', 'hush up': '🤫'
 };
 
 function getWordArt(word) {
