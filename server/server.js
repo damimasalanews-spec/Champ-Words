@@ -186,8 +186,8 @@ const ROOM_CLEANUP_MS = Number(process.env.ROOM_CLEANUP_MS) || 120 * 1000; // dr
 
 // ── Admin (host) credentials — only an admin can create a room ───────────
 // Override on Render via env vars: ADMIN_ID / ADMIN_PASSWORD
-const ADMIN_ID = process.env.ADMIN_ID || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'champ2026';
+const ADMIN_ID = process.env.ADMIN_ID || 'champwords';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'champwords@123';
 const adminTokens = new Map(); // login token -> expiry (ms)
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 function isAdmin(socket, token) {
