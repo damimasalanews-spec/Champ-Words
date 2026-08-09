@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
 import { playSound } from '../sounds';
 
@@ -336,10 +336,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
-  const top5Row = room.players
+  const top5Row = useMemo(() => room.players
     .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .slice(0, 5), [room.players]);
   const top5Ref = useRef(null);
   const [top5Scroll, setTop5Scroll] = useState(false);
   useEffect(() => {
@@ -419,7 +419,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {state === 'playing' && !solvedWord && (
             <form className="type-answer footer-answer" onSubmit={submitTyped}>
               <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
-                placeholder="Or type the answer…" maxLength={8} autoComplete="off" />
+                placeholder="Or type the answer…" maxLength={10} autoComplete="off" />
               <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
             </form>
           )}
