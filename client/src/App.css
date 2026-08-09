@@ -2614,6 +2614,89 @@
 }
 @keyframes caretBlink { 50% { opacity: 0; } }
 
+/* ═══ Get Started intro screen ────────────────────────────────────────── */
+.lobby-intro {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 30px 20px; text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+.intro-logo-wrap { position: relative; display: inline-flex; }
+.intro-glow {
+  position: absolute; inset: -34px;
+  background: radial-gradient(circle, rgba(47,224,164,0.3), transparent 65%);
+  filter: blur(12px);
+  animation: introPulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes introPulse { 0%,100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+.intro-title {
+  font-size: 40px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase;
+  margin: 10px 0 2px;
+  background: linear-gradient(90deg, #2fe0a4, #ffc53d);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.intro-tagline { font-size: 13px; color: var(--text-dim); }
+.intro-features { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0 22px; }
+.intro-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 12px; font-weight: 600; color: var(--text);
+}
+.btn-get-started {
+  padding: 16px 58px; font-size: 16px; border-radius: 999px;
+  animation: getStartedGlow 2s ease-in-out infinite;
+}
+@keyframes getStartedGlow {
+  0%,100% { box-shadow: 0 6px 18px rgba(47,224,164,0.35); }
+  50% { box-shadow: 0 6px 34px rgba(47,224,164,0.6); }
+}
+.intro-foot { font-size: 11px; color: var(--text-dim); margin-top: 16px; }
+
+/* ═══ Join form (behind Get Started) ──────────────────────────────────── */
+.lobby-form {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 22px 0; animation: fadeIn 0.3s ease;
+}
+.btn-back {
+  align-self: flex-start; margin-left: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-dim);
+  border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-back:hover { color: var(--text); border-color: var(--text-dim); }
+.form-heading { font-size: 22px; font-weight: 800; letter-spacing: 1px; text-align: center; }
+.form-sub { font-size: 12px; color: var(--text-dim); text-align: center; margin-bottom: 2px; }
+.mode-tabs {
+  display: flex; gap: 5px; width: 100%; max-width: 340px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 4px;
+}
+.mode-tab {
+  flex: 1; padding: 10px 0; border: none; border-radius: 999px;
+  font-size: 12px; font-weight: 700; color: var(--text-dim);
+  background: transparent; cursor: pointer; transition: all 0.2s;
+}
+.mode-tab.active {
+  background: linear-gradient(180deg, #3fe7b0, #1fce8f);
+  color: #04251a;
+  box-shadow: 0 4px 14px rgba(47,224,164,0.35);
+}
+
+/* TikTok half-screen overrides */
+.tiktok-half .lobby-intro { min-height: 900px; padding: 8px 0; gap: 8px; }
+.tiktok-half .intro-title { font-size: 26px; letter-spacing: 2px; margin: 8px 0 2px; }
+.tiktok-half .intro-tagline { font-size: 10px; }
+.tiktok-half .intro-chip { padding: 5px 10px; font-size: 10px; }
+.tiktok-half .btn-get-started { padding: 13px 42px; font-size: 13px; }
+.tiktok-half .intro-foot { font-size: 10px; margin-top: 10px; }
+.tiktok-half .lobby-form { min-height: 900px; padding: 8px 0; gap: 10px; }
+.tiktok-half .form-heading { font-size: 17px; }
+.tiktok-half .form-sub { font-size: 11px; }
+.tiktok-half .mode-tab { padding: 8px 0; font-size: 11px; }
+
 /* ── Top 5 overall players in ONE row (replaces the congrats banner) ──── */
 .top5-row { display: none; }
 .tiktok-half .top5-row {

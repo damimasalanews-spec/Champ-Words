@@ -3,6 +3,8 @@ import Logo from './Logo';
 import { playSound } from '../sounds';
 
 export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
+  // step: 'intro' (Get Started landing) → 'form' (how to join)
+  const [step, setStep] = useState('intro');
   const [mode, setMode] = useState('create'); // create | join
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [roomCode, setRoomCode] = useState('');
@@ -13,7 +15,7 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
   useEffect(() => {
     if (mode === 'create') nameRef.current?.focus();
     else codeRef.current?.focus();
-  }, [mode]);
+  }, [mode, step]);
 
   useEffect(() => {
     localStorage.setItem('champWordsName', name);
@@ -33,12 +35,48 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
     onJoinRoom(roomCode.trim().toUpperCase(), name.trim());
   };
 
+  // ── Landing: Get Started ──
+  if (step === 'intro') {
+    return (
+      <div className="lobby-intro">
+        <div className="intro-logo-wrap">
+          <div className="intro-glow" aria-hidden="true" />
+          <Logo size={104} />
+        </div>
+        <h1 className="intro-title">Champ Words</h1>
+        <p className="intro-tagline">Guess the word before your friends do!</p>
+        <div className="intro-features">
+          <span className="intro-chip">🎯 60-second word races</span>
+          <span className="intro-chip">⚡ Live drawing hints</span>
+          <span className="intro-chip">🏆 Top 5 leaderboard</span>
+        </div>
+        <button className="btn btn-primary btn-get-started"
+          onClick={() => { playSound('click'); setStep('form'); }}>
+          Get Started
+        </button>
+        <p className="intro-foot">Create a new room or join your friends with a code</p>
+      </div>
+    );
+  }
+
+  // ── Form: how to join the game ──
   return (
-    <div className="lobby">
-      <div className="lobby-title">
-        <Logo size={84} />
-        <h1>Champ Words</h1>
-        <p>Guess the word before your friends do!</p>
+    <div className="lobby-form">
+      <button className="btn-back" onClick={() => { playSound('click'); setStep('intro'); }}>
+        ← Back
+      </button>
+      <h2 className="form-heading">How do you want to join?</h2>
+      <p className="form-sub">Pick an option and fill in your details</p>
+
+      <div className="mode-tabs">
+        <button type="button" className={`mode-tab ${mode === 'create' ? 'active' : ''}`}
+          onClick={() => { playSound('click'); setMode('create'); }}>
+          Create Room
+        </button>
+        <button type="button" className={`mode-tab ${mode === 'join' ? 'active' : ''}`}
+          onClick={() => { playSound('click'); setMode('join'); }}>
+          Join with Code
+        </button>
       </div>
 
       {mode === 'create' ? (
@@ -60,9 +98,8 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
                   {n}
                 </button>
               ))}
-              <span className="round-selector-hint-inline">30 = 3 sections × 10</span>
             </div>
-            <p className="round-selector-hint">Number of rounds before the winner is crowned</p>
+            <p className="round-selector-hint">30 = 3 sections × 10 · rounds before the winner is crowned</p>
           </div>
           <button type="submit" className="btn btn-primary">Create Room</button>
         </form>
@@ -83,15 +120,6 @@ export default function Lobby({ onCreateRoom, onJoinRoom, userName }) {
           <button type="submit" className="btn btn-primary">Join Room</button>
         </form>
       )}
-
-      <div className="lobby-divider">
-        <span>or</span>
-      </div>
-
-      <button className="btn btn-secondary" style={{ maxWidth: 400 }}
-        onClick={() => { playSound('click'); setMode(mode === 'create' ? 'join' : 'create'); }}>
-        {mode === 'create' ? 'Join Existing Room' : 'Create New Room'}
-      </button>
     </div>
   );
 }
