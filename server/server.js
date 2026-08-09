@@ -240,7 +240,7 @@ function sanitizeRoom(room) {
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? getWordArt(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, connected: io.sockets.sockets.has(p.id) }))
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -288,15 +288,10 @@ function clearTimer(room) {
 }
 
 // ── System-picked word: no champ, the game chooses randomly ──────────────
-// ~40% of the time use a word with live drawing (clipart) so the drawing
-// hint stays useful; otherwise any word from the full dictionary.
+// ONLY words the artist can draw (clipart pool) — every round has a drawing
 function pickRandomWord() {
   const artWords = Object.keys(WORD_ART_POOL);
-  if (artWords.length > 0 && Math.random() < 0.4) {
-    return artWords[Math.floor(Math.random() * artWords.length)];
-  }
-  const pool = [...DICT];
-  return pool[Math.floor(Math.random() * pool.length)];
+  return artWords[Math.floor(Math.random() * artWords.length)];
 }
 
 function startSystemRound(room) {

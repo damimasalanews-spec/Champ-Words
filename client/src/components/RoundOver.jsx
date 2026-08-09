@@ -6,7 +6,6 @@ export default function RoundOver({ result, room }) {
   const { word, winner, round, champName, scores, stumpPoints } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
   const rankEmoji = ['🥇', '🥈', '🥉'];
-  const pickerName = champName || 'the picker';
   const nextNote = winner
     ? `${winner.name} was the fastest! A new word comes in a moment…`
     : `No one found it — a new word comes in a moment…`;
@@ -28,7 +27,11 @@ export default function RoundOver({ result, room }) {
         return prev;
       });
     }, 55);
-    return () => clearInterval(iv);
+    // Safety net: reveal the whole list no matter what after ~4s
+    const revealAll = setTimeout(() => {
+      setTyped({ row: topRows.length - 1, chars: topRows[topRows.length - 1] ? topRows[topRows.length - 1].nameLen : 0 });
+    }, 4000);
+    return () => { clearInterval(iv); clearTimeout(revealAll); };
   }, [topRows]);
 
   const shareText = () => {
@@ -49,32 +52,15 @@ export default function RoundOver({ result, room }) {
           The word was <b>{word ? word.toUpperCase() : '—'}</b>
         </div>
 
-        {winner ? (
-          <p className="round-winner-msg">
-            {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
-          </p>
-        ) : (
-          <>
-            <p className="round-winner-msg">
-              No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''} — the seat moves on!
-            </p>
-            {stumpPoints ? (
-              <p className="round-winner-msg">
-                💪 {champName} takes <b>+{stumpPoints} pts</b> for stumping the guesser!
-              </p>
-            ) : null}
-          </>
-        )}
-
         {topRows.length > 0 && (
-          <>
-            <p className="gameover-final-title" style={{ marginTop: 14 }}>Top 5 — total points</p>
-            <div className="score-list" style={{ marginTop: 4 }}>
+          <div className="roundover-top5">
+            <p className="gameover-final-title">Top 5 — total points</p>
+            <div className="score-list">
               {topRows.map((r, i) => {
                 const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;
                 const typing = i === typed.row && typedLen < r.nameLen;
                 return (
-                  <div key={r.id || i} className="score-item" style={{ padding: '7px 12px' }}>
+                  <div key={r.id || i} className="score-item">
                     <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
                       {rankEmoji[i] || `#${i + 1}`}
                     </span>
@@ -91,6 +77,23 @@ export default function RoundOver({ result, room }) {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {winner ? (
+          <p className="round-winner-msg">
+            {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
+          </p>
+        ) : (
+          <>
+            <p className="round-winner-msg">
+              No one guessed it{champName ? ` (${champName}'s word was too hard!)` : ''} — the seat moves on!
+            </p>
+            {stumpPoints ? (
+              <p className="round-winner-msg">
+                💪 {champName} takes <b>+{stumpPoints} pts</b> for stumping the guesser!
+              </p>
+            ) : null}
           </>
         )}
 

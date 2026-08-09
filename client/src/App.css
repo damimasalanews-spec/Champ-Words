@@ -2613,3 +2613,17 @@
   animation: caretBlink 0.8s steps(1) infinite;
 }
 @keyframes caretBlink { 50% { opacity: 0; } }
+
+/* ── Round-over popup: Top 5 total points prominent + compact (TikTok) ── */
+.tiktok-half .roundover-overlay .overlay-card { max-height: 76%; }
+.tiktok-half .roundover-overlay h2 { font-size: 17px; }
+.tiktok-half .roundover-overlay .round-word { font-size: 13px; }
+.tiktok-half .roundover-overlay .roundover-top5 { margin-top: 8px; }
+.tiktok-half .roundover-overlay .gameover-final-title { font-size: 12px; margin-top: 0; }
+.tiktok-half .roundover-overlay .score-item { padding: 5px 10px; }
+.tiktok-half .roundover-overlay .player-name { font-size: 16px; }
+.tiktok-half .roundover-overlay .player-score { font-size: 18px; }
+.tiktok-half .roundover-overlay .typewriter-caret { height: 13px; }
+.tiktok-half .roundover-overlay .round-winner-msg { font-size: 14px; margin: 6px 0 2px; }
+.tiktok-half .roundover-overlay .next-champ-note { font-size: 11px; margin: 6px 0 0; }
+.tiktok-half .roundover-overlay .overlay-buttons { margin-top: 8px; }
