@@ -35,9 +35,13 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
 
   const handleHostClick = () => {
     playSound('click');
-    if (localStorage.getItem('cw_admin_token')) enterHostMode();
-    else { setLoginError(''); setAdminStep('login'); }
+    setLoginError('');
+    setAdminStep('login'); // always show the login form so login is never skipped
   };
+
+  // Login form shows when: the user tapped "Create a Room" (no token yet) OR
+  // they are in host mode but have no valid stored token
+  const showAdminLogin = adminStep === 'login' || (isOwner && !localStorage.getItem('cw_admin_token'));
 
   const handleAdminLogin = async (e) => {
     e.preventDefault();
@@ -97,7 +101,31 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
         ← Back
       </button>
 
-      {isOwner ? (
+      {showAdminLogin ? (
+        <>
+          <h2 className="form-heading">Admin Login</h2>
+          <p className="form-sub">Only hosts can create a room</p>
+          <form className="lobby-card" onSubmit={handleAdminLogin}>
+            <h2>Host Access</h2>
+            <p className="subtitle">Enter your admin details to create a room</p>
+            <div className="form-group">
+              <label>Admin ID</label>
+              <input ref={nameRef} value={adminId} onChange={e => setAdminId(e.target.value)}
+                placeholder="Admin ID" autoComplete="username" required />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input value={adminPass} onChange={e => setAdminPass(e.target.value)}
+                type="password" placeholder="Password" autoComplete="current-password" required />
+            </div>
+            {loginError && <p className="form-error">{loginError}</p>}
+            <button type="submit" className="btn btn-primary" disabled={loginBusy}>
+              {loginBusy ? 'Checking…' : 'Login & Create Room'}
+            </button>
+          </form>
+          <button className="btn-link" onClick={() => { playSound('click'); setAdminStep(null); }}>← Back</button>
+        </>
+      ) : isOwner ? (
         <>
           <h2 className="form-heading">Host a Game</h2>
           <p className="form-sub">Only you create the room — players join from your link</p>
@@ -125,30 +153,6 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
             <button type="submit" className="btn btn-primary">Create Room</button>
           </form>
           <button className="btn-link" onClick={exitHostMode}>← I'm a player, join instead</button>
-        </>
-      ) : adminStep === 'login' ? (
-        <>
-          <h2 className="form-heading">Admin Login</h2>
-          <p className="form-sub">Only hosts can create a room</p>
-          <form className="lobby-card" onSubmit={handleAdminLogin}>
-            <h2>Host Access</h2>
-            <p className="subtitle">Enter your admin details to create a room</p>
-            <div className="form-group">
-              <label>Admin ID</label>
-              <input ref={nameRef} value={adminId} onChange={e => setAdminId(e.target.value)}
-                placeholder="Admin ID" autoComplete="username" required />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input value={adminPass} onChange={e => setAdminPass(e.target.value)}
-                type="password" placeholder="Password" autoComplete="current-password" required />
-            </div>
-            {loginError && <p className="form-error">{loginError}</p>}
-            <button type="submit" className="btn btn-primary" disabled={loginBusy}>
-              {loginBusy ? 'Checking…' : 'Login & Create Room'}
-            </button>
-          </form>
-          <button className="btn-link" onClick={() => { playSound('click'); setAdminStep(null); }}>← Back</button>
         </>
       ) : (
         <>

@@ -188,19 +188,26 @@ const ROOM_CLEANUP_MS = Number(process.env.ROOM_CLEANUP_MS) || 120 * 1000; // dr
 // Override on Render via env vars: ADMIN_ID / ADMIN_PASSWORD
 const ADMIN_ID = process.env.ADMIN_ID || 'champwords';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'champwords@123';
-const adminTokens = new Map(); // login token -> expiry (ms)
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'champ-words-admin-secret';
 const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
+// Stateless signed tokens — they survive server restarts (Render deploys)
+function makeAdminToken() {
+  const payload = Buffer.from(JSON.stringify({ exp: Date.now() + ADMIN_TOKEN_TTL_MS })).toString('base64url');
+  const sig = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
+}
 function isAdmin(socket, token) {
   if (socket.adminAuthorized) return true;
-  if (token && adminTokens.has(token)) {
-    const exp = adminTokens.get(token);
-    if (exp > Date.now()) {
-      adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS); // sliding expiry
-      return true;
-    }
-    adminTokens.delete(token);
-  }
-  return false;
+  if (!token || typeof token !== 'string') return false;
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const [payload, sig] = parts;
+  const expect = crypto.createHmac('sha256', ADMIN_SECRET).update(payload).digest('base64url');
+  if (sig !== expect) return false;
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    return data.exp > Date.now();
+  } catch (_) { return false; }
 }
 
 function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
@@ -699,9 +706,7 @@ io.on('connection', socket => {
   socket.on('admin_login', ({ adminId, password }, cb) => {
     if (adminId === ADMIN_ID && password === ADMIN_PASSWORD) {
       socket.adminAuthorized = true;
-      const token = crypto.randomBytes(24).toString('hex');
-      adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
-      return cb && cb({ ok: true, token });
+      return cb && cb({ ok: true, token: makeAdminToken() });
     }
     cb && cb({ ok: false, error: 'Invalid admin ID or password' });
   });
