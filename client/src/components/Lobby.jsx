@@ -152,19 +152,26 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
         </>
       ) : (
         <>
-          <h2 className="form-heading">Join the Game</h2>
-          <p className="form-sub">One tap and you're in — no code needed</p>
-          <form className="lobby-card" onSubmit={handleJoinActive}>
-            <h2>Join Room</h2>
-            <p className="subtitle">You will automatically join the host's room</p>
-            <div className="form-group">
-              <label>Your Name</label>
-              <input ref={nameRef} value={name} onChange={e => setName(e.target.value)}
-                placeholder="Enter your name" maxLength={16} required />
+          <h2 className="form-heading">How do you want to play?</h2>
+          <p className="form-sub">Players join with one tap · Hosts log in to create</p>
+          <div className="lobby-options">
+            <form className="lobby-card" onSubmit={handleJoinActive}>
+              <h2>Join the Room</h2>
+              <p className="subtitle">One tap — no code needed</p>
+              <div className="form-group">
+                <label>Your Name</label>
+                <input ref={nameRef} value={name} onChange={e => setName(e.target.value)}
+                  placeholder="Enter your name" maxLength={16} required />
+              </div>
+              <button type="submit" className="btn btn-primary">Join the Room</button>
+            </form>
+
+            <div className="lobby-card host-card">
+              <h2>Create a Room</h2>
+              <p className="subtitle">Host the game — admin login required</p>
+              <button className="btn btn-secondary btn-host-create" onClick={handleHostClick}>Create Room</button>
             </div>
-            <button type="submit" className="btn btn-primary">Join the Room</button>
-          </form>
-          <button className="btn-link" onClick={handleHostClick}>🎮 Host a game? Log in to create a room</button>
+          </div>
         </>
       )}
     </div>

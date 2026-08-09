@@ -2694,6 +2694,15 @@
 /* Inline form error (admin login) */
 .form-error { color: #ff6b6b; font-size: 12px; font-weight: 600; margin: 0; text-align: center; }
 
+/* Two option cards: Join the Room / Create a Room */
+.lobby-options { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+.host-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; border-style: dashed !important; }
+.btn-host-create { width: 100%; }
+@media (min-width: 480px) {
+  .lobby-options { flex-direction: row; align-items: stretch; }
+  .lobby-options .lobby-card { flex: 1; }
+}
+
 /* TikTok half-screen overrides */
 .tiktok-half .lobby-intro { min-height: 900px; padding: 8px 0; gap: 8px; }
 .tiktok-half .intro-title { font-size: 26px; letter-spacing: 2px; margin: 8px 0 2px; }
