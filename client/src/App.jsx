@@ -231,6 +231,15 @@ export default function App() {
     });
   };
 
+  // Players tap "JOIN THE ROOM" — auto-join the host's active room, no code
+  const handleJoinActiveRoom = (name) => {
+    cancelAutoRejoin();
+    socket.emit('join_active_room', { name: name || user?.name, avatar: user?.avatar, playerKey: getPlayerKey() }, (res) => {
+      if (res && res.ok) { applyJoinedRoom(res); setMessages([]); }
+      else showToast(res && res.error ? res.error : 'No active room');
+    });
+  };
+
   const handleStartGame = () => {
     if (!room) return;
     playSound('click');
@@ -333,7 +342,7 @@ export default function App() {
             </div>
           )}
           {autoStatus && <div className="auto-status">{autoStatus}</div>}
-          <Lobby onCreateRoom={handleCreateRoom} onJoinRoom={handleJoinRoom} userName={user.name} />
+          <Lobby onCreateRoom={handleCreateRoom} onJoinActive={handleJoinActiveRoom} userName={user.name} />
         </>
       )}
 

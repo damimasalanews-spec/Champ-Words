@@ -187,7 +187,7 @@ const ROOM_CLEANUP_MS = Number(process.env.ROOM_CLEANUP_MS) || 120 * 1000; // dr
 function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
   const id = makeRoomId();
   const room = {
-    id, host: hostId,
+    id, host: hostId, createdAt: Date.now(),
     players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0 }],
     state: 'waiting', round: 0, totalRounds: totalRounds || 5,
     champId: null,
@@ -641,6 +641,41 @@ function scheduleAdvance(room) {
 io.on('connection', socket => {
   console.log(`[connect] ${socket.id}`);
 
+  // Join (or rejoin) this socket as a player of `room`. Same browser key →
+  // restore the player record with points/hints/round state.
+  function joinAsPlayer(socket, room, { name, avatar, playerKey } = {}) {
+    if (playerKey) {
+      const existing = room.players.find(p => p.playerKey === playerKey);
+      if (existing) {
+        existing.id = socket.id;               // re-associate the new socket
+        if (name) existing.name = name;
+        if (avatar !== undefined) existing.avatar = avatar;
+        socket.join(room.id);
+        cancelRoomCleanup(room);
+        // A dropped host reclaims host (solo/studio flow survives reloads)
+        if (room.pendingHostKey === playerKey) { room.host = socket.id; room.pendingHostKey = null; }
+        // A stuck round-over room (nobody was online) resumes now
+        if (room.state === 'round_over') scheduleAdvance(room);
+        // Re-send the pick popup if this player is the champ mid-pick
+        if (room.state === 'champ_pick' && room.champId === socket.id && room.choices.length) {
+          setTimeout(() => io.to(socket.id).emit('word_choices', { choices: room.choices }), 150);
+        }
+        io.to(room.id).emit('room_update', sanitizeRoom(room));
+        io.to(room.id).emit('chat', { system: true, text: `${existing.name} rejoined` });
+        return { rejoined: true, player: existing };
+      }
+    }
+    // New player — allowed at ANY game state (mid-game join)
+    const p = { id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0 };
+    room.players.push(p);
+    socket.join(room.id);
+    cancelRoomCleanup(room);
+    if (room.state === 'round_over') scheduleAdvance(room);
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, text: `${p.name} joined` });
+    return { rejoined: false, player: p };
+  }
+
   socket.on('create_room', ({ name, avatar, totalRounds, playerKey }, cb) => {
     const room = createRoom(socket.id, name || 'Host', avatar || '', totalRounds, playerKey);
     socket.join(room.id);
@@ -658,38 +693,22 @@ io.on('connection', socket => {
       cb && cb({ ok: true, room: sanitizeRoom(room) });
       return;
     }
-    // Rejoin: same browser key → restore the player record with their
-    // points, hints and round state (page reload / accidental leave).
-    if (playerKey) {
-      const existing = room.players.find(p => p.playerKey === playerKey);
-      if (existing) {
-        existing.id = socket.id;               // re-associate the new socket
-        if (name) existing.name = name;
-        if (avatar !== undefined) existing.avatar = avatar;
-        socket.join(roomId);
-        cancelRoomCleanup(room);
-        // A dropped host reclaims host (solo/studio flow survives reloads)
-        if (room.pendingHostKey === playerKey) { room.host = socket.id; room.pendingHostKey = null; }
-        // A stuck round-over room (nobody was online) resumes now
-        if (room.state === 'round_over') scheduleAdvance(room);
-        // Re-send the pick popup if this player is the champ mid-pick
-        if (room.state === 'champ_pick' && room.champId === socket.id && room.choices.length) {
-          setTimeout(() => io.to(socket.id).emit('word_choices', { choices: room.choices }), 150);
-        }
-        cb && cb({ ok: true, rejoined: true, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
-        io.to(roomId).emit('room_update', sanitizeRoom(room));
-        io.to(roomId).emit('chat', { system: true, text: `${existing.name} rejoined` });
-        return;
-      }
+    const r = joinAsPlayer(socket, room, { name, avatar, playerKey });
+    cb && cb({ ok: true, rejoined: r.rejoined, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
+  });
+
+  // Players tap "JOIN THE ROOM" — no code needed: they join the newest
+  // active room (created by the host). Only works while a room is live.
+  socket.on('join_active_room', ({ name, avatar, playerKey }, cb) => {
+    let active = null;
+    for (const [, r] of rooms) {
+      if (r.state === 'game_over') continue;            // finished games are closed
+      if (connectedPlayers(r).length === 0) continue;   // nobody online — not joinable
+      if (!active || r.createdAt > active.createdAt) active = r;
     }
-    // New player — allowed at ANY game state (mid-game join)
-    room.players.push({ id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0 });
-    socket.join(roomId);
-    cancelRoomCleanup(room);
-    if (room.state === 'round_over') scheduleAdvance(room);
-    cb && cb({ ok: true, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
-    io.to(roomId).emit('room_update', sanitizeRoom(room));
-    io.to(roomId).emit('chat', { system: true, text: `${name || 'Player'} joined` });
+    if (!active) return cb && cb({ ok: false, error: 'No active room — the host has not started yet' });
+    const r = joinAsPlayer(socket, active, { name, avatar, playerKey });
+    cb && cb({ ok: true, rejoined: r.rejoined, room: sanitizeRoom(active), lastRound: active.lastRoundResult, lastGame: active.lastGameResult });
   });
 
   socket.on('start_game', ({ roomId }, cb) => {
