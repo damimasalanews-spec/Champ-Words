@@ -45,7 +45,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
                 {rankEmoji[i] || `#${i + 1}`}
               </span>
               <div className="player-info">
-                <div className="player-name">{p.name}</div>
+                <div className="player-name">{p.name}{p.isChat && <span className="chat-badge">CHAT</span>}</div>
               </div>
               <span className="player-score">{p.score}</span>
             </div>

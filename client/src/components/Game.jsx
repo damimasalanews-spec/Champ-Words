@@ -575,6 +575,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
                       {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0]}
+                      {p.isChat && <span className="chat-badge">CHAT</span>}
                     </span>
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
                   </>

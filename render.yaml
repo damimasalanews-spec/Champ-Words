@@ -22,3 +22,21 @@ services:
       - key: TIKTOK_REDIRECT_URI
         sync: false
         # value: https://champ-words.onrender.com/auth/tiktok/callback
+      # --- TikTok LIVE chat answers (all OFF by default — safe) ---
+      # Set CHAT_BRIDGE_ENABLED=true + TIKTOK_LIVE_USERNAME to read live chat.
+      # TIKTOK_SESSION_ID (optional): TikTok web session cookie for reliability.
+      # CHAT_FIXED_POINTS: fixed points per correct chat answer (0 = speed-based).
+      # CHAT_ROOM_PIN: optional room code to lock chat answers to one room.
+      # CHAT_TEST_KEY: ONLY for testing — enables /api/debug/word. Never set in production.
+      - key: CHAT_BRIDGE_ENABLED
+        sync: false
+      - key: TIKTOK_LIVE_USERNAME
+        sync: false
+      - key: TIKTOK_SESSION_ID
+        sync: false
+      - key: CHAT_FIXED_POINTS
+        sync: false
+      - key: CHAT_ROOM_PIN
+        sync: false
+      - key: CHAT_TEST_KEY
+        sync: false

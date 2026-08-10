@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test:chat": "node test-chat-answer.js",
+    "sim": "node chatSimulator.js"
   },
   "type": "commonjs",
   "dependencies": {
@@ -13,6 +15,10 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "tiktok-live-connector": "^1.2.3"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
   }
 }

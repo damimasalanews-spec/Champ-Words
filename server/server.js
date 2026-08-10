@@ -14,6 +14,14 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 const PORT = process.env.PORT || 3000;
 
+// ── TikTok LIVE chat answers (bridge) ────────────────────────────────────
+// ALL OFF by default — the game behaves exactly as before unless set.
+const CHAT_BRIDGE_ENABLED = process.env.CHAT_BRIDGE_ENABLED === 'true';
+const TIKTOK_LIVE_USERNAME = (process.env.TIKTOK_LIVE_USERNAME || '').trim();
+const CHAT_FIXED_POINTS = Number(process.env.CHAT_FIXED_POINTS) || 0;        // 0 = speed-based scoring
+const CHAT_ROOM_PIN = (process.env.CHAT_ROOM_PIN || '').trim().toUpperCase(); // optional: lock answers to one room code
+const CHAT_TEST_KEY = (process.env.CHAT_TEST_KEY || '').trim();               // set ONLY for testing → enables /api/debug/word
+
 // ── TikTok OAuth Config ──────────────────────────────────────────────────
 const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || 'YOUR_CLIENT_KEY';
 const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET || 'YOUR_CLIENT_SECRET';
@@ -127,6 +135,78 @@ app.get('/auth/me', (req, res) => {
 app.get('/auth/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/tiktok'));
 });
+
+// ── TikTok LIVE chat answers ─────────────────────────────────────────────
+// Players who answer from the TikTok LIVE chat instead of the game page.
+// They are virtual players (no socket): auto-registered on their first
+// correct answer, scored, and shown on the leaderboard under their TikTok
+// username. They never affect round progression (only sockets count).
+function findChatTargetRoom() {
+  if (CHAT_ROOM_PIN) {
+    const pinned = rooms.get(CHAT_ROOM_PIN);
+    if (pinned && pinned.state === 'playing') return pinned;
+  }
+  let active = null;
+  for (const [, r] of rooms) {
+    if (r.state !== 'playing') continue;
+    if (connectedPlayers(r).length === 0) continue; // nobody online — no live game
+    if (!active || r.createdAt > active.createdAt) active = r;
+  }
+  return active;
+}
+
+// Shared handler used by both the HTTP endpoint and the live-chat bridge.
+function handleChatAnswer({ user, text }) {
+  const username = String(user || '').trim().slice(0, 30);
+  const guess = String(text || '').trim().toLowerCase().replace(/\s+/g, '');
+  if (!username || !guess) return { ok: false, error: 'missing user or text' };
+  const room = findChatTargetRoom();
+  if (!room) return { ok: false, error: 'no active round' };
+  if (guess !== room.word.replace(/\s+/g, '')) return { ok: false, error: 'wrong word' };
+
+  let player = room.players.find(p => p.isChat && p.chatUser === username);
+  if (!player) {
+    player = {
+      id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
+      name: username, avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
+      foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0
+    };
+    room.players.push(player);
+  }
+  if (player.foundWord) return { ok: true, already: true, score: player.score };
+
+  const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
+  const gained = CHAT_FIXED_POINTS > 0 ? CHAT_FIXED_POINTS : Math.max(10, 100 - elapsed);
+  player.score += gained;
+  player.hintsLeft++; // same bonus as a browser correct guess
+  player.foundWord = true;
+  player.roundFoundAt = elapsed;
+  player.roundScore = gained;
+  player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
+  if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
+  room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
+  io.to(room.id).emit('chat', { system: true, green: true, text: `${player.name} guessed the word! (via TikTok chat)` });
+  // NOTE: chat players are NOT counted in the allFound check — browser-player
+  // round timing is unchanged even if chat players stay silent.
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
+  return { ok: true, word: room.word, score: gained, elapsed, name: player.name };
+}
+
+app.post('/api/chat-answer', (req, res) => {
+  res.json(handleChatAnswer(req.body || {}));
+});
+
+// Debug only: exposes the current round's word. Requires CHAT_TEST_KEY env
+// (default unset → endpoint does not exist) so the simulator/test can verify
+// scoring without a live TikTok stream.
+if (CHAT_TEST_KEY) {
+  app.get('/api/debug/word', (req, res) => {
+    if (req.query.key !== CHAT_TEST_KEY) return res.status(403).json({ ok: false, error: 'bad key' });
+    const room = findChatTargetRoom();
+    if (!room) return res.json({ ok: false, error: 'no active round' });
+    res.json({ ok: true, word: room.word, room: sanitizeRoom(room) });
+  });
+}
 
 // ── Policy Pages ─────────────────────────────────────────────────────────
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'public-terms.html')));
@@ -266,7 +346,7 @@ function sanitizeRoom(room) {
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? getWordArt(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, connected: io.sockets.sockets.has(p.id) }))
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -1036,6 +1116,19 @@ function keepPlayerOnDisconnect(socket, roomId) {
   if (active.length === 0) scheduleRoomCleanup(room);
   io.to(roomId).emit('room_update', sanitizeRoom(room));
   io.to(roomId).emit('chat', { system: true, text: `${p.name} left` });
+}
+
+// ── TikTok LIVE chat bridge (optional, read-only, OFF by default) ────────
+// Reads live-chat comments and feeds them to handleChatAnswer. Safe by
+// design: disabled unless CHAT_BRIDGE_ENABLED=true AND a username is set;
+// never posts to TikTok; auto-reconnects; kill switch via /api/bridge/stop.
+const chatBridge = require('./chatBridge').init({ onAnswer: handleChatAnswer });
+app.post('/api/bridge/start', (req, res) => res.json(chatBridge.start()));
+app.post('/api/bridge/stop', (req, res) => res.json(chatBridge.stop()));
+app.get('/api/bridge/status', (req, res) => res.json(chatBridge.status()));
+if (CHAT_BRIDGE_ENABLED && TIKTOK_LIVE_USERNAME) {
+  const r = chatBridge.start();
+  if (!r.ok) console.warn('[chatBridge] not started:', r.error);
 }
 
 // ── Static files ─────────────────────────────────────────────────────────
