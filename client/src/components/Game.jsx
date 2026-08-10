@@ -129,6 +129,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [allFound, setAllFound] = useState(false); // every online player found the word → round pause
   const [falling, setFalling] = useState(false);
   const [confetti, setConfetti] = useState(null);
+  const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
 
@@ -196,6 +197,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         setTimeout(() => setFalling(false), 1800);
         if (data.winnerId === socket.id) {
           setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
+          setScorePop(data.score);
+          setTimeout(() => setScorePop(null), 1300);
         }
       }
       setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
@@ -459,6 +462,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
+      {/* Flying "+N" popup on a correct guess */}
+      {scorePop !== null && <div className="score-pop">+{scorePop}</div>}
+
       <div className="game-header">
         {/* Remaining chat info — right above the answer box (half-size layout) */}
         {messages.length > 0 && (
@@ -592,6 +598,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
                       {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0]}
+                      {p.streak >= 2 && <span className="streak-chip">🔥{p.streak}</span>}
                       {p.isChat && <span className="chat-badge">CHAT</span>}
                     </span>
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>

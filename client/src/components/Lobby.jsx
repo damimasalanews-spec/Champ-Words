@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Logo from './Logo';
+import Wotd from './Wotd';
 import { playSound } from '../sounds';
 
 export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userName }) {
@@ -9,6 +10,8 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   const [rounds, setRounds] = useState(30);
   const [roundTime, setRoundTime] = useState(60);
   const [difficulty, setDifficulty] = useState('medium');
+  const [category, setCategory] = useState('mixed');
+  const [categories, setCategories] = useState([]);
   const nameRef = useRef(null);
   // Host mode (?host=1): shows the CREATE ROOM form. Players (default) get
   // the one-tap "JOIN THE ROOM" page, with a clear link to become the host.
@@ -58,11 +61,19 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   useEffect(() => { nameRef.current?.focus(); }, [step, adminStep]);
   useEffect(() => { localStorage.setItem('champWordsName', name); }, [name]);
 
+  // Category list for the create form (from the server)
+  useEffect(() => {
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setCategories(d.list || []); })
+      .catch(() => {});
+  }, []);
+
   const handleCreate = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     playSound('click');
-    onCreateRoom(name.trim(), { totalRounds: rounds, roundTimeMs: roundTime * 1000, difficulty });
+    onCreateRoom(name.trim(), { totalRounds: rounds, roundTimeMs: roundTime * 1000, difficulty, category });
   };
 
   const handleJoinActive = (e) => {
@@ -91,9 +102,17 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
           onClick={() => { playSound('click'); setStep('form'); }}>
           Get Started
         </button>
+        <button className="btn btn-secondary btn-wotd"
+          onClick={() => { playSound('click'); setStep('wotd'); }}>
+          📅 Daily Word
+        </button>
         <p className="intro-foot">Host a game or join your friends — one tap either way</p>
       </div>
     );
+  }
+
+  if (step === 'wotd') {
+    return <Wotd onBack={() => { playSound('click'); setStep('intro'); }} />;
   }
 
   // ── Form: host creates · players join with one tap ──
@@ -176,6 +195,18 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
                 ))}
               </div>
               <p className="round-selector-hint">Easy 3–5 letters · Medium 3–8 · Hard 6–8</p>
+            </div>
+            <div className="form-group">
+              <label>Theme</label>
+              <div className="round-selector theme-selector">
+                {[{ id: 'mixed', icon: '🎲', label: 'Surprise' }, ...(categories || [])].filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i).map(c => (
+                  <button key={c.id} type="button"
+                    className={`round-option ${category === c.id ? 'selected' : ''}`}
+                    onClick={() => setCategory(c.id)}>
+                    {c.icon} {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <button type="submit" className="btn btn-primary">Create Room</button>
           </form>

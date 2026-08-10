@@ -36,6 +36,7 @@ export default function App() {
   const [room, setRoom] = useState(null);
   const [toast, setToast] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [modOpen, setModOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
@@ -209,12 +210,19 @@ export default function App() {
     socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
     socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound('chat'); });
+    socket.on('chat_cleared', () => setMessages([]));
+    socket.on('kicked', () => {
+      showToast('You were removed by the host', 'error');
+      cancelAutoRejoin();
+      localStorage.removeItem('cw_last_room');
+      setRoom(null); setScreen('lobby'); setRoundResult(null); setGameResult(null); setMessages([]); setChatOpen(false); setModOpen(false);
+    });
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
 
     return () => {
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
-      socket.off('game_over'); socket.off('chat'); socket.off('connect_error');
+      socket.off('game_over'); socket.off('chat'); socket.off('chat_cleared'); socket.off('kicked'); socket.off('connect_error');
     };
   }, [user, showToast]);
 
@@ -340,6 +348,12 @@ export default function App() {
         </div>
         <div className="header-right">
           <div className="header-controls">
+            {room && socket.id === room.host && (
+              <button className="mod-toggle" title="Moderation"
+                onClick={() => setModOpen(o => !o)}>
+                🛡️
+              </button>
+            )}
             <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
               onClick={() => setMuted(toggleMute())}>
               {muted ? '🔇' : '🔊'}
@@ -434,6 +448,30 @@ export default function App() {
         />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
+
+      {modOpen && room && (
+        <div className="mod-panel">
+          <div className="mod-panel-title">Moderation</div>
+          <button className="mod-close" onClick={() => setModOpen(false)}>✕</button>
+          <div className="mod-list">
+            {room.players.filter(p => p.id !== socket.id).map(p => (
+              <div key={p.id} className="mod-row">
+                <span className="mod-name">{p.name}{p.isChat && <span className="chat-badge">CHAT</span>}{p.id === room.champId && ' 👑'}</span>
+                <div className="mod-actions">
+                  {p.mutedUntil > Date.now() ? (
+                    <button className="btn btn-small" onClick={() => socket.emit('unmute_player', { roomId: room.id, playerId: p.id })}>Unmute</button>
+                  ) : (
+                    <button className="btn btn-small" onClick={() => socket.emit('mute_player', { roomId: room.id, playerId: p.id, seconds: 30 })}>Mute 30s</button>
+                  )}
+                  <button className="btn btn-small btn-danger" onClick={() => socket.emit('kick_player', { roomId: room.id, playerId: p.id })}>Kick</button>
+                </div>
+              </div>
+            ))}
+            {room.players.length <= 1 && <p className="mod-empty">No other players yet</p>}
+          </div>
+          <button className="btn btn-small mod-clear" onClick={() => socket.emit('clear_chat', { roomId: room.id })}>Clear Chat</button>
+        </div>
+      )}
 
       {toast && <Toast text={toast.text} type={toast.type} />}
     </div>

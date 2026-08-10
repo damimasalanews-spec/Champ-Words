@@ -39,7 +39,11 @@ function emitAck(socket, ev, payload) {
 (async () => {
   const child = spawn(process.execPath, ['server/server.js'], {
     cwd: path.join(__dirname, '..'),
-    env: { ...process.env, PORT: String(PORT), CHAT_TEST_KEY: TEST_KEY, CHAT_BRIDGE_ENABLED: 'false' },
+    env: {
+      ...process.env, PORT: String(PORT), CHAT_TEST_KEY: TEST_KEY, CHAT_BRIDGE_ENABLED: 'false',
+      CHAT_GIFT_COOLDOWN_MS: '100', CHAT_ANSWER_COOLDOWN_MS: '200',
+      CHAT_GIFT_TIER2_DIAMONDS: '10', CHAT_GIFT_TIER3_DIAMONDS: '50'
+    },
     stdio: 'ignore'
   });
   await new Promise(r => setTimeout(r, 4000));
@@ -139,6 +143,94 @@ function emitAck(socket, ev, payload) {
     check('maskText leaves clean text', maskText('hello world') === 'hello world');
     check('maskText handles uppercase', maskText('FUCKING') !== 'FUCKING');
     check('maskText respects word boundaries', maskText('assemble') === 'assemble');
+
+    // 17. Categories + Word of the Day endpoints
+    const cats = await get('/api/categories');
+    check('categories include trade pack', cats.ok && cats.list.some(c => c.id === 'trade'), JSON.stringify((cats.list || []).map(c => c.id).join(',')));
+    const wotd = await get('/api/wotd');
+    check('wotd returns a drawable daily word', wotd.ok && !!wotd.art && wotd.word.replace(/[^a-z]/g, '').length === wotd.length, JSON.stringify(wotd));
+
+    // 18. Rate limit on wrong chat answers (CHAT_ANSWER_COOLDOWN_MS=200)
+    await new Promise(r => setTimeout(r, 300));
+    r = await post('/api/chat-answer', { user: 'spammer', text: 'not-the-word' });
+    const rRate = await post('/api/chat-answer', { user: 'spammer', text: 'still-wrong' });
+    check('wrong-answer rate limited', !r.ok && !rRate.ok && /slow down/.test(rRate.error), JSON.stringify(rRate));
+    await new Promise(r => setTimeout(r, 300));
+    r = await post('/api/chat-answer', { user: 'spammer', text: 'not-the-word-2' });
+    check('rate limit releases', !r.ok && /wrong word/.test(r.error), JSON.stringify(r));
+
+    // 19. Gift tiers (cooldown 100ms; room2 is the newest active playing room)
+    const hiddenCount = async () => {
+      const d = await get(`/api/debug/word?key=${TEST_KEY}`);
+      return (d.room.revealedLetters || []).filter(l => l !== '' && l !== ' ').length;
+    };
+    const h0 = await hiddenCount();
+    r = await post('/api/chat-gift', { user: 'tier1_fan', diamonds: 5 });
+    const h1 = await hiddenCount();
+    check('tier1 gift reveals 1 letter', r.ok && h1 === h0 + 1, `h0=${h0} h1=${h1} ${JSON.stringify(r)}`);
+    await new Promise(r => setTimeout(r, 150));
+    r = await post('/api/chat-gift', { user: 'tier2_fan', diamonds: 10 });
+    const h2 = await hiddenCount();
+    check('tier2 gift reveals 2 letters', r.ok && h2 === h1 + 2, `h1=${h1} h2=${h2} ${JSON.stringify(r)}`);
+    await new Promise(r => setTimeout(r, 150));
+    r = await post('/api/chat-gift', { user: 'tier3_fan', diamonds: 50 });
+    const h3 = await hiddenCount();
+    check('tier3 gift reveals full word', r.ok && r.full === true && h3 >= h2 + 1, JSON.stringify(r));
+
+    // 20. Room with trade category + short rounds (8s) for streaks & moderation
+    const r3 = await emitAck(socket, 'create_room', { name: 'Host3', totalRounds: 5, roundTimeMs: 8000, difficulty: 'medium', category: 'trade', adminToken: login.token, playerKey: 'host3-key' });
+    check('trade room created', r3 && r3.ok && r3.room.category === 'trade');
+    const started3 = await emitAck(socket, 'start_game', { roomId: r3.room.id });
+    check('trade room started', started3 && started3.ok);
+    const dbgT = await get(`/api/debug/word?key=${TEST_KEY}`);
+    const TRADE = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
+    check('trade word comes from the trade pack', TRADE.includes(dbgT.word), dbgT.word);
+
+    // 21. Moderation: join a player, mute → blocked, unmute → allowed, kick → removed
+    const joined = io(BASE, { transports: ['websocket'] });
+    await new Promise((res, rej) => { joined.on('connect', res); joined.on('connect_error', rej); setTimeout(() => rej(new Error('join timeout')), 5000); });
+    const jr = await emitAck(joined, 'join_room', { roomId: r3.room.id, name: 'Troll', playerKey: 'troll-key' });
+    check('player joined for moderation', jr && jr.ok);
+    const trollId = jr.room.players.find(p => p.name === 'Troll').id;
+    const kickedP = new Promise(res => joined.on('kicked', () => res(true)));
+    // non-host cannot mute
+    let mr = await emitAck(joined, 'mute_player', { roomId: r3.room.id, playerId: socket.id, seconds: 30 });
+    check('non-host cannot mute', !mr.ok && /host/.test(mr.error), JSON.stringify(mr));
+    // host mutes the troll
+    mr = await emitAck(socket, 'mute_player', { roomId: r3.room.id, playerId: trollId, seconds: 30 });
+    check('host mutes player', mr && mr.ok);
+    // muted player's submit is blocked (round must still be playing — 8s window)
+    const sr = await emitAck(joined, 'submit_word', { roomId: r3.room.id, word: 'whatever', path: [] });
+    check('muted player blocked', sr && !sr.ok && /muted/.test(sr.error), JSON.stringify(sr));
+    // unmute
+    mr = await emitAck(socket, 'unmute_player', { roomId: r3.room.id, playerId: trollId });
+    check('host unmutes player', mr && mr.ok);
+    // unmuted player can submit again (wrong word → not the word)
+    const sr2 = await emitAck(joined, 'submit_word', { roomId: r3.room.id, word: 'whatever', path: [] });
+    check('unmuted player can submit', sr2 && !sr2.ok && /Not the word/i.test(sr2.error), JSON.stringify(sr2));
+    // host kicks the troll
+    const kr = await emitAck(socket, 'kick_player', { roomId: r3.room.id, playerId: trollId });
+    check('host kicks player', kr && kr.ok);
+    const kickedOk = await Promise.race([kickedP, new Promise(res => setTimeout(() => res(false), 3000))]);
+    check('kicked player receives kicked event', kickedOk === true);
+    const dbgK = await get(`/api/debug/word?key=${TEST_KEY}`);
+    check('kicked player removed from room', !(dbgK.room.players || []).some(p => p.id === trollId));
+    joined.close();
+
+    // 22. Streak bonus: fanso_fan answers in round 1 (streak 1), then round 2 (streak 2 → +50)
+    r = await post('/api/chat-answer', { user: 'fanso_fan', text: dbgT.word });
+    check('chat answer in trade round', r.ok && r.score >= 10, JSON.stringify(r));
+    await new Promise(r => setTimeout(r, 22000)); // round 1 (8s) + 6s time-up + 6s advance + margin → round 2 playing
+    const dbgT2 = await get(`/api/debug/word?key=${TEST_KEY}`);
+    check('round 2 active for streak test', dbgT2.ok && !!dbgT2.word && TRADE.includes(dbgT2.word), JSON.stringify(dbgT2));
+    const rStreak = await post('/api/chat-answer', { user: 'fanso_fan', text: dbgT2.word });
+    check('second correct answer earns streak bonus (>=60)', rStreak.ok && rStreak.score >= 60, JSON.stringify(rStreak));
+
+    // 23. All-time stats: found + best streak recorded
+    const alltime2 = await get('/api/alltime');
+    const aF = (alltime2.top || []).find(p => p.name === 'fanso_fan');
+    check('all-time tracks found count', aF && aF.found >= 2, JSON.stringify(aF || null));
+    check('all-time tracks best streak', aF && aF.bestStreak >= 2, JSON.stringify(aF || null));
 
     socket.close();
   } catch (e) {

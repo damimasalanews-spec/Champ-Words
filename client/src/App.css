@@ -3210,6 +3210,83 @@
 .tiktok-half .alltime-row { font-size: 11px; padding: 3px 8px; }
 .tiktok-half .gameover-countdown { font-size: 11px; margin-top: 10px; }
 
+/* Host moderation panel */
+.mod-toggle { background: none; border: none; font-size: 17px; cursor: pointer; padding: 4px 6px; }
+.mod-panel {
+  position: fixed; top: 64px; right: 14px; z-index: 60; width: 300px; max-width: calc(100vw - 28px);
+  background: linear-gradient(165deg, rgba(30, 22, 60, 0.98), rgba(18, 14, 44, 0.99));
+  border: 1px solid var(--border); border-radius: 14px; padding: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.55);
+}
+.mod-panel-title { font-size: 12px; letter-spacing: 3px; color: var(--text-dim); text-align: center; margin-bottom: 10px; }
+.mod-close { position: absolute; top: 8px; right: 10px; background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; }
+.mod-list { max-height: 320px; overflow-y: auto; }
+.mod-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.mod-name { flex: 1; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mod-actions { display: flex; gap: 6px; }
+.mod-clear { width: 100%; margin-top: 10px; }
+.mod-empty { color: var(--text-dim); font-size: 12px; text-align: center; padding: 8px 0; }
+
+/* Streak chip on the leaderboard */
+.streak-chip {
+  display: inline-block; margin-left: 4px; font-size: 9px; font-weight: 800;
+  color: #ffd25e; background: rgba(255, 197, 61, 0.12);
+  border: 1px solid rgba(255, 197, 61, 0.4); border-radius: 8px; padding: 0 4px;
+  vertical-align: 1px; line-height: 1.5;
+}
+
+/* Flying "+N" popup on a correct guess */
+.score-pop {
+  position: fixed; top: 38%; left: 50%; transform: translateX(-50%);
+  font-size: 46px; font-weight: 900; color: #ffd25e; z-index: 40;
+  text-shadow: 0 0 22px rgba(255, 197, 61, 0.8), 0 4px 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  animation: scorePopFloat 1.25s ease-out forwards;
+}
+@keyframes scorePopFloat {
+  0% { opacity: 0; transform: translate(-50%, 14px) scale(0.7); }
+  18% { opacity: 1; transform: translate(-50%, 0) scale(1.12); }
+  30% { transform: translate(-50%, -6px) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -64px) scale(0.95); }
+}
+.tiktok-half .score-pop { font-size: 34px; top: 32%; }
+
+/* Word of the Day */
+.btn-wotd { margin-top: 10px; width: 100%; }
+.wotd-wrap { padding: 10px; }
+.btn-back { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 13px; margin: 4px 2px 10px; }
+.wotd-card { text-align: center; padding-top: 22px; }
+.wotd-title { font-size: 13px; letter-spacing: 4px; color: var(--gold); }
+.wotd-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.wotd-art { font-size: 72px; margin: 18px 0 16px; line-height: 1; filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.4)); }
+.wotd-brackets { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+.wotd-brackets .bracket-box { width: 40px; height: 46px; }
+.wotd-form { display: flex; gap: 8px; justify-content: center; }
+.wotd-form input {
+  background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); padding: 8px 12px; font-size: 15px; width: 180px;
+}
+.wotd-sub { color: var(--text-dim); font-size: 12px; margin-top: 12px; }
+.wotd-done { color: var(--green); font-weight: 700; font-size: 17px; margin-top: 6px; }
+.wotd-streak { color: var(--gold); font-weight: 800; font-size: 15px; margin-top: 4px; }
+.wotd-wrong .wotd-brackets { animation: wotdShake 0.45s ease; }
+@keyframes wotdShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-4px); } }
+.loading-spinner { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; margin: 12px auto 0; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Login page legal links */
+.login-legal { margin-top: 10px; font-size: 11px; color: var(--text-dim); }
+.login-legal a { color: var(--gold); text-decoration: none; }
+.login-legal a:hover { text-decoration: underline; }
+
+/* All-time meta (found / best streak) */
+.alltime-meta { color: var(--text-dim); font-size: 10px; letter-spacing: 0.5px; min-width: 44px; text-align: right; }
+
+/* Theme selector (create room) */
+.theme-selector { flex-wrap: wrap; }
+.theme-selector .round-option { font-size: 12px; padding: 7px 10px; }
+
 /* TikTok live-chat player badge — marks answers that came from TikTok chat */
 .chat-badge {
   display: inline-block;

@@ -39,6 +39,37 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
     navigator.clipboard.writeText(text).catch(() => {});
   };
 
+  // Render the final scores onto a PNG card and download it
+  const shareCard = () => {
+    try {
+      const c = document.createElement('canvas');
+      c.width = 800; c.height = 1000;
+      const ctx = c.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 1000);
+      grad.addColorStop(0, '#1a1440'); grad.addColorStop(1, '#2b1a52');
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 1000);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffd25e';
+      ctx.font = '900 64px sans-serif';
+      ctx.fillText('🏆 CHAMP WORDS', 400, 120);
+      ctx.fillStyle = '#ffeff6';
+      ctx.font = '600 30px sans-serif';
+      ctx.fillText('Final Results', 400, 180);
+      sorted.slice(0, 5).forEach((p, i) => {
+        ctx.fillStyle = i === 0 ? '#ffd25e' : i === 1 ? '#cdd6f4' : i === 2 ? '#f0b27a' : '#e6e2ff';
+        ctx.font = '700 42px sans-serif';
+        ctx.fillText(`${['🥇', '🥈', '🥉'][i] || `#${i + 1}`}  ${p.name}  —  ${p.score} pts`, 400, 280 + i * 95);
+      });
+      ctx.fillStyle = '#9d93d1';
+      ctx.font = '400 26px sans-serif';
+      ctx.fillText('Play at champ-words.onrender.com/tiktok', 400, 930);
+      const a = document.createElement('a');
+      a.href = c.toDataURL('image/png');
+      a.download = 'champ-words-results.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch (_) { /* canvas unsupported — fall back silently */ }
+  };
+
   return (
     <div className="overlay gameover-overlay">
       {/* Confetti celebration */}
@@ -81,6 +112,9 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
               <div key={p.key || p.name} className="alltime-row">
                 <span className={`alltime-rank${i === 0 ? ' rank-1' : ''}`}>{i + 1}</span>
                 <span className="alltime-name">{p.name}{p.chat && <span className="chat-badge">CHAT</span>}</span>
+                <span className="alltime-meta" title={`${p.found || 0} words found · best streak ${p.bestStreak || 0}`}>
+                  {p.found || 0}🔥{p.bestStreak || 0}
+                </span>
                 <span className="alltime-pts">{p.score}</span>
               </div>
             ))}
@@ -95,6 +129,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
 
         <div className="overlay-buttons">
           <button className="btn btn-share" onClick={shareText}>Copy Results</button>
+          <button className="btn btn-secondary" onClick={shareCard}>Share Card</button>
           {isHost && (
             <button className="btn btn-primary" onClick={onPlayAgain}>Play Again</button>
           )}

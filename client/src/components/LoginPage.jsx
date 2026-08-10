@@ -71,6 +71,10 @@ export default function LoginPage({ onPlayAsGuest }) {
         <p className="login-note">
           No account needed to play. We only access your public profile name and avatar when you sign in with TikTok.
         </p>
+
+        <p className="login-legal">
+          <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a>
+        </p>
       </div>
     </div>
   );
