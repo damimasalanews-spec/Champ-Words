@@ -3187,14 +3187,14 @@
 .solved-text { font-size: 12px; }
 
 /* Answer + artist drawing box (TikTok half) — bigger brackets & drawing */
-.tiktok-half .answer-art-box { gap: 16px; padding: 12px 14px; }
+.tiktok-half .answer-art-box { gap: 12px; padding: 10px 14px; }
 .tiktok-half .answer-art-side { gap: 8px; }
-.tiktok-half .answer-art-box .bracket-box { height: 44px; min-width: 30px; padding: 0 4px; border-radius: 10px; }
-.tiktok-half .answer-art-box .bracket-letter { font-size: 22px; }
+.tiktok-half .answer-art-box .bracket-box { height: 38px; min-width: 30px; padding: 0 4px; border-radius: 10px; }
+.tiktok-half .answer-art-box .bracket-letter { font-size: 20px; }
 .tiktok-half .answer-art-box .bracket-gap { width: 16px; }
 .tiktok-half .answer-art-box .brackets-label { font-size: 12px; }
-.tiktok-half .answer-art-box .art-canvas { width: 112px; height: 112px; }
-.tiktok-half .answer-art-box .art-emoji { font-size: 86px; line-height: 112px; }
+.tiktok-half .answer-art-box .art-canvas { width: 96px; height: 96px; }
+.tiktok-half .answer-art-box .art-emoji { font-size: 74px; line-height: 96px; }
 .tiktok-half .answer-art-box .art-label { font-size: 11px; }
 /* ── Found/hint bracket letters match the new size ───────────────────── */
 .bracket-box.found-me .bracket-letter,
@@ -3202,4 +3202,4 @@
 .bracket-box.hint-revealed .bracket-letter { font-size: 19px; }
 .tiktok-half .answer-art-box .bracket-box.found-me .bracket-letter,
 .tiktok-half .answer-art-box .bracket-box.found-other .bracket-letter,
-.tiktok-half .answer-art-box .bracket-box.hint-revealed .bracket-letter { font-size: 22px; }
+.tiktok-half .answer-art-box .bracket-box.hint-revealed .bracket-letter { font-size: 20px; }
