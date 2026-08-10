@@ -218,10 +218,10 @@ export default function App() {
     };
   }, [user, showToast]);
 
-  const handleCreateRoom = (name, totalRounds) => {
+  const handleCreateRoom = (name, opts = {}) => {
     cancelAutoRejoin();
     const adminToken = localStorage.getItem('cw_admin_token') || '';
-    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey(), adminToken }, (res) => {
+    socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds: opts.totalRounds, roundTimeMs: opts.roundTimeMs, difficulty: opts.difficulty, playerKey: getPlayerKey(), adminToken }, (res) => {
       if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
       else {
         // Stale/expired admin token → drop it so the login form shows again

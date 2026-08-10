@@ -24,6 +24,10 @@ const CHAT_TEST_KEY = (process.env.CHAT_TEST_KEY || '').trim();               //
 const CHAT_GIFT_MIN_DIAMONDS = Number(process.env.CHAT_GIFT_MIN_DIAMONDS) || 1; // gifts below this are ignored
 const CHAT_GIFT_COOLDOWN_MS = Number(process.env.CHAT_GIFT_COOLDOWN_MS) || 5000; // per-user gift reveal cooldown
 
+// ── Per-room round settings (host picks at room creation) ────────────────
+const DIFFICULTY_RANGES = { easy: [3, 5], medium: [3, 8], hard: [6, 8] }; // letters
+function difficultyRange(d) { return DIFFICULTY_RANGES[d] || DIFFICULTY_RANGES.medium; }
+
 // ── TikTok OAuth Config ──────────────────────────────────────────────────
 const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || 'YOUR_CLIENT_KEY';
 const TIKTOK_CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET || 'YOUR_CLIENT_SECRET';
@@ -188,7 +192,7 @@ function handleChatAnswer({ user, text }) {
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
-  io.to(room.id).emit('chat', { system: true, green: true, text: `${player.name} guessed the word! (via TikTok chat)` });
+  io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   // NOTE: chat players are NOT counted in the allFound check — browser-player
   // round timing is unchanged even if chat players stay silent.
   io.to(room.id).emit('room_update', sanitizeRoom(room));
@@ -278,6 +282,7 @@ const { generateClue } = require('./clues.js');
 
 // ── Live drawing clipart (Pictionary-style hint) ─────────────────────────
 const { WORD_ART, getWordArt } = require('./wordArt.js');
+const { maskText } = require('./badWords.js'); // profanity filter for chat/guesses
 // Words that both exist in the dictionary AND have clipart — preferred picks
 const WORD_ART_POOL = Object.fromEntries(Object.entries(WORD_ART).filter(([w]) => DICT.has(w)));
 
@@ -364,12 +369,15 @@ function isAdmin(socket, token) {
   } catch (_) { return false; }
 }
 
-function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
+function createRoom(hostId, hostName, hostAvatar, opts) {
   const id = makeRoomId();
+  const opts2 = opts || {};
   const room = {
     id, host: hostId, createdAt: Date.now(),
-    players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0 }],
-    state: 'waiting', round: 0, totalRounds: totalRounds || 5,
+    players: [{ id: hostId, playerKey: opts2.playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0 }],
+    state: 'waiting', round: 0, totalRounds: opts2.totalRounds || 5,
+    roundTimeMs: opts2.roundTimeMs || 0,          // 0 = server default (60s)
+    difficulty: opts2.difficulty || 'medium',     // easy | medium | hard
     champId: null,
     word: null,            // mystery word — NEVER sent to clients
     revealedMask: [],          // which letter positions are hint-revealed (booleans)
@@ -409,13 +417,15 @@ function sanitizeRoom(room) {
   return {
     id: room.id, host: room.host, state: room.state,
     round: room.round, totalRounds: room.totalRounds,
+    roundTimeMs: room.roundTimeMs || 0,
+    difficulty: room.difficulty || 'medium',
     guesserId: room.guesserId || null,
     champId: room.champId,
     wordLength: room.word ? room.word.length : 0,
     revealedLetters: room.word && room.revealedMask
       ? room.word.split('').map((ch, i) => ch === ' ' ? ' ' : room.revealedMask[i] ? ch : '')
       : [],
-    endsAt: room.roundStartedAt ? room.roundStartedAt + ROUND_TIME_MS : null,
+    endsAt: room.roundStartedAt ? room.roundStartedAt + (room.roundTimeMs || ROUND_TIME_MS) : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? getWordArt(room.word) : null,
@@ -469,13 +479,17 @@ function clearTimer(room) {
 
 // ── System-picked word: no champ, the game chooses randomly ──────────────
 // ONLY words the artist can draw (clipart pool) — every round has a drawing
-function pickRandomWord() {
-  const artWords = Object.keys(WORD_ART_POOL);
-  return artWords[Math.floor(Math.random() * artWords.length)];
+function pickRandomWord(difficulty) {
+  const [min, max] = difficultyRange(difficulty);
+  const artWords = Object.keys(WORD_ART_POOL).filter(w => {
+    const len = w.replace(/[^a-z]/g, '').length;
+    return len >= min && len <= max;
+  });
+  return (artWords.length ? artWords : Object.keys(WORD_ART_POOL))[Math.floor(Math.random() * (artWords.length || Object.keys(WORD_ART_POOL).length))];
 }
 
 function startSystemRound(room) {
-  room.word = pickRandomWord();
+  room.word = pickRandomWord(room.difficulty);
   room.category = null;
   room.hintText = null;
   room.hintWindow = null;
@@ -491,17 +505,16 @@ function startSystemRound(room) {
 // Only words the artist can draw (has emoji art) — every choice is drawable.
 // Length = LETTERS only (spaces don't count), so 8-letter words and
 // two-word answers like "ice cream" (8 letters) are both eligible.
-function generateChoices(category) {
+function generateChoices(difficulty) {
   // Use the chosen category's words; fall back to the full mixed pool
-  const wordPool = (category && CATEGORIES.words[category] && CATEGORIES.words[category].length >= 6)
-    ? CATEGORIES.words[category]
-    : CATEGORIES.words.mixed;
+  const wordPool = CATEGORIES.words.mixed;
   const drawablePool = wordPool.filter(w => getWordArt(w));
   const usable = drawablePool.length >= 6 ? drawablePool : wordPool;
+  const [min, max] = difficultyRange(difficulty);
   const byLen = {};
   for (const w of usable) {
     const letters = w.replace(/[^a-z]/g, '');
-    if (letters.length < 3 || letters.length > 8) continue;
+    if (letters.length < min || letters.length > max) continue;
     if (!byLen[letters.length]) byLen[letters.length] = [];
     byLen[letters.length].push(w);
   }
@@ -622,7 +635,7 @@ function beginChampTurn(room, champId) {
   room.offeredClues = [];
   room.roundFinds = [];
   room.allFound = false;
-  room.choices = generateChoices(); // 6 random words (no category selection)
+  room.choices = generateChoices(room.difficulty); // 6 random words (no category selection)
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
   clearTimer(room);
@@ -669,13 +682,16 @@ function startRound(room) {
   room.grid = generateWordGrid(room.word); // 4×4 grid with the word embedded
   room.roundStartedAt = Date.now();
   clearTimer(room);
-  room.timer = setTimeout(() => onTimeUp(room), ROUND_TIME_MS);
-  // Auto hint: 2 letters revealed in the answer brackets at 40s remaining
+  const roundMs = room.roundTimeMs || ROUND_TIME_MS;
+  room.timer = setTimeout(() => onTimeUp(room), roundMs);
+  // Auto hint: 2 letters revealed with ~40s remaining (scaled to round length;
+  // short rounds get the reveal early instead of never)
+  const hintAt = Math.max(8000, roundMs - 40000);
   room.hintTimer1 = setTimeout(() => {
     if (room.state !== 'playing') return;
     revealRandomHint(room);
     revealRandomHint(room);
-  }, HINT1_MS);
+  }, hintAt);
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
@@ -873,9 +889,9 @@ io.on('connection', socket => {
     cb && cb({ ok: false, error: 'Invalid admin ID or password' });
   });
 
-  socket.on('create_room', ({ name, avatar, totalRounds, playerKey, adminToken }, cb) => {
+  socket.on('create_room', ({ name, avatar, totalRounds, roundTimeMs, difficulty, playerKey, adminToken }, cb) => {
     if (!isAdmin(socket, adminToken)) return cb && cb({ ok: false, error: 'Admin login required to create a room' });
-    const room = createRoom(socket.id, name || 'Host', avatar || '', totalRounds, playerKey);
+    const room = createRoom(socket.id, name || 'Host', avatar || '', { totalRounds, roundTimeMs, difficulty, playerKey });
     socket.join(room.id);
     cb && cb({ ok: true, room: sanitizeRoom(room) });
   });
@@ -967,7 +983,7 @@ io.on('connection', socket => {
       if (!guessWord || guessWord !== room.word.replace(/\s+/g, '')) {
         // Skribbl-style: show the guessed word in chat — never the answer
         const p = playerById(room, socket.id);
-        io.to(roomId).emit('chat', { system: true, text: `${p ? p.name : 'Player'} guessed: ${String(word || '').trim().toUpperCase()}` });
+        io.to(roomId).emit('chat', { system: true, text: `${p ? maskText(p.name) : 'Player'} guessed: ${maskText(String(word || '').trim().toUpperCase())}` });
         return cb && cb({ ok: false, error: 'Not the word - try again!' });
       }
     }
@@ -1044,7 +1060,7 @@ io.on('connection', socket => {
     if (word === room.word.replace(/\s+/g, '')) return; // never show the correct answer on a finished drag
     socket.to(roomId).emit('guess_drag_end', { playerId: player.id, playerName: player.name, word });
     // Skribbl-style: completed drags (wrong words) appear in the chat
-    io.to(roomId).emit('chat', { system: true, text: `${player.name} dragged: ${word.toUpperCase()}` });
+    io.to(roomId).emit('chat', { system: true, text: `${maskText(player.name)} dragged: ${maskText(word.toUpperCase())}` });
   });
 
   socket.on('use_hint', ({ roomId }, cb) => {
@@ -1118,7 +1134,7 @@ io.on('connection', socket => {
   });
 
   socket.on('leave_room', ({ roomId }, cb) => { leaveRoom(socket, roomId); cb && cb({ ok: true }); });
-  socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: player.name, text }); });
+  socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(String(text || '')) }); });
   socket.on('disconnect', () => {
     // Accidental leave (page close / reload): KEEP the player record + points
     // so they can rejoin. Only explicit "Leave" removes the player.

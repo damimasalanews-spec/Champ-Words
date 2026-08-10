@@ -3166,6 +3166,34 @@
 .top10-name.solver { color: var(--gold); text-shadow: 0 0 10px rgba(255, 197, 61, 0.7); }
 .inline-chat-msg.success { color: var(--gold); text-shadow: 0 0 10px rgba(255, 197, 61, 0.5); }
 
+/* Round-intro animated card */
+.round-intro {
+  position: fixed; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; /* never blocks the game */
+  animation: roundIntroFade 2.6s ease forwards;
+}
+.round-intro-card {
+  background: linear-gradient(165deg, rgba(24, 36, 74, 0.96), rgba(20, 16, 50, 0.98));
+  border: 1.5px solid rgba(255, 197, 61, 0.5);
+  border-radius: 22px;
+  padding: 26px 46px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255, 197, 61, 0.25), 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: roundIntroPop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.round-intro-label { font-size: 12px; letter-spacing: 5px; color: var(--text-dim); }
+.round-intro-num {
+  font-size: 64px; font-weight: 900; line-height: 1.05;
+  background: linear-gradient(90deg, #ffd25e, #ff9a5c);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.round-intro-letters { font-size: 13px; letter-spacing: 3px; color: var(--gold); margin-top: 4px; }
+@keyframes roundIntroFade { 0% { opacity: 0; } 8% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes roundIntroPop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.tiktok-half .round-intro-num { font-size: 46px; }
+.tiktok-half .round-intro-card { padding: 18px 30px; }
+
 /* All-time leaderboard + no-dead-air countdown (Game Over screen) */
 .gameover-countdown {
   text-align: center; margin-top: 14px; font-size: 13px;

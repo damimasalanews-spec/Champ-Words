@@ -381,6 +381,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     .slice(0, 5), [room.players]);
   const top5Ref = useRef(null);
   const [top5Scroll, setTop5Scroll] = useState(false);
+
+  // Round-intro animation: shows "ROUND N" when a new round starts
+  const [roundIntro, setRoundIntro] = useState(null);
+  useEffect(() => {
+    if (room && room.state === 'playing') setRoundIntro(room.round);
+  }, [room && room.round, room && room.state]);
   useEffect(() => {
     const el = top5Ref.current;
     if (!el) return;
@@ -402,6 +408,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   return (
     <div className="game-area">
+      {/* ── Round intro animation (non-blocking) ── */}
+      {roundIntro !== null && (
+        <div className="round-intro" key={roundIntro} onAnimationEnd={() => setRoundIntro(null)}>
+          <div className="round-intro-card">
+            <div className="round-intro-label">ROUND</div>
+            <div className="round-intro-num">{roundIntro}</div>
+            <div className="round-intro-letters">{room.wordLength} LETTERS</div>
+          </div>
+        </div>
+      )}
+
       {/* ── Word pick popup (champ only) ── */}
       {isChamp && state === 'champ_pick' && choices.length > 0 && (
         <WordPickPopup choices={choices} onPick={submitPick} disabled={submitting}

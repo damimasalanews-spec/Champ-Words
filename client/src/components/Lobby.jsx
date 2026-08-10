@@ -7,6 +7,8 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   const [step, setStep] = useState('intro');
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [rounds, setRounds] = useState(30);
+  const [roundTime, setRoundTime] = useState(60);
+  const [difficulty, setDifficulty] = useState('medium');
   const nameRef = useRef(null);
   // Host mode (?host=1): shows the CREATE ROOM form. Players (default) get
   // the one-tap "JOIN THE ROOM" page, with a clear link to become the host.
@@ -60,7 +62,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
     e.preventDefault();
     if (!name.trim()) return;
     playSound('click');
-    onCreateRoom(name.trim(), rounds);
+    onCreateRoom(name.trim(), { totalRounds: rounds, roundTimeMs: roundTime * 1000, difficulty });
   };
 
   const handleJoinActive = (e) => {
@@ -149,6 +151,31 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
                 ))}
               </div>
               <p className="round-selector-hint">30 = 3 sections × 10 · rounds before the winner is crowned</p>
+            </div>
+            <div className="form-group">
+              <label>Round Time</label>
+              <div className="round-selector">
+                {[30, 60, 90].map(n => (
+                  <button key={n} type="button"
+                    className={`round-option ${roundTime === n ? 'selected' : ''}`}
+                    onClick={() => setRoundTime(n)}>
+                    {n}s
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Difficulty</label>
+              <div className="round-selector">
+                {[['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard']].map(([v, label]) => (
+                  <button key={v} type="button"
+                    className={`round-option ${difficulty === v ? 'selected' : ''}`}
+                    onClick={() => setDifficulty(v)}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="round-selector-hint">Easy 3–5 letters · Medium 3–8 · Hard 6–8</p>
             </div>
             <button type="submit" className="btn btn-primary">Create Room</button>
           </form>

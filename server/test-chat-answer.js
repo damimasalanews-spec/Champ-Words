@@ -7,6 +7,7 @@
 const { spawn } = require('child_process');
 const { io } = require('socket.io-client');
 const path = require('path');
+const { maskText } = require('./badWords');
 
 const PORT = 3998;
 const TEST_KEY = 'testkey123';
@@ -121,6 +122,23 @@ function emitAck(socket, ev, payload) {
     check('all-time has fanso_fan', !!aA && aA.score >= 10, JSON.stringify(aA || null));
     check('all-time has viewer2', !!aB && aB.score >= 10, JSON.stringify(aB || null));
     check('all-time sorted desc', at.every((p, i) => i === 0 || at[i - 1].score >= p.score));
+
+    // 15. Round settings: create a room with custom time + difficulty
+    const r2 = await emitAck(socket, 'create_room', { name: 'Host2', totalRounds: 8, roundTimeMs: 30000, difficulty: 'easy', adminToken: login.token, playerKey: 'host2-key' });
+    check('custom room settings stored', r2 && r2.ok && r2.room.totalRounds === 8 && r2.room.roundTimeMs === 30000 && r2.room.difficulty === 'easy', JSON.stringify(r2 && r2.room));
+    const started2 = await emitAck(socket, 'start_game', { roomId: r2.room.id });
+    check('custom room started', started2 && started2.ok);
+    await new Promise(r => setTimeout(r, 800));
+    const dbg3 = await get(`/api/debug/word?key=${TEST_KEY}`);
+    const wlen = (dbg3.word || '').replace(/[^a-z]/g, '').length;
+    check('easy difficulty word is 3-5 letters', dbg3.ok && wlen >= 3 && wlen <= 5, `${dbg3.word} (${wlen} letters)`);
+
+    // 16. Profanity filter unit checks
+    const pm = maskText('fuck you');
+    check('maskText masks profanity', pm.includes('*') && !pm.includes('fuck'), pm);
+    check('maskText leaves clean text', maskText('hello world') === 'hello world');
+    check('maskText handles uppercase', maskText('FUCKING') !== 'FUCKING');
+    check('maskText respects word boundaries', maskText('assemble') === 'assemble');
 
     socket.close();
   } catch (e) {
