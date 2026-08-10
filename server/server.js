@@ -214,6 +214,7 @@ function createRoom(hostId, hostName, hostAvatar, totalRounds, playerKey) {
   const id = makeRoomId();
   const room = {
     id, host: hostId, createdAt: Date.now(),
+    hostKey: playerKey || `k_${hostId}`,
     players: [{ id: hostId, playerKey: playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0 }],
     state: 'waiting', round: 0, totalRounds: totalRounds || 5,
     champId: null,
@@ -1009,18 +1010,26 @@ function keepPlayerOnDisconnect(socket, roomId) {
   const room = rooms.get(roomId);
   if (!room) return;
   const p = playerById(room, socket.id);
-  if (!p) return;
   socket.leave(roomId);
+  const active = connectedPlayers(room);
+  // Host dropped → remember the host's playerKey so they can reclaim the
+  // host seat on rejoin. Uses room.hostKey so it works even when the player
+  // record was already reassigned to a rejoin socket (the /tiktok redirect
+  // races the disconnect — the old record's id is replaced by the new tab).
+  if (room.host === socket.id) {
+    room.pendingHostKey = room.hostKey;
+    if (active.length > 0) room.host = active[0].id;
+  }
+  if (!p) {
+    // Player record already replaced by a rejoin — host reclaim above still
+    // applied; nothing else to clean up for this stale socket.
+    io.to(roomId).emit('room_update', sanitizeRoom(room));
+    return;
+  }
   // Leave voice chat too (so other players drop the WebRTC connection)
   if (room.voiceUsers.includes(socket.id)) {
     room.voiceUsers = room.voiceUsers.filter(id => id !== socket.id);
     io.to(roomId).emit('voice_left', { socketId: socket.id });
-  }
-  const active = connectedPlayers(room);
-  // Host dropped → remember who they were so they can reclaim the host seat
-  if (room.host === socket.id) {
-    room.pendingHostKey = p.playerKey;
-    if (active.length > 0) room.host = active[0].id;
   }
   // If the hot-seat guesser leaves, the next online player takes their place
   if (room.guesserId === socket.id && active.length > 0) {
