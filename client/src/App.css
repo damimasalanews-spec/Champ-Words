@@ -2203,9 +2203,9 @@
 /* Neutral wrapper (desktop): keeps play-col filling the row exactly as before */
 .grid-leader-panel { display: flex; flex: 1; min-width: 0; gap: inherit; }
 .tiktok-half .play-col {
-  /* width = 6 cells + 5 gaps + 2 paddings — exactly the grid's width */
-  --cell: 36px; --gap: 7px; --pad: 10px;
-  width: calc(var(--cell) * 6 + var(--gap) * 5 + var(--pad) * 2);
+  /* width = 4 cells + 3 gaps + 2 paddings — exactly the grid's width */
+  --cell: 52px; --gap: 10px; --pad: 12px;
+  width: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2);
   flex: none;
   display: flex; flex-direction: column; align-items: center;
 }
@@ -2233,7 +2233,7 @@
 .tiktok-half .score-board-inline { display: none; }
 .tiktok-half .grid-4x4 { padding: var(--pad); gap: var(--gap); margin: 0 auto; }
 .tiktok-half .grid-row { gap: var(--gap); }
-.tiktok-half .grid-4x4 .grid-cell { width: var(--cell); height: var(--cell); font-size: 17px; border-radius: 9px; box-shadow: 0 2px 5px rgba(0,0,0,0.25); }
+.tiktok-half .grid-4x4 .grid-cell { width: var(--cell); height: var(--cell); font-size: 22px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.25); }
 .tiktok-half .grid-4x4 .grid-cell.last { transform: scale(1.08); }
 .tiktok-half .score-board-inline {
   width: 175px; margin-top: 6px;
@@ -2548,10 +2548,10 @@
    --cell/--gap/--pad repeat the play-col values (CSS vars don't flow
    between siblings) so the height matches the grid box 1:1. */
 .tiktok-half .leader-col {
-  --cell: 36px; --gap: 7px; --pad: 10px;
+  --cell: 52px; --gap: 10px; --pad: 12px;
   flex: 1; width: auto; min-width: 0;
   margin-top: 36px; /* timer-display + timer-bar block above the grid */
-  height: calc(var(--cell) * 6 + var(--gap) * 5 + var(--pad) * 2); /* = grid box height */
+  height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2); /* = grid box height */
   display: flex;
 }
 /* The champ also sees a "Your word" line above the timer → shift down too */
