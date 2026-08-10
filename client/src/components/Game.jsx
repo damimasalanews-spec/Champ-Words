@@ -332,14 +332,18 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
   // TOP 5 leaderboard (half-screen right side):
   // - Before anyone solves / during the all-found & round-over pauses →
-  //   top 5 players by TOTAL score.
+  //   top 5 players by TOTAL score (anyone in the room).
   // - After the fastest player solves (but not everyone yet) →
-  //   same top 5, now showing THIS ROUND's score (✓ marks solvers).
+  //   ONLY this round's solvers, fastest first, with their round score —
+  //   non-solvers are hidden (no zeros).
   const leaderTop = room.players
     .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
-  const solvedNames = new Set(foundList.map(f => f.name));
+  const roundSolvers = room.players
+    .filter(p => p.foundWord && (p.roundScore || 0) > 0)
+    .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0))
+    .slice(0, 5);
   const showRoundScores = state === 'playing' && foundList.length > 0 && !allFound;
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
@@ -531,16 +535,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="top10-board">
           <div className="top10-title">TOP 5{showRoundScores ? ' · THIS ROUND' : ''}</div>
           {Array.from({ length: 5 }, (_, i) => {
-            const p = leaderTop[i];
-            const solvedThisRound = p ? (showRoundScores && solvedNames.has(p.name)) : false;
+            const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
               <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
-                    <span className={`top10-name${solvedThisRound ? ' solver' : ''}`}>
+                    <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
-                      {solvedThisRound ? '✓ ' : ''}{p.name.split(' ')[0]}
+                      {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0]}
                     </span>
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
                   </>
