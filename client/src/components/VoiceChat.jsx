@@ -299,8 +299,8 @@ export default function VoiceChat({ roomId, socket, meName }) {
     <div className="voice-chat">
       {!joined ? (
         <>
-          <button className="voice-btn" onClick={joinVoice} disabled={joining}>
-            {joining ? 'Connecting…' : '🎤 Voice'}
+          <button className="voice-btn" onClick={joinVoice} disabled={joining} title="Voice chat">
+            {joining ? '…' : '🎤'}
           </button>
           {error && <div className="voice-error">{error}</div>}
         </>
