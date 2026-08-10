@@ -74,12 +74,11 @@ export default function App() {
     return true;
   }, []);
 
-  // Check auth on mount (or auto-guest via /tiktok, ?auto=1 / ?guest=Name —
-  // the /tiktok page is the in-game view: it auto-joins the player's room)
+  // Check auth on mount (or auto-guest via ?auto=1 / ?guest=Name —
+  // used by studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const isTiktokPath = window.location.pathname.startsWith('/tiktok');
-    const autoGuest = params.get('guest') || (params.has('auto') || isTiktokPath ? 'Guest' : null);
+    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
     if (autoGuest) {
       setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
       setLoading(false);
@@ -219,10 +218,7 @@ export default function App() {
     cancelAutoRejoin();
     const adminToken = localStorage.getItem('cw_admin_token') || '';
     socket.emit('create_room', { name: name || user?.name, avatar: user?.avatar, totalRounds, playerKey: getPlayerKey(), adminToken }, (res) => {
-      if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]);
-        // After joining a room, the game opens on the dedicated /tiktok page
-        if (!window.location.pathname.startsWith('/tiktok')) window.location.href = '/tiktok';
-      }
+      if (res.ok) { localStorage.setItem('cw_last_room', res.room.id); setRoom(res.room); setScreen('waiting'); setGameResult(null); setMessages([{ system: true, text: `Room created! Code: ${res.room.id}` }]); }
       else {
         // Stale/expired admin token → drop it so the login form shows again
         if (res.error && /admin/i.test(res.error)) localStorage.removeItem('cw_admin_token');
@@ -248,9 +244,7 @@ export default function App() {
   const handleJoinRoom = (roomId, name) => {
     cancelAutoRejoin();
     socket.emit('join_room', { roomId, name: name || user?.name, avatar: user?.avatar, playerKey: getPlayerKey() }, (res) => {
-      if (res.ok) { applyJoinedRoom(res); setMessages([]);
-        if (!window.location.pathname.startsWith('/tiktok')) window.location.href = '/tiktok';
-      }
+      if (res.ok) { applyJoinedRoom(res); setMessages([]); }
       else showToast(res.error);
     });
   };
@@ -259,9 +253,7 @@ export default function App() {
   const handleJoinActiveRoom = (name) => {
     cancelAutoRejoin();
     socket.emit('join_active_room', { name: name || user?.name, avatar: user?.avatar, playerKey: getPlayerKey() }, (res) => {
-      if (res && res.ok) { applyJoinedRoom(res); setMessages([]);
-        if (!window.location.pathname.startsWith('/tiktok')) window.location.href = '/tiktok';
-      }
+      if (res && res.ok) { applyJoinedRoom(res); setMessages([]); }
       else showToast(res && res.error ? res.error : 'No active room');
     });
   };
