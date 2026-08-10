@@ -3319,7 +3319,7 @@
 }
 .tiktok-half .footer-answer { flex: 1 1 240px; max-width: 320px; }
 .tiktok-half .footer-answer input { font-size: 16px; padding: 9px 14px; }
-.tiktok-half .round-info { font-size: 13px; margin-left: auto; flex: none; }
+.tiktok-half .round-info { font-size: 11px; margin-left: auto; flex: none; padding: 5px 10px; }
 .tiktok-half .chat-toggle { font-size: 12px; }
 
 /* ── Round-over popup: Top 10 list scrolls if it gets tall ───────────── */
@@ -3331,5 +3331,5 @@
 /* ── Voice tab docked right next to the round pill ───────────────────── */
 .tiktok-half .game-area { position: relative; }
 .tiktok-half .voice-chat { position: absolute; bottom: 8px; left: 6px; z-index: 8; }.tiktok-half .footer-answer { margin-left: auto; }
-.tiktok-half .voice-chat { position: fixed; bottom: 21px; left: 6px; z-index: 8; }
+.tiktok-half .voice-chat { position: fixed; bottom: 21px; left: 12px; z-index: 8; }
 .tiktok-half .round-info { display: inline-flex; align-items: center; }
