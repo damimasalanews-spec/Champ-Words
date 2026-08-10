@@ -2768,6 +2768,20 @@
   100% { transform: translateX(0); }
 }
 
+/* ═══ Whole game in ONE border, flat dark blue inside ═══════════════════ */
+.tiktok-half .game-area {
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 22px;
+  background: #0f1c40; /* same as the page/game background */
+  padding: 12px;
+  gap: 10px;
+}
+.tiktok-half .game-frame { padding: 0; border: none; background: none; box-shadow: none; animation: none; overflow: visible; }
+/* Inner panels lose their own borders — the single frame border rules */
+.tiktok-half .grid-leader-panel { border: none; background: none; box-shadow: none; animation: none; }
+.tiktok-half .answer-art-box { border: none; background: none; box-shadow: none; }
+.tiktok-half .game-header { box-shadow: none; background: none; }
+
 /* ── Round-over popup: Top 5 total points prominent + compact (TikTok) ── */
 .tiktok-half .roundover-overlay .overlay-card { max-height: 76%; }
 .tiktok-half .roundover-overlay h2 { font-size: 17px; }
