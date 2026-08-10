@@ -10,9 +10,9 @@ export default function RoundOver({ result, room }) {
     ? `${winner.name} was the fastest! A new word comes in a moment…`
     : `No one found it — a new word comes in a moment…`;
 
-  // ── Top 5 by TOTAL points, revealed with a typewriter animation ──
+  // ── Top 10 by TOTAL points, revealed with a typewriter animation ──
   const topRows = useMemo(
-    () => sorted.slice(0, 5).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length })),
+    () => sorted.slice(0, 10).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length })),
     [result]
   );
   const [typed, setTyped] = useState({ row: 0, chars: 0 });
@@ -54,7 +54,7 @@ export default function RoundOver({ result, room }) {
 
         {topRows.length > 0 && (
           <div className="roundover-top5">
-            <p className="gameover-final-title">Top 5 — total points</p>
+            <p className="gameover-final-title">Top 10 — total points</p>
             <div className="score-list">
               {topRows.map((r, i) => {
                 const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;

@@ -44,7 +44,13 @@ const SOUNDS = {
   gameover: () => { [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, i * 0.12, 0.22, 'triangle', 0.17)); },
   chat: () => { tone(880, 0, 0.06, 'sine', 0.11); tone(1175, 0.05, 0.06, 'sine', 0.08); },
   toast: () => { tone(600, 0, 0.08, 'sine', 0.12); },
-  join: () => { tone(392, 0, 0.1, 'sine', 0.13); tone(523, 0.08, 0.12, 'sine', 0.13); }
+  join: () => { tone(392, 0, 0.1, 'sine', 0.13); tone(523, 0.08, 0.12, 'sine', 0.13); },
+  // Cartoon "ta-da!" fanfare — bright, playful, anime-style greeting
+  celebrate: () => {
+    [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.08, 0.15, 'triangle', 0.17));
+    [523, 659, 784].forEach(f => tone(f, 0.45, 0.5, 'triangle', 0.15));
+    tone(1568, 0.48, 0.55, 'sine', 0.09);
+  }
 };
 
 export function playSound(name) {

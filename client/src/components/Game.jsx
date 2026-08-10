@@ -81,6 +81,31 @@ function Confetti({ word, onDone, msg }) {
   );
 }
 
+// ── Top 5 celebration (6s pause — covers the grid with a cartoon fanfare) ──
+function Top5Celebration({ players }) {
+  useEffect(() => { playSound('celebrate'); }, []);
+  const rankEmoji = ['🥇', '🥈', '🥉'];
+  return (
+    <div className="top5-celebration">
+      <div className="celeb-title">🎉 TOP 5 🎉</div>
+      <div className="celeb-list">
+        {players.map((p, i) => (
+          <div key={p.id} className={`celeb-row celeb-${i + 1}`} style={{ '--d': `${0.15 + i * 0.18}s` }}>
+            <span className="celeb-rank">{rankEmoji[i] || `#${i + 1}`}</span>
+            <span className="celeb-name">{p.name.split(' ')[0]}</span>
+            <span className="celeb-pts">{p.score}</span>
+          </div>
+        ))}
+      </div>
+      <div className="celeb-confetti">
+        {Array.from({ length: 24 }, (_, i) => (
+          <span key={i} className="celeb-dot" style={{ left: `${(i * 4.2 + 2) % 100}%`, '--cd': `${(i % 8) * 0.12}s`, background: `hsl(${(i * 15) % 360}, 90%, 62%)` }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [] }) {
   const isChamp = room.champId === socket.id;
@@ -429,6 +454,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           </div>
         )}
         <div className="game-header-row">
+          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em>
+            {totalRounds >= 20 && <em className="round-section"> · Section {Math.ceil(room.round / 10)}/{Math.ceil(totalRounds / 10)}</em>}
+          </span>
           {/* Answer box in the bottom round row (half-size layout) */}
           {state === 'playing' && !solvedWord && (
             <form className="type-answer footer-answer" onSubmit={submitTyped}>
@@ -437,9 +465,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
             </form>
           )}
-          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em>
-            {totalRounds >= 20 && <em className="round-section"> · Section {Math.ceil(room.round / 10)}/{Math.ceil(totalRounds / 10)}</em>}
-          </span>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}
@@ -502,6 +527,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </div>
             ))}
           </div>
+
+          {/* ── Top 5 celebration during the 6s pause (covers the grid) ── */}
+          {(allFound || state === 'round_over') && top5Row.length > 0 && (
+            <Top5Celebration players={top5Row} />
+          )}
+
           {dragPath.length > 0 && !submitting && (
             <div style={{ textAlign: 'center', marginTop: 6 }}>
               <span className="drag-word-display">{dragWord}</span>
