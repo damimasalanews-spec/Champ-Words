@@ -501,26 +501,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* ── Top 5 overall players in one row (bracket-letter style; scrolls if too long) ── */}
-      {(state === 'playing' || state === 'round_over') && top5Row.length > 0 && (
-        <div className={`top5-row ${top5Scroll ? 'top5-scroll' : ''}`} ref={top5Ref}>
-          <div className="top5-track">
-            {top5Row.map((p, i) => (
-              <span key={p.id} className="top5-item">
-                {i > 0 && <span className="top5-sep">·</span>}
-                <span className="top5-name">{p.name}</span>
-              </span>
-            ))}
-            {top5Scroll && top5Row.map((p, i) => (
-              <span key={`dup-${p.id}`} className="top5-item" aria-hidden="true">
-                {i > 0 && <span className="top5-sep">·</span>}
-                <span className="top5-name">{p.name}</span>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* ── Who found the word (round keeps going until everyone gets it) ── */}
       {foundList.length > 0 && state === 'playing' && (
         <div className="found-now">
@@ -630,6 +610,26 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           )}
           </div>
         </div>
+
+        {/* ── Top 5 overall players in one row (below the answer + artist box; scrolls if too long) ── */}
+        {(state === 'playing' || state === 'round_over') && top5Row.length > 0 && (
+          <div className={`top5-row ${top5Scroll ? 'top5-scroll' : ''}`} ref={top5Ref}>
+            <div className="top5-track">
+              {top5Row.map((p, i) => (
+                <span key={p.id} className="top5-item">
+                  {i > 0 && <span className="top5-sep">·</span>}
+                  <span className="top5-name">{p.name}</span>
+                </span>
+              ))}
+              {top5Scroll && top5Row.map((p, i) => (
+                <span key={`dup-${p.id}`} className="top5-item" aria-hidden="true">
+                  {i > 0 && <span className="top5-sep">·</span>}
+                  <span className="top5-name">{p.name}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         </div>
         </div>
         </div>
