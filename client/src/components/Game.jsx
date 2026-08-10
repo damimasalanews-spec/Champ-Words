@@ -568,39 +568,25 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {wordLen > 0 && (state === 'playing' || state === 'round_over') && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
-              {(() => {
-                // Split the word into parts (one bracket row per word, stacked
-                // up/down for two-word answers like "ice cream").
-                const hintLetters = room.revealedLetters || [];
-                const parts = [];
-                let cur = [];
-                for (let i = 0; i < wordLen; i++) {
+              <div className="bracket-row">
+                {Array.from({ length: wordLen }, (_, i) => {
+                  // Show hint-revealed letters when unsolved, full word when solved.
+                  // All brackets on ONE line; spaces ("ice cream") render as a gap.
+                  const hintLetters = room.revealedLetters || [];
                   const hintChar = (hintLetters[i] !== undefined && hintLetters[i] !== '') ? hintLetters[i] : '';
                   const solvedChar = solvedWord ? solvedWord[i] || '' : '';
                   const l = solvedChar || hintChar;
-                  if (l === ' ') {
-                    if (cur.length) { parts.push(cur); cur = []; }
-                  } else {
-                    cur.push({ l, i });
-                  }
-                }
-                if (cur.length) parts.push(cur);
-                if (parts.length === 0) parts.push(Array.from({ length: wordLen }, (_, i) => ({ l: '', i })));
-                return parts.map((part, pi) => (
-                  <div key={pi} className="bracket-row">
-                    {part.map(({ l, i }) => {
-                      let cls = '';
-                      if (solvedWord && solvedByName) cls = wonRound ? 'found-me' : 'found-other';
-                      else if (l) cls = 'hint-revealed';
-                      return (
-                        <div key={i} className={`bracket-box ${cls}`}>
-                          {l && <span className={`bracket-letter ${solvedWord ? 'falling-letter' : ''}`} style={{ '--d': `${i * 0.09}s` }}>{l.toUpperCase()}</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ));
-              })()}
+                  if (l === ' ') return <div key={i} className="bracket-gap" />;
+                  let cls = '';
+                  if (solvedWord && solvedByName) cls = wonRound ? 'found-me' : 'found-other';
+                  else if (l) cls = 'hint-revealed';
+                  return (
+                    <div key={i} className={`bracket-box ${cls}`}>
+                      {l && <span className={`bracket-letter ${solvedWord ? 'falling-letter' : ''}`} style={{ '--d': `${i * 0.09}s` }}>{l.toUpperCase()}</span>}
+                    </div>
+                  );
+                })}
+              </div>
               {solvedWord && (
                 <div className="solved-text">
                   {wonRound ? `You cracked ${champPlayer?.name || 'Champ'}'s word!` : solvedByName || 'Time is up!'}
