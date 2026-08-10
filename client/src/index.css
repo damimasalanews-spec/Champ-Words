@@ -1,21 +1,27 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CHAMP WORDS — "Royal Nebula" design system
+   Deep violet-indigo night, crisp white tiles, mint-teal + amber accents
+   (colors only — all sizes/layout unchanged)
+   ═══════════════════════════════════════════════════════════════════ */
+
 :root {
-  --bg: #0a1124;
-  --bg-light: #121c36;
+  --bg: #151133;
+  --bg-light: #211b48;
   --bg-tile: #ffffff;
-  --border: #253355;
-  --border-empty: #3b4c78;
-  --text: #f2f5ff;
-  --text-dark: #0a1124;
-  --text-dim: #93a3cc;
-  --green: #2fe0a4;
+  --border: #373170;
+  --border-empty: #554d9f;
+  --text: #f5f3ff;
+  --text-dark: #141030;
+  --text-dim: #aaa4db;
+  --green: #3ee6b8;
   --yellow: #ffc53d;
-  --gray: #1b2747;
+  --gray: #262052;
   --gold: #ffc53d;
   --danger: #ff6b81;
-  --accent: #ff9f43;
-  --key-bg: #182444;
-  --bracket-bg: rgba(255, 255, 255, 0.05);
-  --bracket-border: #3b4c78;
+  --accent: #a78bfa;
+  --key-bg: #262052;
+  --bracket-bg: rgba(255, 255, 255, 0.06);
+  --bracket-border: #554d9f;
 
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -23,7 +29,12 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background: #0f1c40; /* flat solid dark blue (game design) */
+  background-color: #110e2c; /* flat fallback */
+  background:
+    radial-gradient(1200px 620px at 50% -12%, rgba(167, 139, 250, 0.16), transparent 62%),
+    radial-gradient(900px 520px at 88% 112%, rgba(62, 230, 184, 0.10), transparent 56%),
+    radial-gradient(760px 420px at 6% 108%, rgba(255, 197, 61, 0.07), transparent 55%),
+    linear-gradient(180deg, #171236 0%, #110e2c 45%, #0c0922 100%);
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
