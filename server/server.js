@@ -74,11 +74,11 @@ app.get('/auth/tiktok', (req, res) => {
 app.get('/auth/tiktok/callback', async (req, res) => {
   const { code, state, error } = req.query;
 
-  if (error) return res.redirect(`/?error=${encodeURIComponent(error)}`);
-  if (!code) return res.redirect('/?error=no_code');
+  if (error) return res.redirect(`/tiktok?error=${encodeURIComponent(error)}`);
+  if (!code) return res.redirect('/tiktok?error=no_code');
 
   // Validate state
-  if (state !== req.session.oauthState) return res.redirect('/?error=invalid_state');
+  if (state !== req.session.oauthState) return res.redirect('/tiktok?error=invalid_state');
   delete req.session.oauthState;
 
   const codeVerifier = req.session.codeVerifier;
@@ -112,10 +112,10 @@ app.get('/auth/tiktok/callback', async (req, res) => {
       accessToken: access_token
     };
 
-    req.session.save(() => res.redirect('/'));
+    req.session.save(() => res.redirect('/tiktok'));
   } catch (err) {
     console.error('TikTok auth error:', err.response?.data || err.message);
-    res.redirect(`/?error=auth_failed`);
+    res.redirect(`/tiktok?error=auth_failed`);
   }
 });
 
@@ -125,7 +125,7 @@ app.get('/auth/me', (req, res) => {
 });
 
 app.get('/auth/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/'));
+  req.session.destroy(() => res.redirect('/tiktok'));
 });
 
 // ── Policy Pages ─────────────────────────────────────────────────────────
@@ -1039,6 +1039,14 @@ function keepPlayerOnDisconnect(socket, roomId) {
 }
 
 // ── Static files ─────────────────────────────────────────────────────────
+// Single permanent entry point: the old root link (champ-words.onrender.com)
+// forwards to /tiktok, which now serves the full app — splash/login page
+// first, then the lobby and game (half-screen layout).
+app.get('/', (req, res) => {
+  const qs = req.url.indexOf('?') >= 0 ? req.url.slice(req.url.indexOf('?')) : '';
+  res.redirect('/tiktok' + qs);
+});
+
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));
 app.use((req, res, next) => {

@@ -4,9 +4,10 @@ import './index.css'
 import App from './App.jsx'
 
 // TikTok half-screen layout: the whole game compacts to fit the top half of
-// the screen. Activated only by explicit intent: `?half=1` anywhere or
-// `?auto=1` (studio mode). The /tiktok path now serves the SAME full design
-// as the root link (no forced half layout).
+// the screen (540×960 canvas). Active on the /tiktok link (the permanent
+// game URL) and via `?half=1` anywhere or `?auto=1` (studio mode). The
+// login/splash page shows first on /tiktok — it renders inside the same
+// canvas, so the design matches the full-page look, just scaled.
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;

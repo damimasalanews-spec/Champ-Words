@@ -78,8 +78,11 @@ export default function App() {
   // used by studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const isTiktokPath = window.location.pathname.startsWith('/tiktok');
-    const autoGuest = params.get('guest') || (params.has('auto') || isTiktokPath ? 'Guest' : null);
+    // /tiktok is now the single permanent link — it shows the login/splash
+    // page first (same design as the old root link), then flows into the
+    // lobby and game. Only explicit studio params (?guest= / ?auto=1) skip
+    // the login page (used by browser sources that cannot be clicked).
+    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
     if (autoGuest) {
       setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
       setLoading(false);

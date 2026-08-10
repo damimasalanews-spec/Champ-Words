@@ -24,7 +24,7 @@ export default function LoginPage({ onPlayAsGuest }) {
     const err = params.get('error');
     if (err) {
       setError(err === 'auth_failed' ? 'Login failed. Please try again.' : 'Login was cancelled.');
-      window.history.replaceState({}, '', '/');
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, []);
 
