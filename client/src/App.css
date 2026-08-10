@@ -2301,8 +2301,7 @@
 .tiktok-half .round-info { font-size: 12px; padding: 4px 12px; letter-spacing: 1px; }
 .tiktok-half .chat-toggle { font-size: 10px; padding: 3px 10px; }
 
-/* Voice widget floats above the footer so it never covers the round pill */
-.tiktok-half .voice-chat { bottom: 54px; }
+/* (legacy voice corner offsets removed — voice now lives in the top bar pill) */
 
 /* Popups + overlays + chat (percentages = relative to the fixed 540×960 canvas) */
 .tiktok-half .pick-popup-card { padding: 12px; max-height: 55%; overflow-y: auto; }
@@ -2500,8 +2499,7 @@
   padding-left: 96px; /* leave the corner for the voice tab */
 }
 .tiktok-half .round-info { margin-left: auto; }
-/* Voice tab sits in the bottom-left corner, same row as the round bar */
-.tiktok-half .voice-chat { bottom: 12px; left: 12px; }
+/* (legacy voice corner offsets removed — voice now lives in the top bar pill) */
 /* ── Chat info sits right above the answer box in the bottom bar ──────── */
 .tiktok-half .game-header { flex-direction: column; align-items: stretch; gap: 6px; padding-left: 0; }
 .tiktok-half .game-header-row {
