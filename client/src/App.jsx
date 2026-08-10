@@ -335,7 +335,7 @@ export default function App() {
           <span className="brand-name">Champ Words</span>
           {room && <span className="room-badge">{room.id}</span>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="header-controls">
           <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
             onClick={() => setMuted(toggleMute())}>
             {muted ? '🔇' : '🔊'}
