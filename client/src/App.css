@@ -2817,7 +2817,7 @@
 /* ── Top bar — bigger, cleaner, readable brand ──────────────────────── */
 .app-header {
   padding: 12px 20px;
-  background: rgba(24, 10, 20, 0.72);
+  background: rgba(96, 36, 80, 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: none;
@@ -2896,7 +2896,7 @@
 .login-page { min-height: calc(100vh - 48px); padding: 20px 0; }
 .login-card {
   padding: 30px 32px 26px;
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.97), rgba(28, 13, 26, 0.99));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.97), rgba(66, 28, 60, 0.99));
   border: none;
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
@@ -2922,7 +2922,7 @@
 
 /* ── Lobby / forms ─────────────────────────────────────────────────── */
 .lobby-card {
-  background: linear-gradient(165deg, rgba(48, 25, 44, 0.95), rgba(28, 13, 26, 0.97));
+  background: linear-gradient(165deg, rgba(112, 48, 96, 0.95), rgba(66, 28, 60, 0.97));
   border: none;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
@@ -3035,7 +3035,7 @@
 /* ── Side status card ──────────────────────────────────────────────── */
 .side-status-card {
   border: none;
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.95), rgba(28, 13, 26, 0.98));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.95), rgba(66, 28, 60, 0.98));
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
 }
 .side-status-me { border: none; background: linear-gradient(170deg, rgba(58, 32, 24, 0.95), rgba(40, 20, 16, 0.98)); }
@@ -3045,7 +3045,7 @@
 /* ── Score board ───────────────────────────────────────────────────── */
 .score-board-grid .score-board-row {
   border: none;
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.9), rgba(28, 13, 26, 0.95));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.9), rgba(66, 28, 60, 0.95));
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .score-board-grid .score-board-me {
@@ -3087,7 +3087,7 @@
 
 /* ── Art board ─────────────────────────────────────────────────────── */
 .art-board {
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.9), rgba(28, 13, 26, 0.95));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.9), rgba(66, 28, 60, 0.95));
   border: none;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
@@ -3120,19 +3120,19 @@
 /* ── TikTok half-screen panels ─────────────────────────────────────── */
 .tiktok-half .game-area {
   border: none;
-  background: rgba(30, 14, 26, 0.6);
+  background: rgba(78, 30, 68, 0.38);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
 }
 .tiktok-half .game-frame,
 .tiktok-half .grid-leader-panel,
 .tiktok-half .answer-art-box {
   border: none;
-  background: rgba(30, 14, 26, 0.65);
+  background: rgba(86, 36, 76, 0.55);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
 }
-.tiktok-half .game-header { border: none; background: rgba(35, 17, 31, 0.9); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+.tiktok-half .game-header { border: none; background: rgba(94, 38, 80, 0.92); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
 .tiktok-half .top10-board { border: none; background: rgba(255, 255, 255, 0.04); }
-.tiktok-half .top10-row { border: none; background: linear-gradient(170deg, rgba(48, 25, 44, 0.85), rgba(28, 13, 26, 0.9)); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25); }
+.tiktok-half .top10-row { border: none; background: linear-gradient(170deg, rgba(112, 48, 96, 0.85), rgba(66, 28, 60, 0.9)); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25); }
 .tiktok-half .top10-title { border-bottom: 1px solid rgba(255, 224, 138, 0.12); }
 .tiktok-half .inline-chat { border: none; background: rgba(255, 255, 255, 0.05); }
 .tiktok-half .congrats-line { border: none; background: rgba(255, 197, 61, 0.12); color: var(--gold); }
@@ -3227,7 +3227,7 @@
   display: flex; align-items: center; gap: 8px;
   padding: 4px 8px;
   border-radius: 8px;
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.85), rgba(28, 13, 26, 0.9));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.85), rgba(66, 28, 60, 0.9));
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 .tiktok-half .overall-row.overall-me {
@@ -3284,7 +3284,7 @@
   display: flex; align-items: center; gap: 8px;
   padding: 4px 10px;
   border-radius: 9px;
-  background: linear-gradient(170deg, rgba(48, 25, 44, 0.95), rgba(28, 13, 26, 0.98));
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.95), rgba(66, 28, 60, 0.98));
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   opacity: 0; transform: translateY(14px) scale(0.92);
   animation: celebPop 0.35s ease forwards;

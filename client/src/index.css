@@ -35,12 +35,12 @@ html, body {
 html, body, #root {
   height: 100%;
   width: 100%;
-  background-color: #1f0d1a; /* flat fallback */
+  background-color: #3a1b33; /* flat fallback */
   background:
     radial-gradient(1000px 560px at 85% -10%, rgba(255, 176, 32, 0.16), transparent 60%),
     radial-gradient(900px 560px at 5% 110%, rgba(255, 107, 107, 0.12), transparent 55%),
     radial-gradient(700px 420px at 92% 108%, rgba(255, 214, 118, 0.06), transparent 55%),
-    linear-gradient(180deg, #2e1526 0%, #1f0d1a 45%, #140812 100%);
+    linear-gradient(180deg, #4a213f 0%, #3a1b33 45%, #221020 100%);
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;

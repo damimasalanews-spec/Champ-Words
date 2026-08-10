@@ -179,6 +179,7 @@ export default function VoiceChat({ roomId, socket, meName }) {
       setJoined(true);
       socket.emit('voice_join', { roomId }, (res) => {
         if (res && res.ok) {
+          setJoining(false);
           setMembers(res.members.map(m => ({ socketId: m.socketId, name: m.name, state: 'connecting' })));
           res.members.forEach(m => connectTo(m.socketId));
           startLevelMonitor();
@@ -207,6 +208,7 @@ export default function VoiceChat({ roomId, socket, meName }) {
     socket.emit('voice_leave', { roomId });
     joinedRef.current = false;
     setJoined(false);
+    setJoining(false);
     setMuted(false);
     setMembers([]);
     setSpeakers(new Set());
