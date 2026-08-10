@@ -454,9 +454,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           </div>
         )}
         <div className="game-header-row">
-          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em>
-            {totalRounds >= 20 && <em className="round-section"> · Section {Math.ceil(room.round / 10)}/{Math.ceil(totalRounds / 10)}</em>}
-          </span>
+          <span className="round-info">Round <span>{room.round}</span><em> / {totalRounds}</em></span>
           {/* Answer box in the bottom round row (half-size layout) */}
           {state === 'playing' && !solvedWord && (
             <form className="type-answer footer-answer" onSubmit={submitTyped}>
