@@ -2084,11 +2084,11 @@
 }
 
 /* ── Voice chat ─────────────────────────────────────────────────────── */
-.voice-chat { position: fixed; left: 12px; bottom: 12px; z-index: 150; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 240px; }
+.voice-chat { position: relative; z-index: 150; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 240px; }
 .voice-btn { background: var(--key-bg); color: var(--text); border: 1.5px solid var(--border); border-radius: 22px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.35); transition: all 0.15s ease; }
 .voice-btn:hover { border-color: var(--green); color: var(--green); transform: translateY(-1px); }
 .voice-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
-.voice-panel { background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; min-width: 180px; box-shadow: 0 6px 20px rgba(0,0,0,0.45); animation: slideUp 0.2s ease; }
+.voice-panel { position: absolute; top: calc(100% + 8px); right: 0; background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; min-width: 180px; box-shadow: 0 6px 20px rgba(0,0,0,0.45); animation: slideUp 0.2s ease; }
 .voice-panel-header { display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
 .voice-title { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; color: var(--text); flex: 1; }
 .voice-mute, .voice-leave { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; width: 26px; height: 26px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); }
@@ -2506,7 +2506,7 @@
 .tiktok-half .game-header { flex-direction: column; align-items: stretch; gap: 6px; padding-left: 0; }
 .tiktok-half .game-header-row {
   display: flex; align-items: center; gap: 10px;
-  padding-left: 62px; /* voice tab sits right beside the answer box */
+  padding-left: 10px;
 }
 .tiktok-half .footer-chat {
   border: none; background: none; padding: 0 4px;
@@ -3311,7 +3311,7 @@
 }
 
 /* ── Bottom bar: ONE row (round → answer → chat), bigger letters ─────── */
-.tiktok-half .game-header { flex-direction: row; align-items: center; position: relative; gap: 8px; padding-left: 72px; }
+.tiktok-half .game-header { flex-direction: row; align-items: center; position: relative; gap: 8px; padding-left: 10px; }
 .tiktok-half .footer-chat {
   position: absolute; bottom: calc(100% + 4px); left: 14px; right: 14px;
   max-height: 30px; overflow: hidden;
@@ -3328,12 +3328,9 @@
 .tiktok-half .roundover-top5 .score-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 3px; }
 .tiktok-half .roundover-top5 .score-list::-webkit-scrollbar-thumb { background: rgba(255, 197, 61, 0.35); border-radius: 3px; }
 
-/* ── Voice tab docked right next to the round pill ───────────────────── */
+/* ── Voice chat sits in the top bar, icon-only, next to the speaker ──── */
 .tiktok-half .game-area { position: relative; }
-.tiktok-half .voice-chat { position: absolute; bottom: 8px; left: 6px; z-index: 8; }.tiktok-half .footer-answer { margin-left: auto; }
-.tiktok-half .voice-chat { position: fixed; bottom: 21px; left: 12px; z-index: 8; }
+.tiktok-half .footer-answer { margin-left: auto; }
 .tiktok-half .round-info { display: inline-flex; align-items: center; }
-/* ── Voice chat in the top bar, icon-only, next to the speaker ───────── */
-.tiktok-half .voice-chat { position: fixed; top: 10px; right: 54px; bottom: auto; left: auto; align-items: flex-end; }
 .tiktok-half .voice-btn { width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; border-radius: 8px; }
 .tiktok-half .voice-panel { max-height: 40vh; overflow-y: auto; }

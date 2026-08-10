@@ -340,6 +340,14 @@ export default function App() {
             onClick={() => setMuted(toggleMute())}>
             {muted ? '🔇' : '🔊'}
           </button>
+          {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
+            <VoiceChat
+              key={room.id}
+              roomId={room.id}
+              socket={socket}
+              meName={room.players.find(p => p.id === socket.id)?.name}
+            />
+          )}
           <div className="user-info">
             {user.avatar && <img src={user.avatar} alt="" className="user-avatar" />}
             <span className="user-name">{user.name}</span>
@@ -421,15 +429,6 @@ export default function App() {
         />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
-
-      {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
-        <VoiceChat
-          key={room.id}
-          roomId={room.id}
-          socket={socket}
-          meName={room.players.find(p => p.id === socket.id)?.name}
-        />
-      )}
 
       {toast && <Toast text={toast.text} type={toast.type} />}
     </div>
