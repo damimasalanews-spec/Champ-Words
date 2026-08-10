@@ -2506,7 +2506,7 @@
 .tiktok-half .game-header { flex-direction: column; align-items: stretch; gap: 6px; padding-left: 0; }
 .tiktok-half .game-header-row {
   display: flex; align-items: center; gap: 10px;
-  padding-left: 72px; /* leave room for the voice tab */
+  padding-left: 62px; /* voice tab sits right beside the answer box */
 }
 .tiktok-half .footer-chat {
   border: none; background: none; padding: 0 4px;
