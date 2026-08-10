@@ -335,19 +335,21 @@ export default function App() {
           <span className="brand-name">Champ Words</span>
           {room && <span className="room-badge">{room.id}</span>}
         </div>
-        <div className="header-controls">
-          <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
-            onClick={() => setMuted(toggleMute())}>
-            {muted ? '🔇' : '🔊'}
-          </button>
-          {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
-            <VoiceChat
-              key={room.id}
-              roomId={room.id}
-              socket={socket}
-              meName={room.players.find(p => p.id === socket.id)?.name}
-            />
-          )}
+        <div className="header-right">
+          <div className="header-controls">
+            <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
+              onClick={() => setMuted(toggleMute())}>
+              {muted ? '🔇' : '🔊'}
+            </button>
+            {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
+              <VoiceChat
+                key={room.id}
+                roomId={room.id}
+                socket={socket}
+                meName={room.players.find(p => p.id === socket.id)?.name}
+              />
+            )}
+          </div>
           <div className="user-info">
             {user.avatar && <img src={user.avatar} alt="" className="user-avatar" />}
             <span className="user-name">{user.name}</span>

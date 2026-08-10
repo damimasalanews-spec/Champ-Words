@@ -3355,3 +3355,7 @@
 .tiktok-half .header-controls { padding: 2px; border-radius: 10px; }
 .tiktok-half .header-controls .sound-toggle,
 .tiktok-half .header-controls .voice-btn { width: 24px; height: 24px; font-size: 12px; }
+/* ── Header right side: controls pill + user + login, tidy order ─────── */
+.header-right { display: flex; align-items: center; gap: 10px; }
+.tiktok-half .header-right { gap: 6px; }
+.header-controls { display: flex; align-items: center; gap: 3px; background: rgba(255, 255, 255, 0.07); border: none; border-radius: 12px; padding: 3px; }
