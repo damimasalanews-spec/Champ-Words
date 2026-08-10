@@ -101,6 +101,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [solvedBy, setSolvedBy] = useState(null);
   const [solvedByName, setSolvedByName] = useState('');
   const [foundList, setFoundList] = useState([]); // [{ name, score, self }] — correct guessers this round
+  const [allFound, setAllFound] = useState(false); // every online player found the word → round pause
   const [falling, setFalling] = useState(false);
   const [confetti, setConfetti] = useState(null);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -140,7 +141,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   useEffect(() => {
     setWordClue(''); setHintAction(null); setHintActionLeft(0); setHintSending(false); setClueSent(false);
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
-    setFoundList([]);
+    setFoundList([]); setAllFound(false);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
     setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
@@ -173,6 +174,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         }
       }
       setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
+      setAllFound(!!data.allFound);
     };
     const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
     socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
@@ -328,11 +330,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const wonRound = solved && solvedBy === socket.id;
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
-  // TOP 5: players who made a correct answer THIS round, fastest solver
-  // first — each shows their current round score (resets every round)
-  const sortedPlayers = room.players
-    .filter(p => p.foundWord && (p.roundScore || 0) > 0)
-    .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0));
+  // TOP 5 leaderboard (half-screen right side):
+  // - Before anyone solves / during the all-found & round-over pauses →
+  //   top 5 players by TOTAL score.
+  // - After the fastest player solves (but not everyone yet) →
+  //   same top 5, now showing THIS ROUND's score (✓ marks solvers).
+  const leaderTop = room.players
+    .filter(p => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+  const solvedNames = new Set(foundList.map(f => f.name));
+  const showRoundScores = state === 'playing' && foundList.length > 0 && !allFound;
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
@@ -521,19 +529,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         {/* ── TOP 5 (half-size right side) ── */}
         <div className="leader-col">
         <div className="top10-board">
-          <div className="top10-title">TOP 5</div>
+          <div className="top10-title">TOP 5{showRoundScores ? ' · THIS ROUND' : ''}</div>
           {Array.from({ length: 5 }, (_, i) => {
-            const p = sortedPlayers[i];
+            const p = leaderTop[i];
+            const solvedThisRound = p ? (showRoundScores && solvedNames.has(p.name)) : false;
             return (
               <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
-                    <span className="top10-name solver">
+                    <span className={`top10-name${solvedThisRound ? ' solver' : ''}`}>
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
-                      ✓ {p.name.split(' ')[0]}
+                      {solvedThisRound ? '✓ ' : ''}{p.name.split(' ')[0]}
                     </span>
-                    <span className="top10-pts">{p.roundScore}</span>
+                    <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
                   </>
                 ) : (
                   <span className="top10-name">—</span>
