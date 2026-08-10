@@ -1044,12 +1044,8 @@ app.use(express.static(clientDist));
 app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/socket.io')) return next();
   const indexPath = path.join(clientDist, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    // Never let in-app browsers (TikTok WebView) cache the game shell —
-    // otherwise they keep showing old builds until the app cache clears.
-    res.set('Cache-Control', 'no-store');
-    res.sendFile(indexPath);
-  } else res.status(404).send('Run: cd client && npm run build');
+  if (fs.existsSync(indexPath)) res.sendFile(indexPath);
+  else res.status(404).send('Run: cd client && npm run build');
 });
 
 server.listen(PORT, () => {
