@@ -21,15 +21,15 @@ export default function Logo({ size = 120, className = '' }) {
       </defs>
 
       {/* glows behind the C / W tiles */}
-      <ellipse cx="70" cy="148" rx="36" ry="28" fill="#2FE0A4" opacity="0.38" filter="url(#cwGlowG)" />
+      <ellipse cx="70" cy="148" rx="36" ry="28" fill="#FF6B6B" opacity="0.38" filter="url(#cwGlowG)" />
       <ellipse cx="130" cy="148" rx="36" ry="28" fill="#FFC53D" opacity="0.38" filter="url(#cwGlowA)" />
 
       {/* motion swooshes */}
-      <path d="M16 152 Q42 130 66 150" stroke="#2FE0A4" strokeWidth="3" strokeLinecap="round" opacity="0.55" fill="none" />
+      <path d="M16 152 Q42 130 66 150" stroke="#FF6B6B" strokeWidth="3" strokeLinecap="round" opacity="0.55" fill="none" />
       <path d="M184 152 Q158 130 134 150" stroke="#FFC53D" strokeWidth="3" strokeLinecap="round" opacity="0.55" fill="none" />
 
       {/* sparkles */}
-      <path d="M22 92 L25 97 L30 100 L25 103 L22 108 L19 103 L14 100 L19 97 Z" fill="#2FE0A4" opacity="0.9" />
+      <path d="M22 92 L25 97 L30 100 L25 103 L22 108 L19 103 L14 100 L19 97 Z" fill="#FF6B6B" opacity="0.9" />
       <path d="M178 92 L181 97 L186 100 L181 103 L178 108 L175 103 L170 100 L175 97 Z" fill="#FFC53D" opacity="0.9" />
       <circle cx="40" cy="60" r="2.6" fill="#FFFFFF" opacity="0.85" />
       <circle cx="163" cy="56" r="2.2" fill="#FFFFFF" opacity="0.7" />
