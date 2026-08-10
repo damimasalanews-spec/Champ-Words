@@ -5938,3 +5938,35 @@ zones
 zoning
 zoom in
 zshops
+backpack
+cucumber
+dinosaur
+dumpling
+earphone
+eggplant
+firework
+flamingo
+goldfish
+headache
+kangaroo
+lollipop
+lunchbox
+macaroni
+mosquito
+mushroom
+raincoat
+sailboat
+scissors
+scorpion
+seahorse
+skeleton
+squirrel
+starfish
+tortoise
+trousers
+umbrella
+apple pie
+cup cake
+pan cake
+hot cocoa
+gum drop

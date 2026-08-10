@@ -3179,3 +3179,27 @@
   0%, 100% { box-shadow: 0 6px 18px rgba(255, 159, 67, 0.35); }
   50% { box-shadow: 0 6px 34px rgba(255, 159, 67, 0.6); }
 }
+
+/* ── Bigger answer brackets + letters + art (all layouts) ────────────── */
+.bracket-box { width: 40px; height: 40px; font-size: 19px; border-radius: 10px; }
+.bracket-letter { font-size: 19px; }
+.brackets-label { font-size: 11px; letter-spacing: 3px; }
+.solved-text { font-size: 12px; }
+
+/* Answer + artist drawing box (TikTok half) — bigger brackets & drawing */
+.tiktok-half .answer-art-box { gap: 16px; padding: 12px 14px; }
+.tiktok-half .answer-art-side { gap: 8px; }
+.tiktok-half .answer-art-box .bracket-box { height: 44px; min-width: 30px; padding: 0 4px; border-radius: 10px; }
+.tiktok-half .answer-art-box .bracket-letter { font-size: 22px; }
+.tiktok-half .answer-art-box .bracket-gap { width: 16px; }
+.tiktok-half .answer-art-box .brackets-label { font-size: 12px; }
+.tiktok-half .answer-art-box .art-canvas { width: 112px; height: 112px; }
+.tiktok-half .answer-art-box .art-emoji { font-size: 86px; line-height: 112px; }
+.tiktok-half .answer-art-box .art-label { font-size: 11px; }
+/* ── Found/hint bracket letters match the new size ───────────────────── */
+.bracket-box.found-me .bracket-letter,
+.bracket-box.found-other .bracket-letter,
+.bracket-box.hint-revealed .bracket-letter { font-size: 19px; }
+.tiktok-half .answer-art-box .bracket-box.found-me .bracket-letter,
+.tiktok-half .answer-art-box .bracket-box.found-other .bracket-letter,
+.tiktok-half .answer-art-box .bracket-box.hint-revealed .bracket-letter { font-size: 22px; }

@@ -161,6 +161,25 @@ const WORD_ART = {
   'zoom in': '🔍', 'cheer on': '📣', 'call out': '📢', 'bow wow': '🐶', 'hush up': '🤫'
 };
 
+// ── Long words (8 letters) — drawable ones only ──
+Object.assign(WORD_ART, {
+  airplane: '✈️', backpack: '🎒', calendar: '📅', computer: '💻', cucumber: '🥒',
+  dinosaur: '🦕', dumpling: '🥟', earphone: '🎧', eggplant: '🍆', elephant: '🐘',
+  envelope: '✉️', firework: '🎆', flamingo: '🦩', football: '⚽', fountain: '⛲',
+  goldfish: '🐠', headache: '🤕', hospital: '🏥', kangaroo: '🦘', keyboard: '⌨️',
+  lollipop: '🍭', lunchbox: '🍱', macaroni: '🍝', medicine: '💊', mosquito: '🦟',
+  mountain: '⛰️', mushroom: '🍄', necklace: '📿', notebook: '📓', pharmacy: '💊',
+  postcard: '💌', porridge: '🥣', raincoat: '🧥', sailboat: '⛵', sandwich: '🥪',
+  scissors: '✂️', scorpion: '🦂', seahorse: '🐴', skeleton: '💀', squirrel: '🐿️',
+  starfish: '⭐', sunshine: '☀️', textbook: '📚', tortoise: '🐢', treasure: '💎',
+  trousers: '👖', umbrella: '☂️'
+});
+
+// ── Long two-word answers (drawable) ──
+Object.assign(WORD_ART, {
+  'apple pie': '🥧', 'cup cake': '🧁', 'pan cake': '🥞', 'hot cocoa': '☕', 'gum drop': '🍬'
+});
+
 function getWordArt(word) {
   return WORD_ART[word] || null;
 }

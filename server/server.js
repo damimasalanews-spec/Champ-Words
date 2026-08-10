@@ -334,22 +334,29 @@ function startSystemRound(room) {
 }
 
 // ── Pick 6 words (varied lengths) for the champ ─────────────────────────
+// Only words the artist can draw (has emoji art) — every choice is drawable.
+// Length = LETTERS only (spaces don't count), so 8-letter words and
+// two-word answers like "ice cream" (8 letters) are both eligible.
 function generateChoices(category) {
   // Use the chosen category's words; fall back to the full mixed pool
   const wordPool = (category && CATEGORIES.words[category] && CATEGORIES.words[category].length >= 6)
     ? CATEGORIES.words[category]
     : CATEGORIES.words.mixed;
+  const drawablePool = wordPool.filter(w => getWordArt(w));
+  const usable = drawablePool.length >= 6 ? drawablePool : wordPool;
   const byLen = {};
-  for (const w of wordPool) {
-    if (!byLen[w.length]) byLen[w.length] = [];
-    byLen[w.length].push(w);
+  for (const w of usable) {
+    const letters = w.replace(/[^a-z]/g, '');
+    if (letters.length < 3 || letters.length > 8) continue;
+    if (!byLen[letters.length]) byLen[letters.length] = [];
+    byLen[letters.length].push(w);
   }
-  const lengths = Object.keys(byLen).map(Number).filter(l => l >= 3 && l <= 8);
+  const lengths = Object.keys(byLen).map(Number).sort((a, b) => a - b);
   if (lengths.length === 0) return ['cat', 'dog', 'hat', 'sun', 'egg', 'fox']; // fallback
 
   const choices = [];
-  // Pick 6 words, trying to spread across lengths (prefer 4-7)
-  const preferred = lengths.filter(l => l >= 4 && l <= 7);
+  // Pick 6 words, trying to spread across lengths (prefer 4-8 incl. long words)
+  const preferred = lengths.filter(l => l >= 4 && l <= 8);
   const pool = preferred.length >= 3 ? preferred : lengths;
   for (let i = 0; i < 6 && i < pool.length; i++) {
     const len = pool[Math.floor(Math.random() * pool.length)];
@@ -357,10 +364,10 @@ function generateChoices(category) {
     const w = words[Math.floor(Math.random() * words.length)];
     if (!choices.includes(w)) choices.push(w);
   }
-  // Fill any slots if we got fewer than 6 (stay inside the category pool)
+  // Fill any slots if we got fewer than 6 (drawable words only)
   while (choices.length < 6) {
-    const w = wordPool[Math.floor(Math.random() * wordPool.length)];
-    if (!choices.includes(w)) choices.push(w);
+    const w = usable[Math.floor(Math.random() * usable.length)];
+    if (getWordArt(w) && !choices.includes(w)) choices.push(w);
   }
   // shuffle
   for (let i = choices.length - 1; i > 0; i--) {
