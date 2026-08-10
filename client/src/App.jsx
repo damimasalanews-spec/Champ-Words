@@ -78,7 +78,8 @@ export default function App() {
   // used by studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
+    const isTiktokPath = window.location.pathname.startsWith('/tiktok');
+    const autoGuest = params.get('guest') || (params.has('auto') || isTiktokPath ? 'Guest' : null);
     if (autoGuest) {
       setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
       setLoading(false);
