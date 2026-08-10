@@ -3,3 +3,4 @@ node_modules/
 dist/
 *.pem
 gh-pages/
+server/data/

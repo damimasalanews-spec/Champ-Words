@@ -21,6 +21,8 @@ const TIKTOK_LIVE_USERNAME = (process.env.TIKTOK_LIVE_USERNAME || '').trim();
 const CHAT_FIXED_POINTS = Number(process.env.CHAT_FIXED_POINTS) || 0;        // 0 = speed-based scoring
 const CHAT_ROOM_PIN = (process.env.CHAT_ROOM_PIN || '').trim().toUpperCase(); // optional: lock answers to one room code
 const CHAT_TEST_KEY = (process.env.CHAT_TEST_KEY || '').trim();               // set ONLY for testing → enables /api/debug/word
+const CHAT_GIFT_MIN_DIAMONDS = Number(process.env.CHAT_GIFT_MIN_DIAMONDS) || 1; // gifts below this are ignored
+const CHAT_GIFT_COOLDOWN_MS = Number(process.env.CHAT_GIFT_COOLDOWN_MS) || 5000; // per-user gift reveal cooldown
 
 // ── TikTok OAuth Config ──────────────────────────────────────────────────
 const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || 'YOUR_CLIENT_KEY';
@@ -178,6 +180,7 @@ function handleChatAnswer({ user, text }) {
   const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
   const gained = CHAT_FIXED_POINTS > 0 ? CHAT_FIXED_POINTS : Math.max(10, 100 - elapsed);
   player.score += gained;
+  addAllTime(player.playerKey, player.name, player.avatar, gained);
   player.hintsLeft++; // same bonus as a browser correct guess
   player.foundWord = true;
   player.roundFoundAt = elapsed;
@@ -207,6 +210,35 @@ if (CHAT_TEST_KEY) {
     res.json({ ok: true, word: room.word, room: sanitizeRoom(room) });
   });
 }
+
+// ── TikTok LIVE chat gifts → letter reveal ───────────────────────────────
+// A viewer sends a gift → one hidden letter is revealed for everyone.
+const chatGiftCooldowns = new Map(); // username → last reveal timestamp
+function handleChatGift({ user, diamonds }) {
+  const username = String(user || '').trim().slice(0, 30);
+  const d = Number(diamonds) || 0;
+  if (!username) return { ok: false, error: 'missing user' };
+  if (d < CHAT_GIFT_MIN_DIAMONDS) return { ok: false, error: `need at least ${CHAT_GIFT_MIN_DIAMONDS} diamond(s)` };
+  const now = Date.now();
+  const last = chatGiftCooldowns.get(username) || 0;
+  if (now - last < CHAT_GIFT_COOLDOWN_MS) return { ok: false, error: 'cooldown', waitMs: CHAT_GIFT_COOLDOWN_MS - (now - last) };
+  const room = findChatTargetRoom();
+  if (!room || room.state !== 'playing') return { ok: false, error: 'no active round' };
+  let hidden = 0;
+  for (let i = 0; i < room.word.length; i++) {
+    if (room.word[i] !== ' ' && !room.revealedMask[i]) hidden++;
+  }
+  if (hidden === 0) return { ok: false, error: 'all letters revealed' };
+  chatGiftCooldowns.set(username, now);
+  revealRandomHint(room); // reveals 1 letter + broadcasts room_update
+  io.to(room.id).emit('chat', { system: true, green: true, text: `🎁 ${username} sent a gift and revealed a letter!` });
+  return { ok: true, name: username };
+}
+
+app.post('/api/chat-gift', (req, res) => res.json(handleChatGift(req.body || {})));
+
+// All-time leaderboard (top 20 lifetime scores)
+app.get('/api/alltime', (req, res) => res.json({ ok: true, top: allTimeTop(20) }));
 
 // ── Policy Pages ─────────────────────────────────────────────────────────
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'public-terms.html')));
@@ -252,6 +284,48 @@ const WORD_ART_POOL = Object.fromEntries(Object.entries(WORD_ART).filter(([w]) =
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
 const rooms = new Map();
+
+// ── All-time leaderboard ─────────────────────────────────────────────────
+// Lifetime points per player, keyed by playerKey (browser) or chat:USERNAME
+// (TikTok chat). Persisted best-effort to server/data/alltime.json — note
+// Render's filesystem resets on each deploy, so this survives restarts of
+// the same instance but resets when the service redeploys.
+const ALLTIME_FILE = path.join(__dirname, 'data', 'alltime.json');
+const allTime = new Map();
+let allTimeSaveTimer = null;
+try {
+  if (fs.existsSync(ALLTIME_FILE)) {
+    const arr = JSON.parse(fs.readFileSync(ALLTIME_FILE, 'utf-8'));
+    (Array.isArray(arr) ? arr : []).forEach(e => {
+      if (e && e.key) allTime.set(e.key, { name: e.name || e.key, avatar: e.avatar || '', score: Number(e.score) || 0 });
+    });
+  }
+} catch (_) { /* fresh start if the file is corrupt */ }
+function persistAllTime() {
+  if (allTimeSaveTimer) return;
+  allTimeSaveTimer = setTimeout(() => {
+    allTimeSaveTimer = null;
+    try {
+      fs.mkdirSync(path.dirname(ALLTIME_FILE), { recursive: true });
+      fs.writeFileSync(ALLTIME_FILE, JSON.stringify(Array.from(allTime.entries()).map(([key, v]) => ({ key, name: v.name, avatar: v.avatar, score: v.score }))));
+    } catch (_) { /* best effort */ }
+  }, 2000);
+}
+function addAllTime(key, name, avatar, gained) {
+  if (!key || !gained) return;
+  const cur = allTime.get(key) || { name: name || key, avatar: avatar || '', score: 0 };
+  cur.score += gained;
+  if (name) cur.name = name;
+  if (avatar) cur.avatar = avatar;
+  allTime.set(key, cur);
+  persistAllTime();
+}
+function allTimeTop(n) {
+  return Array.from(allTime.entries())
+    .map(([key, v]) => ({ key, name: v.name, avatar: v.avatar, score: v.score, chat: key.startsWith('chat:') }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, n || 20);
+}
 
 const ROUND_TIME_MS = Number(process.env.ROUND_TIME_MS) || 60 * 1000; // 1 minute to guess each word
 const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 6000; // grid stays visible 6s after everyone finds the word
@@ -699,6 +773,7 @@ function endRound(room) {
     const picker = champOf(room);
     if (picker) {
       picker.score += gained;
+      addAllTime(picker.playerKey, picker.name, picker.avatar, gained);
       room.roundScore = gained;
       room.roundElapsed = elapsed;
       stumpPoints = gained;
@@ -905,6 +980,7 @@ io.on('connection', socket => {
     const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
     const gained = Math.max(10, 100 - elapsed); // faster guess = more points
     player.score += gained;
+    addAllTime(player.playerKey, player.name, player.avatar, gained);
     player.hintsLeft++; // bonus hint for guessing correctly
     player.foundWord = true;
     player.roundFoundAt = elapsed;
@@ -1122,7 +1198,7 @@ function keepPlayerOnDisconnect(socket, roomId) {
 // Reads live-chat comments and feeds them to handleChatAnswer. Safe by
 // design: disabled unless CHAT_BRIDGE_ENABLED=true AND a username is set;
 // never posts to TikTok; auto-reconnects; kill switch via /api/bridge/stop.
-const chatBridge = require('./chatBridge').init({ onAnswer: handleChatAnswer });
+const chatBridge = require('./chatBridge').init({ onAnswer: handleChatAnswer, onGift: handleChatGift });
 app.post('/api/bridge/start', (req, res) => res.json(chatBridge.start()));
 app.post('/api/bridge/stop', (req, res) => res.json(chatBridge.stop()));
 app.get('/api/bridge/status', (req, res) => res.json(chatBridge.status()));

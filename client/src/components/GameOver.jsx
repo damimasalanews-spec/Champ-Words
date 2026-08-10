@@ -1,9 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Logo from './Logo';
 import { playSound } from '../sounds';
 
+const AUTO_RESTART_SECONDS = 20;
+
 export default function GameOver({ result, room, isHost, onPlayAgain, onLeave }) {
   useEffect(() => { playSound('gameover'); }, []);
+  const [allTime, setAllTime] = useState([]);
+  const [countdown, setCountdown] = useState(isHost ? AUTO_RESTART_SECONDS : null);
+
+  // All-time leaderboard (lifetime scores across games)
+  useEffect(() => {
+    fetch('/api/alltime')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setAllTime(d.top.slice(0, 10)); })
+      .catch(() => {});
+  }, []);
+
+  // No dead air: the host's next game auto-starts after a short countdown.
+  // Clicking Play Again / Leave cancels it (component unmounts → timer cleared).
+  useEffect(() => {
+    if (!isHost || countdown === null) return;
+    if (countdown <= 0) { onPlayAgain(); return; }
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [isHost, countdown, onPlayAgain]);
+
   const sorted = [...result.scores].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const rankEmoji = ['🥇', '🥈', '🥉'];
@@ -51,6 +73,25 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
             </div>
           ))}
         </div>
+
+        {allTime.length > 0 && (
+          <div className="alltime-panel">
+            <div className="alltime-title">ALL-TIME TOP 10</div>
+            {allTime.map((p, i) => (
+              <div key={p.key || p.name} className="alltime-row">
+                <span className={`alltime-rank${i === 0 ? ' rank-1' : ''}`}>{i + 1}</span>
+                <span className="alltime-name">{p.name}{p.chat && <span className="chat-badge">CHAT</span>}</span>
+                <span className="alltime-pts">{p.score}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {isHost && countdown !== null && countdown > 0 && (
+          <p className="gameover-countdown">
+            Next game starts in <b>{countdown}s</b> — room <b>{room?.id}</b> · friends can still join
+          </p>
+        )}
 
         <div className="overlay-buttons">
           <button className="btn btn-share" onClick={shareText}>Copy Results</button>

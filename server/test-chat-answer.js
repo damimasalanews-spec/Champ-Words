@@ -98,6 +98,30 @@ function emitAck(socket, ev, payload) {
     const startRes = await post('/api/bridge/start', {});
     check('bridge start refuses without username', !startRes.ok, JSON.stringify(startRes));
 
+    // 11. Gift below minimum diamonds → rejected
+    r = await post('/api/chat-gift', { user: 'big_fan', diamonds: 0 });
+    check('gift below min rejected', !r.ok, JSON.stringify(r));
+
+    // 12. Gift reveals a letter (revealedLetters count increases)
+    const countHidden = roomState => (roomState.revealedLetters || []).filter(l => l !== '' && l !== ' ').length;
+    const before = countHidden((await get(`/api/debug/word?key=${TEST_KEY}`)).room);
+    r = await post('/api/chat-gift', { user: 'big_fan', diamonds: 5 });
+    const after = countHidden((await get(`/api/debug/word?key=${TEST_KEY}`)).room);
+    check('gift reveals a letter', r.ok && after === before + 1, `before=${before} after=${after} ${JSON.stringify(r)}`);
+
+    // 13. Immediate second gift from same user → cooldown
+    r = await post('/api/chat-gift', { user: 'big_fan', diamonds: 5 });
+    check('gift cooldown respected', !r.ok && /cooldown/.test(r.error), JSON.stringify(r));
+
+    // 14. All-time leaderboard includes the chat players
+    const alltime = await get('/api/alltime');
+    const at = (alltime.top || []);
+    const aA = at.find(p => p.name === 'fanso_fan');
+    const aB = at.find(p => p.name === 'viewer2');
+    check('all-time has fanso_fan', !!aA && aA.score >= 10, JSON.stringify(aA || null));
+    check('all-time has viewer2', !!aB && aB.score >= 10, JSON.stringify(aB || null));
+    check('all-time sorted desc', at.every((p, i) => i === 0 || at[i - 1].score >= p.score));
+
     socket.close();
   } catch (e) {
     failed++;

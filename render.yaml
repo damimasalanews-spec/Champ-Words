@@ -40,3 +40,9 @@ services:
         sync: false
       - key: CHAT_TEST_KEY
         sync: false
+      # Gift-powered hints: CHAT_GIFT_MIN_DIAMONDS (min diamonds to reveal a
+      # letter, default 1), CHAT_GIFT_COOLDOWN_MS (per-user cooldown, default 5000).
+      - key: CHAT_GIFT_MIN_DIAMONDS
+        sync: false
+      - key: CHAT_GIFT_COOLDOWN_MS
+        sync: false

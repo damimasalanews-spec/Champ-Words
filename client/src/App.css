@@ -3166,6 +3166,22 @@
 .top10-name.solver { color: var(--gold); text-shadow: 0 0 10px rgba(255, 197, 61, 0.7); }
 .inline-chat-msg.success { color: var(--gold); text-shadow: 0 0 10px rgba(255, 197, 61, 0.5); }
 
+/* All-time leaderboard + no-dead-air countdown (Game Over screen) */
+.gameover-countdown {
+  text-align: center; margin-top: 14px; font-size: 13px;
+  color: var(--gold);
+}
+.gameover-countdown b { font-size: 16px; letter-spacing: 1px; }
+.alltime-panel { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 12px; }
+.alltime-title { text-align: center; font-size: 11px; letter-spacing: 3px; color: var(--text-dim); margin-bottom: 6px; }
+.alltime-row { display: flex; align-items: center; gap: 8px; padding: 5px 10px; font-size: 13px; }
+.alltime-rank { min-width: 18px; color: var(--text-dim); font-weight: 800; text-align: center; }
+.alltime-rank.rank-1 { color: var(--gold); }
+.alltime-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alltime-pts { color: var(--green); font-weight: 800; font-variant-numeric: tabular-nums; }
+.tiktok-half .alltime-row { font-size: 11px; padding: 3px 8px; }
+.tiktok-half .gameover-countdown { font-size: 11px; margin-top: 10px; }
+
 /* TikTok live-chat player badge — marks answers that came from TikTok chat */
 .chat-badge {
   display: inline-block;

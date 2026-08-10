@@ -25,10 +25,13 @@ const state = {
   lastChatAt: 0,
   chatCount: 0,
   correctCount: 0,
+  giftCount: 0,
+  giftReveals: 0,
   lastError: ''
 };
 
 let onAnswer = null; // set by server.js → handleChatAnswer({ user, text })
+let onGift = null;   // set by server.js → handleChatGift({ user, diamonds })
 
 function loadConnector() {
   try {
@@ -83,6 +86,17 @@ function start() {
     }
   });
 
+  conn.on('gift', (data) => {
+    const user = String((data && data.uniqueId) || '').trim();
+    if (!user) return;
+    state.giftCount++;
+    const diamonds = Number((data && (data.diamondCount !== undefined ? data.diamondCount : data.diamonds)) || 0);
+    if (onGift) {
+      const res = onGift({ user, diamonds });
+      if (res && res.ok) state.giftReveals++;
+    }
+  });
+
   conn.on('disconnected', () => {
     if (state.stopped) return;
     state.lastError = 'disconnected';
@@ -132,6 +146,8 @@ function status() {
     connected: state.running && !!state.conn,
     chatCount: state.chatCount,
     correctCount: state.correctCount,
+    giftCount: state.giftCount,
+    giftReveals: state.giftReveals,
     lastChatAt: state.lastChatAt,
     startedAt: state.startedAt,
     lastError: state.lastError
@@ -139,8 +155,9 @@ function status() {
 }
 
 module.exports = {
-  init({ onAnswer: cb }) {
+  init({ onAnswer: cb, onGift: gb }) {
     onAnswer = cb;
+    onGift = gb;
     return { start, stop, status };
   }
 };
