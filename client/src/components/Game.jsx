@@ -344,6 +344,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     .filter(p => p.foundWord && (p.roundScore || 0) > 0)
     .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0))
     .slice(0, 5);
+  // FULL leaderboard: every player ranked by total score (scrollable below)
+  const overallPlayers = room.players.slice().sort((a, b) => b.score - a.score);
   const showRoundScores = state === 'playing' && foundList.length > 0 && !allFound;
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
@@ -624,6 +626,25 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                   {i > 0 && <span className="top5-sep">·</span>}
                   <span className="top5-name">{p.name}</span>
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── FULL overall leaderboard — every player by total score, scrollable (50+ players) ── */}
+        {(state === 'playing' || state === 'round_over') && room.players.length > 0 && (
+          <div className="overall-board">
+            <div className="overall-title">ALL PLAYERS</div>
+            <div className="overall-scroll">
+              {overallPlayers.map((p, i) => (
+                <div key={p.id} className={`overall-row${p.id === socket.id ? ' overall-me' : ''}`}>
+                  <span className={`overall-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
+                  <span className="overall-name">
+                    {p.id === room.champId && <span className="champ-crown">👑</span>}
+                    {p.name.split(' ')[0]}
+                  </span>
+                  <span className="overall-pts">{p.score}</span>
+                </div>
               ))}
             </div>
           </div>

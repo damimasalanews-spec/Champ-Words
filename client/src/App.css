@@ -3203,3 +3203,57 @@
 .tiktok-half .answer-art-box .bracket-box.found-me .bracket-letter,
 .tiktok-half .answer-art-box .bracket-box.found-other .bracket-letter,
 .tiktok-half .answer-art-box .bracket-box.hint-revealed .bracket-letter { font-size: 20px; }
+/* ── FULL overall leaderboard — every player, scrollable (50+ players) ── */
+.overall-board { display: none; }
+.tiktok-half .overall-board {
+  display: flex; flex-direction: column; gap: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.tiktok-half .overall-title {
+  font-size: 11px; letter-spacing: 2.5px; font-weight: 800;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 224, 138, 0.12);
+  padding-bottom: 5px;
+}
+.tiktok-half .overall-scroll {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.tiktok-half .overall-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: linear-gradient(170deg, rgba(48, 25, 44, 0.85), rgba(28, 13, 26, 0.9));
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+.tiktok-half .overall-row.overall-me {
+  background: rgba(255, 197, 61, 0.12);
+  box-shadow: 0 0 10px rgba(255, 197, 61, 0.2);
+}
+.tiktok-half .overall-rank {
+  width: 20px; height: 20px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+}
+.tiktok-half .overall-rank.rank-1 { background: linear-gradient(180deg, #ffe08a, #ffc53d); color: #4a2c00; }
+.tiktok-half .overall-rank.rank-2 { background: linear-gradient(180deg, #d3d9e0, #a7b1bd); color: #2a3440; }
+.tiktok-half .overall-rank.rank-3 { background: linear-gradient(180deg, #e9b98a, #c98656); color: #4a2508; }
+.tiktok-half .overall-name {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12.5px; font-weight: 600;
+}
+.tiktok-half .overall-pts { font-size: 13px; font-weight: 800; color: var(--gold); }
+/* Slim scrollbar */
+.tiktok-half .overall-scroll::-webkit-scrollbar { width: 5px; }
+.tiktok-half .overall-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 3px; }
+.tiktok-half .overall-scroll::-webkit-scrollbar-thumb { background: rgba(255, 197, 61, 0.35); border-radius: 3px; }
+.tiktok-half .overall-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 197, 61, 0.55); }
