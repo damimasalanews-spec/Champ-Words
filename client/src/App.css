@@ -3331,5 +3331,5 @@
 /* ── Voice tab docked right next to the round pill ───────────────────── */
 .tiktok-half .game-area { position: relative; }
 .tiktok-half .voice-chat { position: absolute; bottom: 8px; left: 6px; z-index: 8; }.tiktok-half .footer-answer { margin-left: auto; }
-.tiktok-half .voice-chat { position: fixed; bottom: 12px; left: 6px; z-index: 8; }
+.tiktok-half .voice-chat { position: fixed; bottom: 21px; left: 6px; z-index: 8; }
 .tiktok-half .round-info { display: inline-flex; align-items: center; }
