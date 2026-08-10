@@ -1,27 +1,27 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CHAMP WORDS — "Royal Nebula" design system
-   Deep violet-indigo night, crisp white tiles, mint-teal + amber accents
-   (colors only — all sizes/layout unchanged)
+   CHAMP WORDS — "Sky" design system
+   Light sky-blue gradient, white borderless cards, deep navy text,
+   mint + gold accents. (colors only — all sizes/layout unchanged)
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --bg: #151133;
-  --bg-light: #211b48;
+  --bg: #f2f8ff;
+  --bg-light: #ffffff;
   --bg-tile: #ffffff;
-  --border: #373170;
-  --border-empty: #554d9f;
-  --text: #f5f3ff;
-  --text-dark: #141030;
-  --text-dim: #aaa4db;
-  --green: #3ee6b8;
-  --yellow: #ffc53d;
-  --gray: #262052;
-  --gold: #ffc53d;
+  --border: #cfe2f7;
+  --border-empty: #b9d4f0;
+  --text: #123a63;
+  --text-dark: #0c2547;
+  --text-dim: #6485a8;
+  --green: #17c58f;
+  --yellow: #ffb020;
+  --gray: #dcecff;
+  --gold: #f59e0b;
   --danger: #ff6b81;
-  --accent: #a78bfa;
-  --key-bg: #262052;
-  --bracket-bg: rgba(255, 255, 255, 0.06);
-  --bracket-border: #554d9f;
+  --accent: #2f7cf6;
+  --key-bg: #e4f0ff;
+  --bracket-bg: rgba(43, 108, 196, 0.10);
+  --bracket-border: #b9d4f0;
 
   font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -29,12 +29,12 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background-color: #110e2c; /* flat fallback */
+  background-color: #d9ecff; /* flat fallback */
   background:
-    radial-gradient(1200px 620px at 50% -12%, rgba(167, 139, 250, 0.16), transparent 62%),
-    radial-gradient(900px 520px at 88% 112%, rgba(62, 230, 184, 0.10), transparent 56%),
-    radial-gradient(760px 420px at 6% 108%, rgba(255, 197, 61, 0.07), transparent 55%),
-    linear-gradient(180deg, #171236 0%, #110e2c 45%, #0c0922 100%);
+    radial-gradient(1000px 560px at 88% -10%, rgba(255, 255, 255, 0.9), transparent 62%),
+    radial-gradient(1100px 640px at 6% 112%, rgba(120, 190, 255, 0.38), transparent 58%),
+    radial-gradient(700px 420px at 92% 108%, rgba(255, 197, 61, 0.16), transparent 55%),
+    linear-gradient(180deg, #bfe0ff 0%, #dceeff 45%, #f2f9ff 100%);
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;

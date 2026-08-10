@@ -2808,3 +2808,291 @@
 .hint-btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(255,159,67,0.3); }
 /* Answer brackets: thin blue-bordered empty squares (like the design) */
 .bracket-box { border-color: #7c6ff0; background: rgba(124,111,240,0.10); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SKY THEME — light sky-blue, borderless, white cards
+   Overrides the dark surfaces below. Colors/decoration only — no sizes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── App shell ─────────────────────────────────────────────────────── */
+.app-header {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: none;
+  box-shadow: 0 8px 24px rgba(30, 90, 160, 0.08);
+}
+.app-header .brand-name,
+.lobby-title h1,
+.intro-title,
+.winner-name {
+  background: linear-gradient(90deg, #0284c7, #0d9488);
+}
+.room-badge {
+  background: rgba(23, 145, 244, 0.12);
+  border: none;
+  color: #0b76d4;
+}
+.app-header .room-badge { border: none; }
+.sound-toggle { border: none; box-shadow: 0 3px 10px rgba(30, 90, 160, 0.14); }
+.sound-toggle:hover { transform: scale(1.06); }
+.user-info { border: none; box-shadow: 0 3px 10px rgba(30, 90, 160, 0.12); }
+.logout-btn { border: none; box-shadow: 0 2px 8px rgba(30, 90, 160, 0.12); }
+
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.btn-primary { box-shadow: 0 8px 20px rgba(23, 197, 143, 0.35); }
+.btn-secondary {
+  background: linear-gradient(180deg, #dcecff, #c6e2ff);
+  color: #0b3a6e;
+  box-shadow: 0 4px 12px rgba(30, 90, 160, 0.16);
+}
+.btn-danger { border: none; background: rgba(255, 107, 129, 0.10); }
+.btn-share { box-shadow: 0 6px 18px rgba(245, 158, 11, 0.32); }
+
+/* ── Login ─────────────────────────────────────────────────────────── */
+.login-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  box-shadow: 0 24px 60px rgba(30, 90, 160, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.login-logo h1 { background: linear-gradient(90deg, #0284c7, #0d9488);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.tiktok-login-btn {
+  border: none;
+  box-shadow: 0 8px 20px rgba(30, 90, 160, 0.16), 0 0 0 1px rgba(254, 44, 85, 0.12);
+}
+.guest-login-btn {
+  border: none;
+  background: #e8f3ff;
+  color: #0b3a6e;
+  box-shadow: 0 4px 12px rgba(30, 90, 160, 0.12);
+}
+.guest-login-btn:hover { background: #dcecff; }
+.login-error { background: rgba(255, 107, 129, 0.10); border: none; }
+.loading-spinner { border-color: #cfe2f7; border-top-color: var(--green); }
+
+/* ── Lobby / forms ─────────────────────────────────────────────────── */
+.lobby-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  box-shadow: 0 18px 44px rgba(30, 90, 160, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.host-card { border: none !important; box-shadow: 0 18px 44px rgba(30, 90, 160, 0.16); }
+.form-group input,
+.form-group select {
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(30, 90, 160, 0.10), inset 0 1px 2px rgba(30, 90, 160, 0.06);
+  color: var(--text);
+}
+.form-group input:focus {
+  border: none;
+  box-shadow: 0 0 0 3px rgba(47, 124, 246, 0.18), 0 2px 8px rgba(30, 90, 160, 0.12);
+}
+.round-option { border: none; box-shadow: 0 3px 8px rgba(30, 90, 160, 0.12); }
+.round-option:hover { border: none; }
+.round-option.selected { border: none; }
+.lobby-divider::before, .lobby-divider::after { background: rgba(18, 58, 99, 0.10); }
+.btn-back { border: none; background: #ffffff; box-shadow: 0 2px 8px rgba(30, 90, 160, 0.12); }
+.mode-tabs { border: none; box-shadow: 0 2px 10px rgba(30, 90, 160, 0.12); }
+.mode-tab { color: var(--text-dim); }
+.mode-tab.active { box-shadow: 0 4px 14px rgba(23, 197, 143, 0.3); }
+
+/* ── Waiting room ──────────────────────────────────────────────────── */
+.room-code {
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 26px rgba(30, 90, 160, 0.14);
+}
+.player-badge { border: none; background: #ffffff; box-shadow: 0 2px 8px rgba(30, 90, 160, 0.10); }
+.player-avatar, .user-avatar { border-color: var(--gold); }
+
+/* ── Intro ─────────────────────────────────────────────────────────── */
+.intro-glow { background: radial-gradient(circle, rgba(47, 124, 246, 0.30), transparent 65%); }
+.intro-chip { border: none; background: rgba(255, 255, 255, 0.85); box-shadow: 0 2px 8px rgba(30, 90, 160, 0.10); }
+
+/* ── Game header / pills ───────────────────────────────────────────── */
+.round-info { border: none; background: rgba(255, 255, 255, 0.85); box-shadow: 0 2px 8px rgba(30, 90, 160, 0.10); }
+.chat-toggle { border: none; background: rgba(255, 255, 255, 0.85); box-shadow: 0 2px 8px rgba(30, 90, 160, 0.10); }
+.spot-banner {
+  border: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.75), rgba(228, 240, 255, 0.85), rgba(255, 255, 255, 0.75));
+  box-shadow: 0 6px 18px rgba(30, 90, 160, 0.12);
+}
+.spot-banner span { background: linear-gradient(180deg, #f7b733, #f59e0b); }
+.champ-word-display { border: none; background: rgba(23, 197, 143, 0.10); }
+.champ-word-display b { color: #0ea172; }
+
+/* ── Timer ─────────────────────────────────────────────────────────── */
+.timer-display { color: #0ea172; text-shadow: 0 0 24px rgba(23, 197, 143, 0.30); }
+.timer-warn { color: var(--danger); text-shadow: 0 0 24px rgba(255, 107, 129, 0.30); }
+.timer-bar { background: #cfe2f7; }
+
+/* ── Grid tiles ────────────────────────────────────────────────────── */
+.grid-cell, .grid-4x4 .grid-cell {
+  background: #ffffff;
+  color: #0f3d77;
+  box-shadow: 0 3px 8px rgba(30, 90, 160, 0.18), inset 0 -2px 0 rgba(30, 90, 160, 0.06);
+}
+.grid-cell.selected, .grid-4x4 .grid-cell.selected {
+  background: linear-gradient(180deg, #3fe7b0, #12b98a);
+  color: #05332a;
+  box-shadow: 0 0 16px rgba(23, 197, 143, 0.45);
+}
+.grid-cell.last, .grid-4x4 .grid-cell.last { box-shadow: 0 0 24px rgba(23, 197, 143, 0.6); }
+.grid-4x4 .grid-cell.spect-cell { box-shadow: 0 4px 0 #e0a72e, 0 0 14px rgba(245, 158, 11, 0.40); }
+.drag-word-display { color: #0ea172; }
+.falling-word { color: #0ea172; text-shadow: 0 0 22px rgba(23, 197, 143, 0.5); }
+
+/* ── Answer brackets — borderless soft slots ───────────────────────── */
+.bracket-box {
+  border: none;
+  background: rgba(43, 108, 196, 0.12);
+  box-shadow: inset 0 2px 6px rgba(30, 90, 160, 0.10);
+}
+.bracket-box.found-me { border: none; background: rgba(23, 197, 143, 0.16); box-shadow: 0 0 10px rgba(23, 197, 143, 0.25); }
+.bracket-box.found-other { border: none; background: rgba(245, 158, 11, 0.16); }
+.bracket-box.hint-revealed { border: none; background: rgba(245, 158, 11, 0.16); }
+.bracket-letter { color: #123a63; }
+
+/* ── Hint pills ────────────────────────────────────────────────────── */
+.hint-category {
+  border: none;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+.hint-clue {
+  border: none;
+  background: rgba(47, 124, 246, 0.10);
+  color: #123a63;
+}
+.pick-category-tag { border: none; background: rgba(245, 158, 11, 0.12); color: #b45309; }
+
+/* ── Inputs (type-the-answer / word input / chat) ──────────────────── */
+.word-input {
+  background: #ffffff;
+  border: none;
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(30, 90, 160, 0.12);
+}
+.word-input:focus { border: none; box-shadow: 0 0 0 3px rgba(47, 124, 246, 0.18), 0 2px 8px rgba(30, 90, 160, 0.12); }
+.type-answer input {
+  background: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(30, 90, 160, 0.12);
+}
+.type-answer input:focus { border: none; box-shadow: 0 0 0 3px rgba(47, 124, 246, 0.18); }
+.pick-hint-input { background: #ffffff; border: none; box-shadow: 0 2px 8px rgba(30, 90, 160, 0.12); }
+.pick-hint-input:focus { border: none; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18); }
+.submit-btn { color: #05332a; }
+.chat-input-area input { background: #ffffff; border: none; box-shadow: 0 2px 6px rgba(30, 90, 160, 0.10); }
+.chat-input-area input:focus { border: none; box-shadow: 0 0 0 3px rgba(47, 124, 246, 0.15); }
+
+/* ── Found chips ───────────────────────────────────────────────────── */
+.found-chip { border: none; background: rgba(23, 197, 143, 0.12); color: #0ea172; }
+.found-chip.found-self { background: rgba(23, 197, 143, 0.22); }
+
+/* ── Side status card ──────────────────────────────────────────────── */
+.side-status-card {
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 26px rgba(30, 90, 160, 0.14);
+}
+.side-status-me { border: none; background: rgba(23, 197, 143, 0.10); }
+.side-status-win { border: none; background: linear-gradient(170deg, rgba(245, 158, 11, 0.14), rgba(255, 176, 32, 0.08)); }
+.side-avatar-fallback { background: #e4f0ff; }
+
+/* ── Score board ───────────────────────────────────────────────────── */
+.score-board-grid .score-board-row {
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 12px rgba(30, 90, 160, 0.12);
+}
+.score-board-grid .score-board-me {
+  border: none;
+  background: rgba(23, 197, 143, 0.12);
+  box-shadow: 0 0 12px rgba(23, 197, 143, 0.2);
+}
+.score-board-pts { color: #0ea172; }
+
+/* ── Popups / overlays — light blur, white cards ───────────────────── */
+.pick-popup-overlay { background: rgba(255, 255, 255, 0.55); }
+.overlay { background: rgba(255, 255, 255, 0.55); }
+.pick-popup-card, .overlay-card {
+  background: rgba(255, 255, 255, 0.97);
+  border: none;
+  box-shadow: 0 30px 80px rgba(30, 90, 160, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.pick-popup-word, .category-choice, .hint-clue-option {
+  border: none;
+  background: #eef6ff;
+  box-shadow: 0 3px 10px rgba(30, 90, 160, 0.10);
+}
+.pick-popup-word:hover, .category-choice:hover, .hint-clue-option:hover {
+  border: none;
+  background: rgba(23, 197, 143, 0.10);
+}
+.pick-popup-text { color: #123a63; }
+.score-item { border: none; background: #eef6ff; box-shadow: 0 2px 8px rgba(30, 90, 160, 0.08); }
+.round-word-item { background: #eef6ff; }
+.all-possible .word-chip { border: none; background: #eef6ff; color: #6485a8; }
+.confetti-center {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  box-shadow: 0 20px 50px rgba(30, 90, 160, 0.2);
+}
+.confetti-word { color: #0ea172; text-shadow: 0 0 30px rgba(23, 197, 143, 0.4); }
+.congrats { background: linear-gradient(90deg, #0284c7, #f59e0b, #0284c7); background-size: 200% 100%; }
+.round-word { color: #b45309; text-shadow: 0 0 26px rgba(245, 158, 11, 0.3); }
+
+/* ── Art board (live drawing) ──────────────────────────────────────── */
+.art-board {
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  box-shadow: 0 8px 20px rgba(30, 90, 160, 0.12);
+}
+.art-canvas { background: #eaf4ff; }
+.art-canvas::after { background: linear-gradient(90deg, #eaf4ff 0%, #f8fcff 90%); }
+
+/* ── Chat / toast ──────────────────────────────────────────────────── */
+.chat-panel {
+  background: rgba(255, 255, 255, 0.97);
+  border: none;
+  box-shadow: -18px 0 50px rgba(30, 90, 160, 0.16);
+}
+.chat-msg { border: none; background: #eef6ff; box-shadow: 0 2px 6px rgba(30, 90, 160, 0.08); }
+.chat-msg.system { border: none; background: rgba(23, 197, 143, 0.08); }
+.chat-input-area { border-top: 1px solid rgba(18, 58, 99, 0.08); }
+.toast {
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 12px 34px rgba(30, 90, 160, 0.2);
+}
+
+/* ── Voice ─────────────────────────────────────────────────────────── */
+.voice-btn { border: none; background: #ffffff; box-shadow: 0 4px 14px rgba(30, 90, 160, 0.14); }
+.voice-panel { border: none; background: #ffffff; box-shadow: 0 6px 20px rgba(30, 90, 160, 0.16); }
+.voice-panel-header { border-bottom: 1px solid rgba(18, 58, 99, 0.08); }
+.voice-mute, .voice-leave { border: none; background: #eef6ff; }
+
+/* ── TikTok half-screen panels ─────────────────────────────────────── */
+.tiktok-half .game-area {
+  border: none;
+  background: rgba(255, 255, 255, 0.60);
+  box-shadow: 0 10px 34px rgba(30, 90, 160, 0.14);
+}
+.tiktok-half .game-frame,
+.tiktok-half .grid-leader-panel,
+.tiktok-half .answer-art-box {
+  border: none;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 10px 34px rgba(30, 90, 160, 0.12);
+}
+.tiktok-half .game-header { border: none; background: rgba(255, 255, 255, 0.85); box-shadow: 0 8px 24px rgba(30, 90, 160, 0.12); }
+.tiktok-half .top10-board { border: none; background: rgba(255, 255, 255, 0.7); }
+.tiktok-half .top10-row { border: none; background: rgba(255, 255, 255, 0.9); box-shadow: 0 3px 8px rgba(30, 90, 160, 0.10); }
+.tiktok-half .top10-title { border-bottom: 1px solid rgba(18, 58, 99, 0.10); }
+.tiktok-half .inline-chat { border: none; background: rgba(255, 255, 255, 0.8); }
+.tiktok-half .congrats-line { border: none; background: rgba(245, 158, 11, 0.12); color: #b45309; }
+.tiktok-half .top5-row { border: none; background: rgba(255, 255, 255, 0.8); }
+.auto-status { border: none; background: rgba(245, 158, 11, 0.10); color: #b45309; }
