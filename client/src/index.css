@@ -23,11 +23,7 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background:
-    radial-gradient(1100px 700px at 15% -10%, #142450 0%, transparent 60%),
-    radial-gradient(900px 650px at 110% 115%, #0d3b33 0%, transparent 55%),
-    radial-gradient(700px 500px at 100% 0%, #241a4d 0%, transparent 60%),
-    linear-gradient(160deg, #070d1f 0%, #0a1124 45%, #0d1630 100%);
+  background: #0f1c40; /* flat solid dark blue (game design) */
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
