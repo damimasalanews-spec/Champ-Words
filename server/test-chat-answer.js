@@ -11,6 +11,7 @@ const { maskText } = require('./badWords');
 const CATS = require('./categories');
 const { WORD_ART } = require('./wordArt');
 CATS.words.trade = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
+CATS.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
 // Require server.js for its exported pickers. Bind to an ephemeral port so
 // the parent require's idle listener never conflicts (the spawned child
 // overrides PORT with its own test port).
@@ -181,6 +182,11 @@ function emitAck(socket, ev, payload) {
     const picks2 = [];
     for (let i = 0; i < 30; i++) { const w = pickRandomWord('medium', 'mixed', used2); picks2.push(w); used2.push(w); }
     check('mixed pool: 30 rounds with zero repeats', new Set(picks2).size === 30);
+    // Countries pack: big pool, no repeats for 30 rounds
+    const used3 = [];
+    const picks3 = [];
+    for (let i = 0; i < 30; i++) { const w = pickRandomWord('medium', 'countries', used3); picks3.push(w); used3.push(w); }
+    check('countries pool: 30 rounds with zero repeats', new Set(picks3).size === 30, picks3.slice(0, 10).join(','));
     // Every category needs a healthy drawable pool so 10+ round games don't repeat early
     const thin2 = Object.entries(CATS.words)
       .filter(([id]) => id !== 'mixed')

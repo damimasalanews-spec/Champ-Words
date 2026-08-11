@@ -220,6 +220,24 @@ Object.assign(WORD_ART, {
   beast: '👹'
 });
 
+// ── Countries (flag emoji art; UK flag used for england/scotland/wales) ──
+Object.assign(WORD_ART, {
+  india: '🇮🇳', china: '🇨🇳', france: '🇫🇷', egypt: '🇪🇬', brazil: '🇧🇷', canada: '🇨🇦', japan: '🇯🇵', germany: '🇩🇪',
+  italy: '🇮🇹', spain: '🇪🇸', mexico: '🇲🇽', turkey: '🇹🇷', poland: '🇵🇱', sweden: '🇸🇪', norway: '🇳🇴', denmark: '🇩🇰',
+  portugal: '🇵🇹', greece: '🇬🇷', ireland: '🇮🇪', iceland: '🇮🇸', england: '🇬🇧', scotland: '🇬🇧', wales: '🇬🇧', russia: '🇷🇺',
+  thailand: '🇹🇭', vietnam: '🇻🇳', malaysia: '🇲🇾', pakistan: '🇵🇰', nepal: '🇳🇵', bhutan: '🇧🇹', chile: '🇨🇱', nigeria: '🇳🇬',
+  kenya: '🇰🇪', ghana: '🇬🇭', senegal: '🇸🇳', morocco: '🇲🇦', algeria: '🇩🇿', tunisia: '🇹🇳', sudan: '🇸🇩', somalia: '🇸🇴',
+  ethiopia: '🇪🇹', tanzania: '🇹🇿', uganda: '🇺🇬', zambia: '🇿🇲', zimbabwe: '🇿🇼', angola: '🇦🇴', cyprus: '🇨🇾', jordan: '🇯🇴',
+  israel: '🇮🇱', lebanon: '🇱🇧', syria: '🇸🇾', yemen: '🇾🇪', qatar: '🇶🇦', kuwait: '🇰🇼', saudi: '🇸🇦', bahrain: '🇧🇭',
+  mongolia: '🇲🇳', taiwan: '🇹🇼', cambodia: '🇰🇭', myanmar: '🇲🇲', niger: '🇳🇪', congo: '🇨🇩', rwanda: '🇷🇼', malawi: '🇲🇼',
+  namibia: '🇳🇦', botswana: '🇧🇼', guinea: '🇬🇳', liberia: '🇱🇷', armenia: '🇦🇲', georgia: '🇬🇪', ukraine: '🇺🇦', belarus: '🇧🇾',
+  moldova: '🇲🇩', romania: '🇷🇴', bulgaria: '🇧🇬', hungary: '🇭🇺', austria: '🇦🇹', belgium: '🇧🇪', slovakia: '🇸🇰', slovenia: '🇸🇮',
+  croatia: '🇭🇷', bosnia: '🇧🇦', serbia: '🇷🇸', albania: '🇦🇱', estonia: '🇪🇪', latvia: '🇱🇻', finland: '🇫🇮', andorra: '🇦🇩',
+  malta: '🇲🇹', monaco: '🇲🇨', ecuador: '🇪🇨', colombia: '🇨🇴', bolivia: '🇧🇴', paraguay: '🇵🇾', uruguay: '🇺🇾', guyana: '🇬🇾',
+  panama: '🇵🇦', honduras: '🇭🇳', haiti: '🇭🇹', jamaica: '🇯🇲', trinidad: '🇹🇹', barbados: '🇧🇧', bahamas: '🇧🇸', grenada: '🇬🇩',
+  samoa: '🇼🇸', papua: '🇵🇬', solomon: '🇸🇧', puerto: '🇵🇷'
+});
+
 function getWordArt(word) {
   return WORD_ART[word] || null;
 }
