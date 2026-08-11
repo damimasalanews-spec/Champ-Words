@@ -620,7 +620,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               {room.art ? (
                 <>
                   <div className="art-canvas">
-                    <span className="art-emoji">{room.art}</span>
+                    {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>
                 </>
@@ -715,7 +715,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               {room.art ? (
                 <>
                   <div className="art-canvas">
-                    <span className="art-emoji">{room.art}</span>
+                    {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>
                 </>

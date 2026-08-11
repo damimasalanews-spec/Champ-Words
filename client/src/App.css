@@ -157,6 +157,15 @@
   border-radius: 12px;
   background: rgba(255,255,255,0.06);
 }
+.art-flag {
+  width: 64px; height: 64px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block; margin: 0 auto;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.wotd-art .art-flag { width: 96px; height: 64px; }
 .art-emoji {
   font-size: 46px;
   line-height: 64px;

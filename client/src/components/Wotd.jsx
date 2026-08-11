@@ -65,7 +65,9 @@ export default function Wotd({ onBack }) {
           <div className="wotd-title">WORD OF THE DAY</div>
           <div className="wotd-date">{data.date}</div>
 
-          <div className="wotd-art">{data.art}</div>
+          <div className="wotd-art">
+            {String(data.art).startsWith('http') ? <img className="art-flag" src={data.art} alt="" /> : data.art}
+          </div>
 
           <div className="wotd-brackets">
             {Array.from({ length: data.length }, (_, i) => (

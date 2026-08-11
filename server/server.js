@@ -275,7 +275,7 @@ app.get('/api/wotd', (req, res) => {
   if (pool.length === 0) return res.json({ ok: false, error: 'no words available' });
   const day = Math.floor(Date.now() / 86400000);
   const word = pool[day % pool.length];
-  res.json({ ok: true, word, length: word.replace(/[^a-z]/g, '').length, art: getWordArt(word), date: new Date().toISOString().slice(0, 10) });
+  res.json({ ok: true, word, length: word.replace(/[^a-z]/g, '').length, art: artForWord(word), date: new Date().toISOString().slice(0, 10) });
 });
 
 // Category list for the host's create-room form
@@ -306,7 +306,7 @@ const DICT = new Set();
 try {
   const txt = fs.readFileSync(path.join(__dirname, 'words.txt'), 'utf-8');
   txt.split(/\r?\n/).map(w => w.trim().toLowerCase())
-    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 5 && l.length <= 8; }) // 5-8 letters, spaces allowed
+    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 3 && l.length <= 10; }) // 3-10 letters, spaces allowed (drag path needs ≥3)
     .forEach(w => DICT.add(w));
 } catch (_) {}
 
@@ -350,6 +350,36 @@ for (const [id, words] of Object.entries(PACKS)) {
 // Countries pack — every word is 5–8 letters, in the dictionary, with flag art.
 CATEGORIES.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
 if (!CATEGORY_IDS.has('countries')) { CATEGORIES.list.push({ id: 'countries', label: 'Countries', icon: '🌍' }); CATEGORY_IDS.add('countries'); }
+
+// ── Country flag art ─────────────────────────────────────────────────────
+// Flag emojis render as two-letter codes (e.g. "IN") on Windows — useless as
+// a drawing hint. Countries therefore use real flag images from flagcdn.
+const FLAG_CODES = {
+  india: 'in', china: 'cn', france: 'fr', egypt: 'eg', brazil: 'br', canada: 'ca',
+  japan: 'jp', germany: 'de', italy: 'it', spain: 'es', mexico: 'mx', turkey: 'tr',
+  poland: 'pl', sweden: 'se', norway: 'no', denmark: 'dk', portugal: 'pt', greece: 'gr',
+  ireland: 'ie', iceland: 'is', england: 'gb-eng', scotland: 'gb-sct', wales: 'gb-wls',
+  russia: 'ru', thailand: 'th', vietnam: 'vn', malaysia: 'my', pakistan: 'pk', nepal: 'np',
+  bhutan: 'bt', chile: 'cl', nigeria: 'ng', kenya: 'ke', ghana: 'gh', senegal: 'sn',
+  morocco: 'ma', algeria: 'dz', tunisia: 'tn', sudan: 'sd', somalia: 'so', ethiopia: 'et',
+  tanzania: 'tz', uganda: 'ug', zambia: 'zm', zimbabwe: 'zw', angola: 'ao', cyprus: 'cy',
+  jordan: 'jo', israel: 'il', lebanon: 'lb', syria: 'sy', yemen: 'ye', qatar: 'qa',
+  kuwait: 'kw', saudi: 'sa', bahrain: 'bh', mongolia: 'mn', taiwan: 'tw', cambodia: 'kh',
+  myanmar: 'mm', niger: 'ne', congo: 'cd', rwanda: 'rw', malawi: 'mw', namibia: 'na',
+  botswana: 'bw', guinea: 'gn', liberia: 'lr', armenia: 'am', georgia: 'ge', ukraine: 'ua',
+  belarus: 'by', moldova: 'md', romania: 'ro', bulgaria: 'bg', hungary: 'hu', austria: 'at',
+  belgium: 'be', slovakia: 'sk', slovenia: 'si', croatia: 'hr', bosnia: 'ba', serbia: 'rs',
+  albania: 'al', estonia: 'ee', latvia: 'lv', finland: 'fi', andorra: 'ad', malta: 'mt',
+  monaco: 'mc', ecuador: 'ec', colombia: 'co', bolivia: 'bo', paraguay: 'py', uruguay: 'uy',
+  guyana: 'gy', panama: 'pa', honduras: 'hn', haiti: 'ht', jamaica: 'jm', trinidad: 'tt',
+  barbados: 'bb', bahamas: 'bs', grenada: 'gd', samoa: 'ws', papua: 'pg', solomon: 'sb',
+  puerto: 'pr'
+};
+function artForWord(word) {
+  const code = FLAG_CODES[word];
+  if (code) return `https://flagcdn.com/w160/${code}.png`;
+  return getWordArt(word);
+}
 
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
@@ -511,7 +541,7 @@ function sanitizeRoom(room) {
     endsAt: room.roundStartedAt ? room.roundStartedAt + (room.roundTimeMs || ROUND_TIME_MS) : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
     finds: room.roundFinds || [],
-    art: room.state === 'playing' ? getWordArt(room.word) : null,
+    art: room.state === 'playing' ? artForWord(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
   };

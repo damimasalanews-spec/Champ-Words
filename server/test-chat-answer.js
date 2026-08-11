@@ -16,7 +16,7 @@ const fs = require('fs');
 const TEST_DICT = new Set(
   fs.readFileSync(path.join(__dirname, 'words.txt'), 'utf-8').split(/\r?\n/)
     .map(w => w.trim().toLowerCase())
-    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 5 && l.length <= 8; })
+    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 3 && l.length <= 10; })
 );
 // Mirror the server's pack merge
 for (const [id, ws] of Object.entries(PACKS)) {
@@ -198,6 +198,11 @@ function emitAck(socket, ev, payload) {
     const picks3 = [];
     for (let i = 0; i < 30; i++) { const w = pickRandomWord('medium', 'countries', used3); picks3.push(w); used3.push(w); }
     check('countries pool: 30 rounds with zero repeats', new Set(picks3).size === 30, picks3.slice(0, 10).join(','));
+
+    // 17d. Dictionary now accepts short (3-4) and long (9-10) letter words
+    check('dictionary includes short words (kale)', TEST_DICT.has('kale'));
+    check('dictionary includes long words (basketball)', TEST_DICT.has('basketball'));
+    check('2-letter words excluded (tv)', !TEST_DICT.has('tv'));
     // Every category needs a 50+ drawable pool so long games don't repeat early
     const thin2 = Object.entries(CATS.words)
       .filter(([id]) => id !== 'mixed')
@@ -286,6 +291,14 @@ function emitAck(socket, ev, payload) {
     const aF = (alltime2.top || []).find(p => p.name === 'fanso_fan');
     check('all-time tracks found count', aF && aF.found >= 2, JSON.stringify(aF || null));
     check('all-time tracks best streak', aF && aF.bestStreak >= 2, JSON.stringify(aF || null));
+
+    // 24. Countries theme shows real flag images (flag emojis → letters on Windows)
+    const r4 = await emitAck(socket, 'create_room', { name: 'Host4', totalRounds: 3, roundTimeMs: 60000, difficulty: 'medium', category: 'countries', adminToken: login.token, playerKey: 'host4-key' });
+    check('countries room created', r4 && r4.ok && r4.room.category === 'countries');
+    const started4 = await emitAck(socket, 'start_game', { roomId: r4.room.id });
+    check('countries room started', started4 && started4.ok);
+    const dbgC = await get(`/api/debug/word?key=${TEST_KEY}`);
+    check('countries art is a real flag image', dbgC.ok && String(dbgC.room.art).startsWith('https://flagcdn'), String(dbgC.room && dbgC.room.art));
 
     socket.close();
   } catch (e) {
