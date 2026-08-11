@@ -3728,5 +3728,150 @@
   .login-page .login-logo svg,
   .login-page::before,
   .login-page::after,
-  .login-page .login-card::after { animation: none !important; }
+  .login-page .login-card::after,
+  .login-page .login-avatar,
+  .login-page .login-live-badge,
+  .login-page .login-logo,
+  .login-page .login-divider,
+  .login-page .tiktok-login-btn,
+  .login-page .guest-login-btn,
+  .login-page .login-note,
+  .login-page .login-legal,
+  .login-page .login-bg-tiles span { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOGIN PAGE — stunning bundle: avatar, live badge, floating tiles,
+   breathing border, staggered entrance, premium grain.
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page {
+  padding-top: 52px; /* room for the avatar that overlaps the card top */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.05'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* Champ cartoon avatar — circular, gold ring, overlaps the card top */
+.login-page .login-avatar {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translate(-50%, -52%);
+  width: 98px; height: 98px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3.5px solid rgba(255, 197, 61, 0.92);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    0 0 34px rgba(255, 197, 61, 0.30);
+  z-index: 2;
+  animation: loginFadeUp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.08s both;
+}
+.login-page .login-card { padding-top: 60px; } /* keep logo clear of the avatar */
+.login-page .login-avatar::after {
+  content: '';
+  position: absolute; inset: -6px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 197, 61, 0.5);
+  animation: loginRingSpin 16s linear infinite;
+  pointer-events: none;
+}
+@keyframes loginRingSpin { to { transform: rotate(360deg); } }
+
+/* NOW LIVE badge */
+.login-page .login-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 auto 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255, 235, 245, 0.9);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  animation: loginFadeUp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.2s both;
+}
+.login-page .login-live-badge .live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #ff4d6d;
+  box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.6);
+  animation: loginLivePulse 1.8s ease-out infinite;
+}
+@keyframes loginLivePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.55); }
+  70% { box-shadow: 0 0 0 9px rgba(255, 77, 109, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
+}
+
+/* Floating background letter tiles */
+.login-page .login-bg-tiles {
+  position: absolute; inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.login-page .login-bg-tiles span {
+  position: absolute;
+  bottom: -50px;
+  font-weight: 800;
+  font-family: 'Fredoka', sans-serif;
+  opacity: 0;
+  animation-name: loginTileUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes loginTileUp {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  85% { opacity: 0.7; }
+  100% { transform: translateY(-1000px) rotate(28deg); opacity: 0; }
+}
+
+/* Breathing golden border on the card */
+.login-page .login-card {
+  animation:
+    loginCardIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both,
+    loginBorderBreath 5s ease-in-out 0.9s infinite;
+}
+@keyframes loginBorderBreath {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.55),
+      0 12px 44px rgba(255, 197, 61, 0.09),
+      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  }
+  50% {
+    border-color: rgba(255, 197, 61, 0.4);
+    box-shadow:
+      0 30px 80px rgba(0, 0, 0, 0.55),
+      0 12px 44px rgba(255, 197, 61, 0.09),
+      0 0 48px rgba(255, 197, 61, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  }
+}
+
+/* Staggered entrance for the content blocks */
+@keyframes loginFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.login-page .login-logo { animation: loginFadeUp 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.1) 0.3s both; }
+.login-page .login-divider { animation: loginFadeUp 0.5s ease 0.42s both; }
+.login-page .login-error { animation: loginFadeUp 0.5s ease 0.45s both; }
+.login-page .tiktok-login-btn { animation: loginFadeUp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) 0.52s both; }
+.login-page .guest-login-btn { animation: loginFadeUp 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) 0.66s both; }
+.login-page .login-note,
+.login-page .login-legal { animation: loginFadeUp 0.5s ease 0.78s both; }
+
+/* Compact heights — avatar and spacing shrink to fit the 540×960 canvas */
+@media (max-height: 860px) {
+  .login-page { padding-top: 40px; }
+  .login-page .login-avatar { width: 76px; height: 76px; }
+  .login-page .login-card { padding-top: 46px; }
+  .login-page .login-live-badge { padding: 5px 12px; font-size: 9px; margin-bottom: 9px; }
+  .login-page .login-bg-tiles span { font-size: 20px; }
 }
