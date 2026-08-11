@@ -4145,6 +4145,30 @@
   max-width: 100%;
   margin: auto;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   FACEBOOK-STYLE FULL-SCREEN LOGIN — edge-to-edge, no scroll:
+   brand on top · buttons in the middle · footer at the bottom.
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page {
+  padding: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.login-page .login-card {
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  margin: 0;
+  border: none;
+  padding: 26px 22px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+/* Buttons land mid-screen, footer pinned to the bottom (Facebook layout) */
+.login-page .login-divider { margin-top: auto; }
+.login-page .login-note { margin-top: auto; }
+.login-page .login-legal { margin-bottom: 2px; }
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
