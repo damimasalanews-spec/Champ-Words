@@ -4146,29 +4146,44 @@
   margin: auto;
 }
 /* ═══════════════════════════════════════════════════════════════════════
-   FACEBOOK-STYLE FULL-SCREEN LOGIN — edge-to-edge, no scroll:
-   brand on top · buttons in the middle · footer at the bottom.
+   FACEBOOK-STYLE LOGIN — compact column, consistent spacing, even gaps,
+   mobile-proportioned fonts, no scroll.
    ═══════════════════════════════════════════════════════════════════════ */
 .login-page {
   padding: 0;
-  align-items: stretch;
-  justify-content: flex-start;
+  align-items: center;
+  justify-content: center;
 }
 .login-page .login-card {
-  width: 100%;
+  width: min(92vw, 400px);
   max-width: 100%;
-  flex: 1;
+  flex: 0 0 auto;
   margin: 0;
   border: none;
-  padding: 26px 22px 12px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: center;
 }
-/* Buttons land mid-screen, footer pinned to the bottom (Facebook layout) */
-.login-page .login-divider { margin-top: auto; }
-.login-page .login-note { margin-top: auto; }
-.login-page .login-legal { margin-bottom: 2px; }
+/* Consistent internal rhythm — no giant auto gaps */
+.login-page .login-live-badge { margin-bottom: 14px; }
+.login-page .login-logo { margin-bottom: 2px; }
+.login-page .login-divider { margin: 24px 0 0; }
+.login-page .login-error { margin-top: 12px; }
+.login-page .tiktok-login-btn { margin-top: 16px; }
+.login-page .or-divider { margin: 16px 0; }
+.login-page .login-note { margin-top: 28px; }
+.login-page .login-legal { margin-top: 16px; margin-bottom: 0; }
+/* Mobile-proportioned fonts */
+.login-page .login-logo h1 { font-size: 33px; letter-spacing: 3px; margin: 12px 0 5px; }
+.login-page .login-logo p { font-size: 11.5px; letter-spacing: 2.5px; }
+.login-page .tiktok-login-btn { font-size: 15px; padding: 14px; }
+.login-page .guest-login-btn { font-size: 13.5px; padding: 14px; }
+.login-page .login-divider span { font-size: 9.5px; letter-spacing: 3px; }
+.login-page .login-note { font-size: 10.5px; line-height: 1.65; }
+.login-page .login-legal { font-size: 10.5px; }
+.login-page .login-avatar { width: 78px; height: 78px; }
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
