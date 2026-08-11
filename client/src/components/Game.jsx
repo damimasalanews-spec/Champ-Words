@@ -107,7 +107,7 @@ function Top5Celebration({ players }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], onAnswerSlot }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [] }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -336,20 +336,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       else if (res.error && !res.error.includes('Not the word')) showToast(res.error); // no wrong-guess popup
     });
   };
-
-  // Mobile: the typed-answer box lives inside the chat sidebar (WhatsApp-style).
-  // Reported up to App → Chat; hidden on desktop via CSS.
-  useEffect(() => {
-    if (!onAnswerSlot) return;
-    onAnswerSlot(
-      <form className="type-answer mobile-answer" onSubmit={submitTyped}>
-        <input value={typedWord} onChange={e => setTypedWord(e.target.value)}
-          placeholder="Or type the answer…" maxLength={10} autoComplete="off" />
-        <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
-      </form>
-    );
-    return () => onAnswerSlot(null);
-  }, [typedWord, submitting, onAnswerSlot]);
 
   // Drag global listeners
   useEffect(() => {

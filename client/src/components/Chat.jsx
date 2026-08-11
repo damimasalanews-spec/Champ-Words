@@ -11,7 +11,7 @@ function getColor(name = '') {
   return COLORS[Math.abs(hash) % COLORS.length];
 }
 
-export default function Chat({ messages, onSend, onClose, answerSlot }) {
+export default function Chat({ messages, onSend, onClose }) {
   const [input, setInput] = useState('');
   const bottomRef = useRef(null);
 
@@ -48,7 +48,6 @@ export default function Chat({ messages, onSend, onClose, answerSlot }) {
         ))}
         <div ref={bottomRef} />
       </div>
-      {answerSlot && <div className="chat-answer-slot">{answerSlot}</div>}
       <form className="chat-input-area" onSubmit={handleSubmit}>
         <input value={input} onChange={e => setInput(e.target.value)}
           placeholder="Send a message..." maxLength={200} />
