@@ -4066,3 +4066,44 @@
   .lobby-intro .intro-foot,
   .lobby-intro .login-bg-tiles span { animation: none !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FULL-BLEED MOBILE LAYOUT — splash + lobby cards fill the screen
+   (thin 10px frame, content centered inside like a native app).
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page {
+  padding: 10px 12px;
+}
+.login-page .login-card {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lobby-intro {
+  padding: 10px 12px;
+}
+.lobby-intro .intro-card {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Ember tiles drift OVER the app screen (pointer-events none, translucent) */
+.login-page .login-bg-tiles,
+.lobby-intro .login-bg-tiles {
+  z-index: 3;
+}
+/* Tighter inside spacing now the card fills the height */
+.login-page .login-card {
+  gap: 2px;
+}
+.lobby-intro .intro-card {
+  gap: 4px;
+}
