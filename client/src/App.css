@@ -4305,6 +4305,14 @@
    GAME PAGE — identical layout on mobile and desktop (the original 540×960
    canvas, same sections, same format). No mobile-specific game overrides.
    ═══════════════════════════════════════════════════════════════════════ */
+
+/* Mobile: no scrolling anywhere on the top-5 — the horizontal marquee strip
+   is hidden (the static TOP 5 board already shows all 5 players) */
+@media (max-width: 540px) {
+  .top5-row,
+  .top5-row.top5-scroll { display: none; }
+  .tiktok-half .top10-board { overflow: hidden; }
+}
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
