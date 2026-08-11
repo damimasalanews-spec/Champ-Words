@@ -4270,6 +4270,37 @@
 .wotd-wrap .wotd-art { font-size: 60px; margin: 14px 0 12px; }
 .wotd-wrap .wotd-brackets { margin-bottom: 14px; }
 .wotd-wrap .wotd-title { font-size: 12px; }
+/* ═══════════════════════════════════════════════════════════════════════
+   GLOBAL BOX-SIZING + iPhone X (375px) MOBILE FIT
+   border-box everywhere: width:100% + padding elements no longer overflow
+   (this is what caused the right-side cut on the pre-game screens).
+   The game page is unaffected (it already used border-box inside its canvas).
+   ═══════════════════════════════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+@media (max-width: 400px) {
+  .app { padding: 0 8px; }
+  .intro-features,
+  .mode-tabs,
+  .theme-selector {
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  .intro-chip { font-size: 10.5px; padding: 6px 10px; }
+  .lobby-intro .intro-title { font-size: 30px; letter-spacing: 3px; }
+  .login-brand-row { gap: 14px; }
+  .login-page .login-avatar { width: 72px; height: 72px; }
+  .login-page .login-logo h1 { font-size: 30px; letter-spacing: 3px; }
+  .wotd-art { font-size: 52px; }
+  .wotd-brackets { gap: 4px; }
+  .wotd-brackets .bracket-box { width: 32px; height: 38px; }
+  .lobby-form { padding: 8px; }
+  .wotd-wrap { padding: 8px; }
+  .login-page { padding: 0 8px; }
+}
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
