@@ -1474,12 +1474,8 @@ app.get('/', (req, res) => {
   res.redirect('/tiktok' + qs);
 });
 
-// /compact → the same half-screen TikTok experience (additive alias;
-// the /tiktok link itself is unchanged)
-app.get('/compact', (req, res) => {
-  const qs = req.url.indexOf('?') >= 0 ? req.url.slice(req.url.indexOf('?')) : '';
-  res.redirect('/tiktok' + qs);
-});
+// /compact serves its own redesigned compact view (client-side mode); the
+// /tiktok link itself is untouched.
 
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));
