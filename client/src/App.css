@@ -4100,6 +4100,13 @@
 .lobby-intro .login-bg-tiles {
   z-index: 3;
 }
+/* Cards are transparent — the page's own purple gradient shows through
+   everywhere (no maroon/"brown" tint covering the section) */
+.login-page .login-card,
+.lobby-intro .intro-card {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.10);
+}
 /* Tighter inside spacing now the card fills the height */
 .login-page .login-card {
   gap: 2px;
