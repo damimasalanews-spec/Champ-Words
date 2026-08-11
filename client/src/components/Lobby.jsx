@@ -87,26 +87,40 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   if (step === 'intro') {
     return (
       <div className="lobby-intro">
-        <div className="intro-logo-wrap">
-          <div className="intro-glow" aria-hidden="true" />
-          <Logo size={104} />
+        {/* Decorative floating letter tiles (CSS animation only) */}
+        <div className="login-bg-tiles" aria-hidden="true">
+          <span style={{ left: '5%', fontSize: 26, animationDuration: '11s', animationDelay: '0s', color: 'rgba(255,197,61,0.20)' }}>C</span>
+          <span style={{ left: '16%', fontSize: 16, animationDuration: '14s', animationDelay: '2s', color: 'rgba(255,107,107,0.18)' }}>W</span>
+          <span style={{ left: '28%', fontSize: 32, animationDuration: '10s', animationDelay: '4s', color: 'rgba(255,255,255,0.12)' }}>★</span>
+          <span style={{ left: '42%', fontSize: 18, animationDuration: '15s', animationDelay: '1s', color: 'rgba(255,197,61,0.16)' }}>W</span>
+          <span style={{ left: '56%', fontSize: 24, animationDuration: '12s', animationDelay: '3s', color: 'rgba(255,107,107,0.15)' }}>C</span>
+          <span style={{ left: '70%', fontSize: 14, animationDuration: '16s', animationDelay: '5s', color: 'rgba(255,255,255,0.12)' }}>✦</span>
+          <span style={{ left: '82%', fontSize: 28, animationDuration: '11.5s', animationDelay: '0.5s', color: 'rgba(255,197,61,0.18)' }}>A</span>
+          <span style={{ left: '93%', fontSize: 18, animationDuration: '13s', animationDelay: '2.5s', color: 'rgba(255,107,107,0.16)' }}>✦</span>
         </div>
-        <h1 className="intro-title">Champ Words</h1>
-        <p className="intro-tagline">Guess the word before your friends do!</p>
-        <div className="intro-features">
-          <span className="intro-chip">🎯 60-second word races</span>
-          <span className="intro-chip">⚡ Live drawing hints</span>
-          <span className="intro-chip">🏆 Top 5 leaderboard</span>
+
+        <div className="lobby-card intro-card">
+          <div className="intro-logo-wrap">
+            <div className="intro-glow" aria-hidden="true" />
+            <Logo size={104} />
+          </div>
+          <h1 className="intro-title">Champ Words</h1>
+          <p className="intro-tagline">Guess the word before your friends do!</p>
+          <div className="intro-features">
+            <span className="intro-chip">🎯 60-second word races</span>
+            <span className="intro-chip">⚡ Live drawing hints</span>
+            <span className="intro-chip">🏆 Top 5 leaderboard</span>
+          </div>
+          <button className="btn btn-primary btn-get-started"
+            onClick={() => { playSound('click'); setStep('form'); }}>
+            Get Started
+          </button>
+          <button className="btn btn-secondary btn-wotd"
+            onClick={() => { playSound('click'); setStep('wotd'); }}>
+            📅 Daily Word
+          </button>
+          <p className="intro-foot">Host a game or join your friends — one tap either way</p>
         </div>
-        <button className="btn btn-primary btn-get-started"
-          onClick={() => { playSound('click'); setStep('form'); }}>
-          Get Started
-        </button>
-        <button className="btn btn-secondary btn-wotd"
-          onClick={() => { playSound('click'); setStep('wotd'); }}>
-          📅 Daily Word
-        </button>
-        <p className="intro-foot">Host a game or join your friends — one tap either way</p>
       </div>
     );
   }
