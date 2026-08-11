@@ -4107,6 +4107,19 @@
   background: transparent;
   border-color: rgba(255, 255, 255, 0.10);
 }
+/* Square corners (no border radius) on the splash + lobby cards */
+.login-page .login-card,
+.lobby-intro .intro-card {
+  border-radius: 0;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+/* Remove the glow orbs — they create the lighter area visible inside the frame */
+.login-page::before,
+.login-page::after,
+.lobby-intro::before,
+.lobby-intro::after {
+  display: none;
+}
 /* Tighter inside spacing now the card fills the height */
 .login-page .login-card {
   gap: 2px;
