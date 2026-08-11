@@ -4136,6 +4136,15 @@
   box-shadow: none;
   animation: loginCardIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
+/* Center the whole login/lobby section in the middle of the screen —
+   auto-sized block, perfectly centered on mobile */
+.login-page .login-card,
+.lobby-intro .intro-card {
+  flex: 0 0 auto;
+  width: min(92vw, 400px);
+  max-width: 100%;
+  margin: auto;
+}
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
