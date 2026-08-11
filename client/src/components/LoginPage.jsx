@@ -53,13 +53,13 @@ export default function LoginPage({ onPlayAsGuest }) {
       </div>
 
       <div className="login-card">
-        {/* Champ cartoon avatar — overlaps the card top edge */}
-        <img src="/champ-avatar.png" alt="Champ" className="login-avatar" />
-
         <div className="login-live-badge"><span className="live-dot" /> Now Live · Play With Friends</div>
 
         <div className="login-logo">
-          <Logo size={110} />
+          <div className="login-brand-row">
+            <img src="/champ-avatar.png" alt="Champ" className="login-avatar" />
+            <Logo size={104} />
+          </div>
           <h1>Champ Words</h1>
           <p>Multiplayer Word Puzzle Game</p>
         </div>
