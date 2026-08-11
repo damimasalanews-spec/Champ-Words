@@ -4120,6 +4120,14 @@
 .lobby-intro::after {
   display: none;
 }
+/* Kill the half-mode forced 900px height + vertical padding that created
+   the top/bottom gaps on the splash, lobby and form pages */
+.tiktok-half .login-page,
+.tiktok-half .lobby-intro,
+.tiktok-half .lobby-form {
+  min-height: 0;
+  padding: 0;
+}
 /* Tighter inside spacing now the card fills the height */
 .login-page .login-card {
   gap: 2px;
