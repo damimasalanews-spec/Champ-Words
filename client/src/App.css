@@ -4325,19 +4325,99 @@
   }
 }
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE GAME — professional & comfortable: scrollable play area, bigger
-   tiles/fonts, and the typed-answer box lives inside the chat sidebar.
-   Applies ONLY on phones (≤540px). Desktop keeps the original layout.
+   MOBILE GAME — COMPLETE PROFESSIONAL REDESIGN (phones ≤540px):
+   glass header · card-based play area · big thumb tiles ·
+   ALWAYS-VISIBLE sticky answer bar · WhatsApp-style chat sidebar.
+   Desktop is untouched — everything is scoped to .tiktok-half + ≤540px.
    ═══════════════════════════════════════════════════════════════════════ */
 .chat-answer-slot { display: none; } /* desktop default */
 @media (max-width: 540px) {
-  /* Chat sidebar: full-height column — messages scroll, answer + send pinned */
+  /* ── shell ── */
+  .tiktok-half .app { background: #191129; }
+
+  /* ── header: compact glass bar ── */
+  .tiktok-half .app-header {
+    padding: 8px 12px;
+    background: rgba(18, 12, 36, 0.85);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* ── play area: scrollable, card-based ── */
+  .tiktok-half .game-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 14px 96px; /* bottom room for the sticky answer bar */
+    gap: 14px;
+    align-items: center;
+  }
+  .tiktok-half .game-header { gap: 6px; }
+  .tiktok-half .game-header-row { flex-wrap: wrap; gap: 8px; }
+  .tiktok-half .round-info { font-size: 15px; font-weight: 700; }
+  .tiktok-half .inline-chat.footer-chat { font-size: 13px; }
+
+  /* leaderboard card */
+  .tiktok-half .top10-board {
+    width: 100%;
+    max-height: 220px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .tiktok-half .top10-name,
+  .tiktok-half .top10-pts { font-size: 14px; }
+
+  /* answer + art card */
+  .tiktok-half .answer-art-box {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .tiktok-half .brackets-label { font-size: 11px; letter-spacing: 2px; }
+  .tiktok-half .bracket-box { min-width: 26px; }
+
+  /* grid — big thumb-friendly tiles */
+  .tiktok-half .grid-4x4 { gap: 8px; }
+  .tiktok-half .grid-4x4 .grid-cell {
+    width: 56px; height: 56px;
+    font-size: 24px; font-weight: 700;
+    border-radius: 12px;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.04));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+
+  /* ── ALWAYS-VISIBLE sticky answer bar (fixes missing "or type the answer") ── */
+  .tiktok-half .game-header-row .footer-answer {
+    display: flex;
+    position: fixed;
+    left: 12px; right: 12px; bottom: 12px;
+    z-index: 45;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(22, 14, 44, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+  .tiktok-half .footer-answer input {
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+  }
+  .tiktok-half .footer-answer .btn { flex: 0 0 auto; padding: 10px 18px; }
+
+  /* ── chat sidebar: full-height, messages scroll, answer + send pinned ── */
   .chat-panel {
     display: flex;
     flex-direction: column;
     width: min(92vw, 380px);
     height: 100%;
-    max-height: calc(100vh - 70px);
+    max-height: 100%;
   }
   .chat-panel .chat-messages { flex: 1; min-height: 0; overflow-y: auto; }
   .chat-panel .chat-input-area { flex: 0 0 auto; }
@@ -4345,39 +4425,11 @@
     display: block;
     padding: 10px 12px;
     border-top: 1px solid var(--border);
-    background: rgba(0, 0, 0, 0.22);
+    background: rgba(0, 0, 0, 0.25);
   }
   .chat-answer-slot .type-answer { display: flex; gap: 8px; align-items: center; }
   .chat-answer-slot .type-answer input { flex: 1; min-width: 0; }
   .chat-answer-slot .type-answer .btn { flex: 0 0 auto; }
-
-  /* The in-game answer box is hidden on phones — it lives in the chat now */
-  .tiktok-half .game-header-row .footer-answer { display: none; }
-
-  /* Play area: scrollable, comfortable, easy to reach */
-  .tiktok-half .game-area {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 10px 12px;
-    gap: 12px;
-  }
-  .tiktok-half .game-header { gap: 6px; }
-  .tiktok-half .game-header-row { flex-wrap: wrap; gap: 8px; }
-  .tiktok-half .round-info { font-size: 15px; }
-  .tiktok-half .inline-chat.footer-chat { font-size: 13px; }
-
-  /* Bigger, thumb-friendly tiles */
-  .tiktok-half .grid-4x4 { gap: 7px; }
-  .tiktok-half .grid-4x4 .grid-cell { width: 54px; height: 54px; font-size: 23px; border-radius: 10px; }
-
-  /* Leaderboard + answer board: full width, readable */
-  .tiktok-half .top10-board { width: 100%; max-height: 210px; overflow-y: auto; }
-  .tiktok-half .top10-name,
-  .tiktok-half .top10-pts { font-size: 14px; }
-  .tiktok-half .answer-art-box { width: 100%; }
-  .tiktok-half .brackets-label { font-size: 11px; }
-  .tiktok-half .bracket-box { min-width: 26px; }
 }
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
