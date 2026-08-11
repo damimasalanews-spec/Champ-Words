@@ -3505,3 +3505,228 @@
 .header-right { display: flex; align-items: center; gap: 10px; }
 .tiktok-half .header-right { gap: 6px; }
 .header-controls { display: flex; align-items: center; gap: 3px; background: rgba(255, 255, 255, 0.07); border: none; border-radius: 12px; padding: 3px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOGIN / SPLASH PAGE — professional mobile-first redesign
+   Colors untouched (maroon card, gold + pink accents); everything else
+   elevated: depth, motion, typography, responsiveness.
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+/* Ambient glow orbs behind the card (palette colors, slow drift) */
+.login-page::before,
+.login-page::after {
+  content: '';
+  position: absolute;
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.34;
+  pointer-events: none;
+  z-index: 0;
+}
+.login-page::before {
+  background: radial-gradient(circle, rgba(255, 107, 107, 0.55), transparent 70%);
+  top: -110px; left: -120px;
+  animation: loginOrbA 14s ease-in-out infinite alternate;
+}
+.login-page::after {
+  background: radial-gradient(circle, rgba(255, 197, 61, 0.5), transparent 70%);
+  bottom: -120px; right: -130px;
+  animation: loginOrbB 18s ease-in-out infinite alternate;
+}
+@keyframes loginOrbA { to { transform: translate(48px, 40px) scale(1.14); } }
+@keyframes loginOrbB { to { transform: translate(-42px, -36px) scale(1.08); } }
+
+/* Card — layered depth, entrance motion */
+.login-page .login-card {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 400px);
+  max-width: 400px;
+  padding: 38px 30px 30px;
+  border-radius: 28px;
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.97), rgba(66, 28, 60, 0.99));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.55),
+    0 12px 44px rgba(255, 197, 61, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  animation: loginCardIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* golden top sheen */
+.login-page .login-card::before {
+  content: '';
+  position: absolute; top: 0; left: 16%; right: 16%; height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 197, 61, 0.85), transparent);
+  opacity: 0.75;
+}
+/* twinkling sparkle (top-right) */
+.login-page .login-card::after {
+  content: '✦';
+  position: absolute; top: 16px; right: 22px;
+  font-size: 13px;
+  color: rgba(255, 197, 61, 0.9);
+  animation: loginTwinkle 3.2s ease-in-out infinite;
+}
+@keyframes loginTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8) rotate(-8deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(6deg); }
+}
+
+/* Branding */
+.login-page .login-logo { margin-bottom: 10px; }
+.login-page .login-logo svg {
+  animation: loginFloat 5.5s ease-in-out infinite;
+  filter:
+    drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35))
+    drop-shadow(0 0 26px rgba(255, 197, 61, 0.16));
+}
+@keyframes loginFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.login-page .login-logo h1 {
+  font-size: clamp(30px, 8vw, 40px);
+  letter-spacing: 4px;
+  margin: 14px 0 6px;
+  background: linear-gradient(90deg, #ffc53d, #ff6b6b);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 14px rgba(255, 197, 61, 0.22));
+}
+.login-page .login-logo p {
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(233, 218, 255, 0.72);
+}
+.login-page .login-logo p::before,
+.login-page .login-logo p::after {
+  content: '✦';
+  font-size: 9px;
+  color: rgba(255, 197, 61, 0.85);
+  vertical-align: 2px;
+  margin: 0 8px;
+}
+
+/* Dividers */
+.login-page .login-divider { margin: 18px 0; }
+.login-page .login-divider span {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: rgba(233, 218, 255, 0.6);
+}
+.login-page .login-divider::before,
+.login-page .login-divider::after {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 197, 61, 0.45), transparent);
+}
+
+/* Error box */
+.login-page .login-error {
+  border-radius: 12px;
+  font-size: 12px;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  color: #ffb3c0;
+}
+
+/* TikTok button — crisp white, layered shadow, tactile */
+.login-page .tiktok-login-btn {
+  width: 100%;
+  font-size: 15.5px;
+  font-weight: 700;
+  padding: 15px 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #eceffa);
+  color: #151133;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.login-page .tiktok-login-btn:hover {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+.login-page .tiktok-login-btn:active { transform: translateY(0) scale(0.98); }
+.login-page .tiktok-icon { width: 22px; height: 22px; }
+
+/* Guest button — dark glass with gold hover glow */
+.login-page .guest-login-btn {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 15px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  transition: all 0.18s ease;
+}
+.login-page .guest-login-btn:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 197, 61, 0.55);
+  box-shadow: 0 0 24px rgba(255, 197, 61, 0.14);
+  transform: translateY(-1px);
+}
+.login-page .guest-login-btn:active { transform: scale(0.98); }
+
+/* Note + legal */
+.login-page .login-note {
+  font-size: 11px;
+  line-height: 1.7;
+  color: rgba(233, 218, 255, 0.55);
+}
+.login-page .login-legal {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+.login-page .login-legal a {
+  color: #ffcf5c;
+  transition: color 0.15s ease;
+}
+.login-page .login-legal a:hover { color: #ffd87a; text-decoration: none; }
+
+/* Focus rings (accessibility) */
+.login-page .tiktok-login-btn:focus-visible,
+.login-page .guest-login-btn:focus-visible,
+.login-page .login-legal a:focus-visible {
+  outline: 2px solid rgba(255, 197, 61, 0.7);
+  outline-offset: 2px;
+}
+
+/* Compact fit inside the 540×960 canvas — never overflow on short screens */
+@media (max-height: 860px) {
+  .login-page .login-logo svg { width: 88px !important; height: auto !important; }
+  .login-page .login-logo h1 { font-size: 30px; margin: 10px 0 4px; }
+  .login-page .login-logo p { font-size: 11px; letter-spacing: 2.5px; }
+  .login-page .login-card { padding: 26px 26px 22px; }
+  .login-page .login-divider { margin: 13px 0; }
+  .login-page .tiktok-login-btn,
+  .login-page .guest-login-btn { padding: 12px; }
+}
+@media (max-width: 360px) {
+  .login-page .login-card { padding: 26px 20px 22px; border-radius: 22px; }
+  .login-page .login-logo h1 { letter-spacing: 3px; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .login-page .login-card,
+  .login-page .login-logo svg,
+  .login-page::before,
+  .login-page::after,
+  .login-page .login-card::after { animation: none !important; }
+}
