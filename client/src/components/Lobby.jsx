@@ -10,7 +10,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   const [rounds, setRounds] = useState(30);
   const [roundTime, setRoundTime] = useState(60);
   const [difficulty, setDifficulty] = useState('medium');
-  const [category, setCategory] = useState('mixed');
+  const [category, setCategory] = useState('all'); // All Categories merged by default
   const [categories, setCategories] = useState([]);
   const nameRef = useRef(null);
   // Host mode (?host=1): shows the CREATE ROOM form. Players (default) get
@@ -213,11 +213,16 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
             <div className="form-group">
               <label>Theme</label>
               <div className="round-selector theme-selector">
-                {[{ id: 'mixed', icon: '🎲', label: 'Surprise' }, ...(categories || [])].filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i).map(c => (
+                <button key="all" type="button"
+                  className={`round-option ${category === 'all' ? 'selected' : ''}`}
+                  onClick={() => setCategory('all')}>
+                  All Categories
+                </button>
+                {(categories || []).filter(c => c.id !== 'all' && c.id !== 'mixed').map(c => (
                   <button key={c.id} type="button"
                     className={`round-option ${category === c.id ? 'selected' : ''}`}
                     onClick={() => setCategory(c.id)}>
-                    {c.icon} {c.label}
+                    {c.label}
                   </button>
                 ))}
               </div>

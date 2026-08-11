@@ -351,6 +351,10 @@ for (const [id, words] of Object.entries(PACKS)) {
 CATEGORIES.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
 if (!CATEGORY_IDS.has('countries')) { CATEGORIES.list.push({ id: 'countries', label: 'Countries', icon: '🌍' }); CATEGORY_IDS.add('countries'); }
 
+// 'all' = every drawable word from every category merged into one giant pool
+CATEGORIES.words.all = Object.keys(WORD_ART_POOL);
+if (!CATEGORY_IDS.has('all')) { CATEGORIES.list.push({ id: 'all', label: 'All Categories', icon: '🎲' }); CATEGORY_IDS.add('all'); }
+
 // ── Country flag art ─────────────────────────────────────────────────────
 // Flag emojis render as two-letter codes (e.g. "IN") on Windows — useless as
 // a drawing hint. Countries therefore use real flag images from flagcdn.
