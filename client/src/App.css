@@ -4184,6 +4184,49 @@
 .login-page .login-note { font-size: 10.5px; line-height: 1.65; }
 .login-page .login-legal { font-size: 10.5px; }
 .login-page .login-avatar { width: 78px; height: 78px; }
+/* ═══════════════════════════════════════════════════════════════════════
+   LOGIN FILLS THE WHOLE SCREEN — top (brand) · middle (actions) ·
+   bottom (footer), space distributed evenly, no bottom void.
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page {
+  padding: 0;
+  justify-content: flex-start;
+}
+.login-page .login-card {
+  width: 100%;
+  max-width: 100%;
+  flex: 1;
+  margin: 0;
+  border: none;
+  padding: 28px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.login-page .login-top,
+.login-page .login-mid,
+.login-page .login-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.login-page .login-mid { justify-content: center; }
+.login-page .login-bottom { justify-content: flex-end; }
+/* top group rhythm */
+.login-page .login-live-badge { margin-bottom: 16px; }
+.login-page .login-logo h1 { font-size: 34px; margin: 12px 0 5px; }
+.login-page .login-avatar { width: 80px; height: 80px; }
+/* middle group rhythm */
+.login-page .login-mid .login-divider { margin: 0 0 18px; }
+.login-page .login-error { margin: 0 0 14px; }
+.login-page .login-mid .tiktok-login-btn { margin-bottom: 0; }
+.login-page .login-mid .guest-login-btn { margin-top: 0; }
+/* bottom group rhythm */
+.login-page .login-bottom .login-note { margin: 0 0 14px; }
+.login-page .login-legal { margin: 0; }
+/* loading state stays centered */
+.login-page .login-card .loading-spinner { margin: auto; }
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
