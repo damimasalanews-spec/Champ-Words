@@ -63,11 +63,15 @@ function start() {
 
   let conn;
   try {
-    conn = new lib.WebcastPushConnection(username, {
-      sessionId: process.env.TIKTOK_SESSION_ID || '',
+    // v2.x option shape: `session.cookie` carries the TikTok session cookie
+    // (the old v1 `sessionId` option no longer exists in the 2.x line).
+    const opts = {
       enableExtendedGiftInfo: true,
       requestOptions: { timeout: 10000 }
-    });
+    };
+    const sid = (process.env.TIKTOK_SESSION_ID || '').trim();
+    if (sid) opts.session = { cookie: sid };
+    conn = new lib.WebcastPushConnection(username, opts);
   } catch (e) {
     state.lastError = 'failed to create connection: ' + (e && e.message ? e.message : e);
     return { ok: false, error: state.lastError };
