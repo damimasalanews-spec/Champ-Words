@@ -8,6 +8,9 @@ const { spawn } = require('child_process');
 const { io } = require('socket.io-client');
 const path = require('path');
 const { maskText } = require('./badWords');
+const CATS = require('./categories');
+const { WORD_ART } = require('./wordArt');
+CATS.words.trade = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
 
 const PORT = 3998;
 const TEST_KEY = 'testkey123';
@@ -149,6 +152,14 @@ function emitAck(socket, ev, payload) {
     check('categories include trade pack', cats.ok && cats.list.some(c => c.id === 'trade'), JSON.stringify((cats.list || []).map(c => c.id).join(',')));
     const wotd = await get('/api/wotd');
     check('wotd returns a drawable daily word', wotd.ok && !!wotd.art && wotd.word.replace(/[^a-z]/g, '').length === wotd.length, JSON.stringify(wotd));
+
+    // 17b. Every selectable category must have enough drawable words (≥6) so
+    // system rounds and champ choices respect the chosen theme.
+    const thin = Object.entries(CATS.words)
+      .filter(([id]) => id !== 'mixed')
+      .filter(([, ws]) => ws.filter(w => WORD_ART[w]).length < 6)
+      .map(([id, ws]) => `${id}:${ws.filter(w => WORD_ART[w]).length}`);
+    check('all categories have ≥6 drawable words', thin.length === 0, thin.join(', ') || 'ok');
 
     // 18. Rate limit on wrong chat answers (CHAT_ANSWER_COOLDOWN_MS=200)
     await new Promise(r => setTimeout(r, 300));

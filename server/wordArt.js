@@ -180,6 +180,17 @@ Object.assign(WORD_ART, {
   'apple pie': '🥧', 'cup cake': '🧁', 'pan cake': '🥞', 'hot cocoa': '☕', 'gum drop': '🍬'
 });
 
+// ── Clothes (so the Clothes category has drawable system-round words) ──
+Object.assign(WORD_ART, {
+  dress: '👗', fabric: '🧵', glove: '🧤', jacket: '🧥', jersey: '👕',
+  outfit: '🧥', shirt: '👕', uniform: '🤵'
+});
+
+// ── Colors (complete the color set with drawable words) ──
+Object.assign(WORD_ART, {
+  bronze: '🥉', ivory: '🤍', pearl: '🫧', salmon: '🍣'
+});
+
 function getWordArt(word) {
   return WORD_ART[word] || null;
 }
