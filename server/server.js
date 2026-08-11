@@ -539,8 +539,10 @@ function clearTimer(room) {
 }
 
 // ── System-picked word: no champ, the game chooses randomly ──────────────
-// ONLY words the artist can draw (clipart pool) — every round has a drawing
-function pickRandomWord(difficulty, category) {
+// ONLY words the artist can draw (clipart pool) — every round has a drawing.
+// No repeats within a game: usedWords are excluded until the pool is
+// exhausted, then a fresh cycle starts (unavoidable beyond that).
+function pickRandomWord(difficulty, category, usedWords) {
   const [min, max] = difficultyRange(difficulty);
   let pool = Object.keys(WORD_ART_POOL);
   if (category && category !== 'mixed' && CATEGORIES.words[category]) {
@@ -548,16 +550,31 @@ function pickRandomWord(difficulty, category) {
     const catPool = pool.filter(w => catSet.has(w));
     if (catPool.length > 0) pool = catPool;
   }
-  const filtered = pool.filter(w => {
+  const used = new Set(usedWords || []);
+  const unused = pool.filter(w => !used.has(w));
+  const pickFrom = (src) => src[Math.floor(Math.random() * src.length)];
+
+  // 1) Unused + difficulty range (strictest — honours the chosen difficulty)
+  const strict = unused.filter(w => {
     const len = w.replace(/[^a-z]/g, '').length;
     return len >= min && len <= max;
   });
-  const use = filtered.length ? filtered : pool;
-  return use[Math.floor(Math.random() * use.length)];
+  if (strict.length) return pickFrom(strict);
+
+  // 2) Unused, any length (small category pool — prefer theme over length)
+  if (unused.length) return pickFrom(unused);
+
+  // 3) Pool exhausted — restart the cycle (repeats allowed only now)
+  const any = pool.filter(w => {
+    const len = w.replace(/[^a-z]/g, '').length;
+    return len >= min && len <= max;
+  });
+  return pickFrom(any.length ? any : pool);
 }
 
 function startSystemRound(room) {
-  room.word = pickRandomWord(room.difficulty, room.wordPack);
+  room.word = pickRandomWord(room.difficulty, room.wordPack, room.usedWords);
+  room.usedWords.push(room.word);
   room.category = null;
   room.hintText = null;
   room.hintWindow = null;
@@ -573,13 +590,16 @@ function startSystemRound(room) {
 // Only words the artist can draw (has emoji art) — every choice is drawable.
 // Length = LETTERS only (spaces don't count), so 8-letter words and
 // two-word answers like "ice cream" (8 letters) are both eligible.
-function generateChoices(difficulty, category) {
+function generateChoices(difficulty, category, usedWords) {
   // Use the chosen category's words; fall back to the full mixed pool
   const wordPool = (category && category !== 'mixed' && CATEGORIES.words[category] && CATEGORIES.words[category].length >= 6)
     ? CATEGORIES.words[category]
     : CATEGORIES.words.mixed;
   const drawablePool = wordPool.filter(w => getWordArt(w));
-  const usable = drawablePool.length >= 6 ? drawablePool : wordPool;
+  // No repeats this game: drop words already used (champ can't re-pick them)
+  const used = new Set(usedWords || []);
+  const fresh = (drawablePool.length >= 6 ? drawablePool : wordPool).filter(w => !used.has(w));
+  const usable = fresh.length >= 3 ? fresh : (drawablePool.length >= 6 ? drawablePool : wordPool);
   const [min, max] = difficultyRange(difficulty);
   const byLen = {};
   for (const w of usable) {
@@ -705,7 +725,7 @@ function beginChampTurn(room, champId) {
   room.offeredClues = [];
   room.roundFinds = [];
   room.allFound = false;
-  room.choices = generateChoices(room.difficulty, room.wordPack); // 6 random words
+  room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords); // 6 random words (no game repeats)
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
   clearTimer(room);
@@ -1032,6 +1052,7 @@ io.on('connection', socket => {
     // Solo start is allowed (studio / practice mode) — the system picks the word
     // and the single player guesses. Friends may join before starting.
     room.round = 1;
+    room.usedWords = []; // fresh word cycle per game — no repeats across rounds
     // The system picks a random word and everyone guesses together
     startSystemRound(room);
     cb && cb({ ok: true });
@@ -1045,6 +1066,7 @@ io.on('connection', socket => {
     const w = String(word || '').toLowerCase().trim();
     if (w.length < 3 || w.length > 8) return cb && cb({ ok: false, error: 'Word must be 3-8 letters' });
     if (!room.choices.includes(w)) return cb && cb({ ok: false, error: 'Please pick one of the words shown' });
+    room.usedWords.push(w); // no repeats this game
     room.word = w;
     room.hintText = typeof hintText === 'string' ? hintText.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
     room.hintText = room.hintText || null;
@@ -1195,6 +1217,7 @@ io.on('connection', socket => {
       room.hintWindow = null; room.offeredClues = [];
       room.guesserId = null; room.failStreak = 0;
       room.muted = new Map();
+      room.usedWords = []; // fresh word cycle for the new game
       room.players.forEach(p => { p.score = 0; p.hintsLeft = MAX_HINTS; p.bestTime = 0; p.streak = 0; });
       io.to(roomId).emit('room_update', sanitizeRoom(room));
     }
@@ -1414,4 +1437,4 @@ server.listen(PORT, () => {
 });
 
 // Exposed for tests
-module.exports = { generateWordGrid, validatePath, pickRandomWord, DICT };
+module.exports = { generateWordGrid, validatePath, pickRandomWord, generateChoices, DICT };

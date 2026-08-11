@@ -191,6 +191,35 @@ Object.assign(WORD_ART, {
   bronze: '🥉', ivory: '🤍', pearl: '🫧', salmon: '🍣'
 });
 
+// ── More clothes (reduce repetition in Clothes-theme games) ──
+Object.assign(WORD_ART, {
+  cotton: '☁️', fashion: '🛍️', leather: '👜', linen: '🛏️', nylon: '🪢'
+});
+
+// ── More travel words ──
+Object.assign(WORD_ART, {
+  airline: '✈️', avenue: '🛣️', drive: '🚗', fleet: '🚢', motor: '🏎️',
+  rental: '🚘', route: '🗺️', tourism: '🧳', trail: '🥾', travel: '🧭',
+  vehicle: '🚛', wagon: '🛒'
+});
+
+// ── More body words ──
+Object.assign(WORD_ART, {
+  ankle: '🦶', health: '🩺', liver: '🫀', nerve: '⚡', tissue: '🧻'
+});
+
+// ── More sports words ──
+Object.assign(WORD_ART, {
+  arena: '🏟️', contest: '🏆', court: '🎾', derby: '🏇', dodge: '🤸',
+  fight: '🥊', playing: '🎮', runner: '🏃', scout: '🏕️', shoot: '🎯',
+  trial: '⚖️', walker: '🚶', winning: '🏅'
+});
+
+// ── Remaining animals ──
+Object.assign(WORD_ART, {
+  beast: '👹'
+});
+
 function getWordArt(word) {
   return WORD_ART[word] || null;
 }

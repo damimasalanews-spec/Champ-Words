@@ -11,6 +11,11 @@ const { maskText } = require('./badWords');
 const CATS = require('./categories');
 const { WORD_ART } = require('./wordArt');
 CATS.words.trade = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
+// Require server.js for its exported pickers. Bind to an ephemeral port so
+// the parent require's idle listener never conflicts (the spawned child
+// overrides PORT with its own test port).
+process.env.PORT = '0';
+const { pickRandomWord, generateChoices } = require('./server.js');
 
 const PORT = 3998;
 const TEST_KEY = 'testkey123';
@@ -160,6 +165,28 @@ function emitAck(socket, ev, payload) {
       .filter(([, ws]) => ws.filter(w => WORD_ART[w]).length < 6)
       .map(([id, ws]) => `${id}:${ws.filter(w => WORD_ART[w]).length}`);
     check('all categories have ≥6 drawable words', thin.length === 0, thin.join(', ') || 'ok');
+
+    // 17c. No-repeat word selection across rounds
+    const used = [];
+    const picks = [];
+    for (let i = 0; i < 30; i++) {
+      const w = pickRandomWord('medium', 'trade', used);
+      picks.push(w);
+      used.push(w);
+    }
+    check('trade pool: no repeats for first 21 picks', new Set(picks.slice(0, 21)).size === 21, picks.slice(0, 21).join(','));
+    const c1 = generateChoices('medium', 'trade', ['truck', 'money', 'clock']);
+    check('champ choices exclude used words', c1.length >= 6 && !c1.includes('truck') && !c1.includes('money') && !c1.includes('clock'), c1.join(','));
+    const used2 = [];
+    const picks2 = [];
+    for (let i = 0; i < 30; i++) { const w = pickRandomWord('medium', 'mixed', used2); picks2.push(w); used2.push(w); }
+    check('mixed pool: 30 rounds with zero repeats', new Set(picks2).size === 30);
+    // Every category needs a healthy drawable pool so 10+ round games don't repeat early
+    const thin2 = Object.entries(CATS.words)
+      .filter(([id]) => id !== 'mixed')
+      .filter(([, ws]) => ws.filter(w => WORD_ART[w]).length < 8)
+      .map(([id, ws]) => `${id}:${ws.filter(w => WORD_ART[w]).length}`);
+    check('all categories have ≥8 drawable words', thin2.length === 0, thin2.join(', ') || 'ok');
 
     // 18. Rate limit on wrong chat answers (CHAT_ANSWER_COOLDOWN_MS=200)
     await new Promise(r => setTimeout(r, 300));
