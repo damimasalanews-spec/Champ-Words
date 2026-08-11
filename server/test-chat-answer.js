@@ -10,7 +10,18 @@ const path = require('path');
 const { maskText } = require('./badWords');
 const CATS = require('./categories');
 const { WORD_ART } = require('./wordArt');
-CATS.words.trade = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
+const PACKS = require('./categoryPacks');
+const fs = require('fs');
+// Mirror the server's dictionary filter
+const TEST_DICT = new Set(
+  fs.readFileSync(path.join(__dirname, 'words.txt'), 'utf-8').split(/\r?\n/)
+    .map(w => w.trim().toLowerCase())
+    .filter(w => { const l = w.replace(/[^a-z]/g, ''); return l.length >= 5 && l.length <= 8; })
+);
+// Mirror the server's pack merge
+for (const [id, ws] of Object.entries(PACKS)) {
+  CATS.words[id] = [...new Set(ws.filter(w => WORD_ART[w] && TEST_DICT.has(w)))];
+}
 CATS.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
 // Require server.js for its exported pickers. Bind to an ephemeral port so
 // the parent require's idle listener never conflicts (the spawned child
@@ -187,12 +198,12 @@ function emitAck(socket, ev, payload) {
     const picks3 = [];
     for (let i = 0; i < 30; i++) { const w = pickRandomWord('medium', 'countries', used3); picks3.push(w); used3.push(w); }
     check('countries pool: 30 rounds with zero repeats', new Set(picks3).size === 30, picks3.slice(0, 10).join(','));
-    // Every category needs a healthy drawable pool so 10+ round games don't repeat early
+    // Every category needs a 50+ drawable pool so long games don't repeat early
     const thin2 = Object.entries(CATS.words)
       .filter(([id]) => id !== 'mixed')
-      .filter(([, ws]) => ws.filter(w => WORD_ART[w]).length < 8)
+      .filter(([, ws]) => ws.filter(w => WORD_ART[w]).length < 50)
       .map(([id, ws]) => `${id}:${ws.filter(w => WORD_ART[w]).length}`);
-    check('all categories have ≥8 drawable words', thin2.length === 0, thin2.join(', ') || 'ok');
+    check('all categories have ≥50 drawable words', thin2.length === 0, thin2.join(', ') || 'ok');
 
     // 18. Rate limit on wrong chat answers (CHAT_ANSWER_COOLDOWN_MS=200)
     await new Promise(r => setTimeout(r, 300));
@@ -227,7 +238,7 @@ function emitAck(socket, ev, payload) {
     const started3 = await emitAck(socket, 'start_game', { roomId: r3.room.id });
     check('trade room started', started3 && started3.ok);
     const dbgT = await get(`/api/debug/word?key=${TEST_KEY}`);
-    const TRADE = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
+    const TRADE = CATS.words.trade;
     check('trade word comes from the trade pack', TRADE.includes(dbgT.word), dbgT.word);
 
     // 21. Moderation: join a player, mute → blocked, unmute → allowed, kick → removed

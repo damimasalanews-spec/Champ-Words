@@ -238,6 +238,269 @@ Object.assign(WORD_ART, {
   samoa: '🇼🇸', papua: '🇵🇬', solomon: '🇸🇧', puerto: '🇵🇷'
 });
 
+// ── Category pack expansions (common words so every theme has 50+ picks) ──
+// Animals
+Object.assign(WORD_ART, {
+  bear: '🐻', lion: '🦁', giraffe: '🦒', zebra: '🦓', gorilla: '🦍', chimp: '🐒',
+  koala: '🐨', panda: '🐼', penguin: '🐧', parrot: '🦜', owl: '🦉', hawk: '🦅',
+  duck: '🦆', goose: '🪿', swan: '🦢', chicken: '🐔', rooster: '🐓', hen: '🐔',
+  pigeon: '🕊️', crow: '🐦⬛', raven: '🐦⬛', sparrow: '🐦', peacock: '🦚', ostrich: '🦤',
+  camel: '🐫', donkey: '🫏', cow: '🐄', bull: '🐂', goat: '🐐', pig: '🐖', dog: '🐶',
+  cat: '🐱', rabbit: '🐰', hare: '🐇', rat: '🐀', fox: '🦊', wolf: '🐺', deer: '🦌',
+  moose: '🫎', elk: '🫎', raccoon: '🦝', skunk: '🦨', hedgehog: '🦔', bat: '🦇',
+  whale: '🐋', dolphin: '🐬', seal: '🦭', walrus: '🦭', octopus: '🐙', squid: '🦑',
+  crab: '🦀', lobster: '🦞', shrimp: '🦐', snail: '🐌', turtle: '🐢', frog: '🐸',
+  toad: '🐸', lizard: '🦎', crocodile: '🐊', alligator: '🐊', bee: '🐝', wasp: '🐝',
+  ant: '🐜', spider: '🕷️', butterfly: '🦋', moth: '🦋', worm: '🪱', bug: '🐛',
+  beetle: '🪲', ladybug: '🐞'
+});
+// Food
+Object.assign(WORD_ART, {
+  lime: '🍋', berry: '🫐', strawberry: '🍓', blueberry: '🫐', watermelon: '🍉',
+  melon: '🍈', peach: '🍑', pear: '🍐', plum: '🟣', mango: '🥭', pineapple: '🍍',
+  coconut: '🥥', kiwi: '🥝', avocado: '🥑', tomato: '🍅', carrot: '🥕', onion: '🧅',
+  corn: '🌽', pea: '🫛', bean: '🫘', rice: '🍚', cake: '🎂', pie: '🥧', cookie: '🍪',
+  donut: '🍩', muffin: '🧁', croissant: '🥐', bagel: '🥯', burger: '🍔', taco: '🌮',
+  noodle: '🍜', cheese: '🧀', egg: '🥚', bacon: '🥓', ham: '🍖', sausage: '🌭',
+  fish: '🐟', sushi: '🍣', soup: '🍲', milk: '🥛', chocolate: '🍫', fries: '🍟'
+});
+// Nature
+Object.assign(WORD_ART, {
+  sun: '☀️', moon: '🌙', star: '⭐', rain: '🌧️', snow: '❄️', wind: '💨', rainbow: '🌈',
+  tree: '🌳', leaf: '🍃', flower: '🌸', rose: '🌹', tulip: '🌷', hill: '⛰️', lake: '🏞️',
+  sea: '🌊', wave: '🌊', sand: '🏖️', island: '🏝️', desert: '🏜️', canyon: '🏞️',
+  cave: '🕳️', rock: '🪨', stone: '🪨', crystal: '🔮', ice: '🧊', fire: '🔥', sky: '🌌',
+  sunset: '🌇', lightning: '⚡', thunder: '⛈️', tornado: '🌪️', hurricane: '🌀',
+  glacier: '🏔️', valley: '🏞️', meadow: '🌼', planet: '🪐', comet: '☄️', meteor: '☄️',
+  galaxy: '🌌', seed: '🌱', plant: '🪴', bush: '🌳', branch: '🌿', root: '🌱',
+  log: '🪵', moss: '🍀', pine: '🌲', palm: '🌴', cactus: '🌵'
+});
+// Body
+Object.assign(WORD_ART, {
+  head: '👤', face: '🙂', eye: '👁️', eyes: '👀', ear: '👂', nose: '👃', lip: '👄',
+  tooth: '🦷', hair: '💇', lung: '🫁', bone: '🦴', skin: '🤚', arm: '💪', hand: '✋',
+  nail: '💅', leg: '🦵', foot: '🦶', knee: '🦵', elbow: '💪', shoulder: '🤷', neck: '🧣',
+  back: '🔙', chest: '🫁', belly: '🤰', beard: '🧔', mustache: '👨', eyebrow: '🤨',
+  cheek: '😊', chin: '🤔', forehead: '🤕', skull: '💀', wrist: '⌚'
+});
+// Home
+Object.assign(WORD_ART, {
+  home: '🏠', door: '🚪', roof: '🏠', wall: '🧱', bedroom: '🛏️', bathroom: '🛁',
+  sofa: '🛋️', desk: '🪑', bed: '🛏️', pillow: '🛏️', rug: '🧶', carpet: '🧶',
+  curtain: '🪟', oven: '🍳', sink: '🚰', toilet: '🚽', shower: '🚿', towel: '🧻',
+  broom: '🧹', plate: '🍽️', bowl: '🥣', cup: '☕', fork: '🍴', pan: '🍳', pot: '🍲',
+  kettle: '🫖', jar: '🫙', box: '📦', basket: '🧺', key: '🔑', lock: '🔒', bell: '🔔',
+  phone: '📱', newspaper: '📰', tv: '📺', radio: '📻', fan: '🌀', garage: '🚗',
+  stairs: '🪜', balcony: '🏢', porch: '🏠', fence: '🪵', gate: '⛩️', yard: '🏡'
+});
+// Clothes
+Object.assign(WORD_ART, {
+  pants: '👖', jeans: '👖', shorts: '🩳', skirt: '👗', coat: '🧥', sweater: '🧶',
+  vest: '🦺', suit: '🤵', tie: '👔', scarf: '🧣', hat: '🎩', cap: '🧢', mitten: '🧤',
+  sock: '🧦', shoe: '👟', boot: '🥾', sandal: '🩴', slipper: '🩴', sneaker: '👟',
+  belt: '🥋', button: '🔘', pocket: '👖', zipper: '🤐', pajama: '🛌', gown: '👗',
+  cloak: '🧥', cape: '🦸', crown: '👑', ring: '💍', bracelet: '📿', watch: '⌚',
+  sunglasses: '🕶️', purse: '👛', wallet: '👛', backpack: '🎒', bag: '👜', umbrella: '☂️',
+  raincoat: '🧥', swimsuit: '🩱', apron: '👩'
+});
+// Travel
+Object.assign(WORD_ART, {
+  car: '🚗', bus: '🚌', van: '🚐', taxi: '🚕', boat: '⛵', ship: '🚢', canoe: '🛶',
+  kayak: '🛶', rocket: '🚀', bicycle: '🚲', bike: '🚲', motorcycle: '🏍️', scooter: '🛵',
+  helicopter: '🚁', balloon: '🎈', jet: '✈️', submarine: '🛥️', trolley: '🚎',
+  compass: '🧭', map: '🗺️', globe: '🌍', airport: '🛫', station: '🚉', road: '🛣️',
+  street: '🏙️', bridge: '🌉', tunnel: '🚇', hotel: '🏨', ticket: '🎫', passport: '🛂',
+  luggage: '🧳', suitcase: '🧳', cruise: '🚢', safari: '🦁', pier: '⛵',
+  lighthouse: '🗼', journey: '🧭', tour: '🧭', trip: '🧳', voyage: '⛵'
+});
+// Sports
+Object.assign(WORD_ART, {
+  soccer: '⚽', basketball: '🏀', baseball: '⚾', tennis: '🎾', cricket: '🏏', golf: '⛳',
+  hockey: '🏒', volleyball: '🏐', rugby: '🏉', boxing: '🥊', wrestling: '🤼',
+  karate: '🥋', judo: '🥋', fencing: '🤺', archery: '🏹', skiing: '🎿', snowboard: '🏂',
+  skating: '⛸️', surfing: '🏄', swimming: '🏊', running: '🏃', jogging: '🏃',
+  sprint: '🏃', marathon: '🏅', cycling: '🚴', gym: '🏋️', workout: '🏋️', yoga: '🧘',
+  dancing: '💃', trophy: '🏆', medal: '🥇', stadium: '🏟️', referee: '🧑', player: '🏃',
+  team: '👥', coach: '📣', champion: '🏆', winner: '🥇', race: '🏁', match: '⚔️',
+  goal: '🥅', ball: '⚽', helmet: '⛑️'
+});
+// Arts
+Object.assign(WORD_ART, {
+  song: '🎵', sing: '🎤', dance: '💃', piano: '🎹', drum: '🥁', violin: '🎻',
+  flute: '🪈', trumpet: '🎺', saxophone: '🎷', harp: '🪕', microphone: '🎤',
+  band: '🎸', orchestra: '🎻', cinema: '🎬', painting: '🖼️', canvas: '🖼️',
+  draw: '✏️', sketch: '✏️', museum: '🏛️', gallery: '🖼️', statue: '🗿',
+  sculpture: '🗿', theater: '🎭', stage: '🎭', drama: '🎭', comedy: '😂', opera: '🎭',
+  ballet: '🩰', poetry: '📜', poem: '📜', novel: '📖', writer: '✍️', story: '📖',
+  fairy: '🧚', puppet: '🪆', costume: '🎭', clown: '🤡', magician: '🪄'
+});
+// Colors
+Object.assign(WORD_ART, {
+  white: '⬜', red: '🟥', blue: '🟦', purple: '🟪', pink: '🩷', brown: '🟤',
+  gray: '🩶', grey: '🩶', gold: '🥇', ruby: '🔴', emerald: '💚', sapphire: '💙',
+  amber: '🟠', jade: '🟩', lime: '🟩', navy: '🟦', teal: '🩵', maroon: '🟫',
+  crimson: '🔴', violet: '🟣', magenta: '🩷', turquoise: '🩵', indigo: '🟣',
+  beige: '🟤', tan: '🟤', peach: '🍑', mint: '🟩', sky: '🩵', ocean: '🌊',
+  snow: '❄️', coal: '⬛', ash: '🌫️', lemon: '🍋', plum: '🟣', berry: '🫐',
+  flame: '🔥'
+});
+// People
+Object.assign(WORD_ART, {
+  man: '👨', woman: '👩', boy: '👦', girl: '👧', baby: '👶', child: '🧒',
+  adult: '🧑', family: '👨', mother: '👩', father: '👨', brother: '👦', son: '👦',
+  daughter: '👧', grandma: '👵', grandpa: '👴', uncle: '🧔', aunt: '👩', wife: '💍',
+  husband: '💍', groom: '🤵', bride: '👰', prince: '🤴', knight: '🛡️', wizard: '🧙',
+  witch: '🧙', fairy: '🧚', elf: '🧝', giant: '🗿', dwarf: '🧌', pirate: '🏴',
+  cowboy: '🤠', robot: '🤖', alien: '👽', ghost: '👻', vampire: '🧛', zombie: '🧟',
+  mermaid: '🧜', superhero: '🦸', doctor: '👨', nurse: '👩', teacher: '👩',
+  student: '🧑', police: '👮', soldier: '💂', sailor: '⛵', chef: '👨', waiter: '🤵',
+  cashier: '🧑', lawyer: '⚖️', scientist: '👩', engineer: '👷', musician: '🎸',
+  singer: '🎤', dancer: '💃', athlete: '🏃', boxer: '🥊', ninja: '🥷', samurai: '⚔️',
+  hero: '🦸', villain: '🦹', monster: '👹', angel: '👼', devil: '😈'
+});
+// Trade
+Object.assign(WORD_ART, {
+  ship: '🚢', boat: '⛵', box: '📦', package: '📦', parcel: '📦', letter: '✉️',
+  mail: '✉️', stamp: '📮', computer: '💻', printer: '🖨️', paper: '📄', pen: '🖊️',
+  pencil: '✏️', folder: '📁', briefcase: '💼', suitcase: '🧳', coin: '🪙',
+  dollar: '💵', bank: '🏦', store: '🏪', shop: '🏬', market: '🏪', factory: '🏭',
+  office: '🏢', scale: '⚖️', weight: '🏋️', price: '🏷️', tag: '🏷️', label: '🏷️',
+  receipt: '🧾', contract: '📝', document: '📄', safe: '🔒'
+});
+
+// ── Dictionary-expansion art (5–8 letter words added to words.txt) ───────
+Object.assign(WORD_ART, {
+  // Animals
+  badger: '🦡', beaver: '🦫', buffalo: '🐃', bunny: '🐰', cobra: '🐍', coyote: '🐺',
+  crane: '🦩', falcon: '🦅', ferret: '🦦', gazelle: '🦌', gecko: '🦎', gibbon: '🦧',
+  gopher: '🐹', heron: '🦩', hippo: '🦛', hyena: '🐆', iguana: '🦎', jaguar: '🐆',
+  lemur: '🐒', leopard: '🐆', llama: '🦙', lobster: '🦞', manatee: '🦭', otter: '🦦',
+  panda: '🐼', panther: '🐆', pelican: '🦢', piranha: '🐟', platypus: '🦫', puffin: '🐧',
+  python: '🐍', rabbit: '🐰', raven: '🐦⬛', rhino: '🦏', seagull: '🕊️', skunk: '🦨',
+  sloth: '🦥', sparrow: '🐦', stork: '🕊️', tadpole: '🐸', tapir: '🐗', tortoise: '🐢',
+  toucan: '🦜', trout: '🐟', viper: '🐍', vulture: '🦅', walrus: '🦭', weasel: '🦦',
+  whale: '🐋', wombat: '🐨', zebra: '🦓',
+  // Food
+  almond: '🌰', apricot: '🍑', avocado: '🥑', biscuit: '🍪', broccoli: '🥦',
+  caramel: '🍮', celery: '🥬', chili: '🌶️', clove: '🧄', cranberry: '🍒',
+  cucumber: '🥒', custard: '🍮', dough: '🥖', dumpling: '🥟', eggplant: '🍆',
+  fennel: '🌿', flour: '🌾', ginger: '🫚', granola: '🥣', guava: '🍈',
+  hazelnut: '🌰', honey: '🍯', jalapeno: '🌶️', kale: '🥬', leek: '🥬', lentil: '🫘',
+  lettuce: '🥬', lychee: '🍒', mango: '🥭', mustard: '🟡', nutmeg: '🌰', oatmeal: '🥣',
+  okra: '🌱', olive: '🫒', omelet: '🍳', papaya: '🍈', parsley: '🌿', pickle: '🥒',
+  pretzel: '🥨', prune: '🟣', pudding: '🍮', pumpkin: '🎃', quinoa: '🌾', radish: '🌶️',
+  raisin: '🍇', salsa: '🫕', sesame: '🫘', spinach: '🥬', squash: '🎃', syrup: '🍯',
+  tamale: '🌮', tofu: '🧊', vanilla: '🍦', walnut: '🌰', yogurt: '🥛', zucchini: '🥒',
+  // Nature
+  aster: '🌸', birch: '🌳', blossom: '🌸', boulder: '🪨', breeze: '🌬️', brook: '💧',
+  cedar: '🌲', cliff: '🏔️', dune: '🏜️', fern: '🌿', fjord: '🏞️', frost: '❄️',
+  glade: '🌳', gorge: '🏞️', grove: '🌳', heather: '🌸', lagoon: '🏝️', lilac: '🪻',
+  lily: '🌺', mist: '🌫️', moss: '🍀', oasis: '🌴', orchid: '🌺', peak: '⛰️',
+  pebble: '🪨', petal: '🌸', pine: '🌲', prairie: '🌾', reed: '🌾', ridge: '⛰️',
+  shrub: '🌳', spark: '✨', summit: '🏔️', swamp: '🐊', thicket: '🌲', thorn: '🌵',
+  tide: '🌊', vista: '🏞️', willow: '🌳', wood: '🪵',
+  // Body
+  abdomen: '🫃', ankle: '🦶', artery: '🩸', bladder: '🫙', digit: '🖐️', flesh: '🥩',
+  forearm: '💪', gland: '🫁', gullet: '🫁', knuckle: '👊', marrow: '🦴', organ: '🫀',
+  pelvis: '🦴', pulse: '🩺', spleen: '🫀', stomach: '🤢', temple: '🧠', thigh: '🍗',
+  torso: '👤', waist: '🩰', wrist: '⌚', throat: '🗣️', shoulder: '🤷', muscle: '💪',
+  cheek: '😊', tooth: '🦷', tongue: '👅', thumb: '👍', forehead: '🤕', eyebrow: '🤨',
+  beard: '🧔', skull: '💀', spine: '🦴', chest: '🫁', belly: '🤰', liver: '🫀',
+  kidney: '🫘', heart: '❤️', brain: '🧠', blood: '🩸',
+  // Home
+  armchair: '🛋️', basement: '🕳️', bathtub: '🛁', candle: '🕯️', cellar: '🕳️',
+  chandelier: '💡', cupboard: '🚪', dish: '🍽️', furnace: '🔥', hall: '🚪',
+  hallway: '🚪', hamper: '🧺', heater: '♨️', laundry: '🧺', mantel: '🕯️',
+  mattress: '🛏️', pantry: '🧺', patio: '🏡', radiator: '♨️', shutter: '🪟',
+  teapot: '🫖', toaster: '🍞', trash: '🗑️', vase: '🏺', wardrobe: '🚪', fridge: '🧊',
+  oven: '🔥', sink: '🚰', toilet: '🚽', shower: '🚿', towel: '🧻', broom: '🧹',
+  bucket: '🪣', plate: '🍽️', bowl: '🥣', cup: '☕', fork: '🍴', pan: '🍳', pot: '🍲',
+  kettle: '🫖', jar: '🫙', basket: '🧺', key: '🔑', lock: '🔒', bell: '🔔', phone: '📱',
+  tv: '📺', radio: '📻', fan: '🌀', stairs: '🪜', garden: '🌷', garage: '🚗',
+  // Clothes
+  apron: '🧑', beanie: '🧢', blazer: '🧥', blouse: '👚', brooch: '📿', buckle: '🥋',
+  cardigan: '🧥', clogs: '🩰', fleece: '🐑', garter: '🩰', glasses: '👓', jacket: '🧥',
+  jumper: '👕', kimono: '👘', mittens: '🧤', necktie: '👔', overalls: '👖', parka: '🧥',
+  poncho: '🧥', pumps: '👠', sandal: '🩴', scarf: '🧣', shawl: '🧣', sleeve: '👕',
+  slipper: '🩴', sneaker: '👟', sweater: '🧶', tights: '🩰', tunic: '👚', zipper: '🤐',
+  gloves: '🧤', jeans: '👖', pants: '👖', shirt: '👕', shorts: '🩳', skirt: '👗',
+  dress: '👗', socks: '🧦',
+  // Travel
+  airplane: '✈️', airport: '🛫', avenue: '🛣️', departure: '🛫', freeway: '🛣️',
+  highway: '🛣️', lane: '🛣️', motel: '🏨', railway: '🚂', resort: '🏖️', subway: '🚇',
+  terminal: '🚏', tourist: '🧳', tram: '🚋', voyage: '⛵', anchor: '⚓', cruise: '🛳️',
+  harbor: '⛵', hotel: '🏨', journey: '🧭', luggage: '🧳', passport: '🛂', pier: '⛵',
+  port: '⚓', route: '🗺️', station: '🚉', street: '🏙️', taxi: '🚕', trail: '🥾',
+  train: '🚂', trip: '🧳', trolley: '🚎', tunnel: '🚇', bridge: '🌉', canyon: '🏞️',
+  flight: '✈️', ticket: '🎫',
+  // Sports
+  archery: '🏹', badminton: '🏸', bowling: '🎳', cheer: '📣', diving: '🤿', gymnast: '🤸',
+  javelin: '🎯', pitch: '⚾', referee: '🧑', rowing: '🚣', runner: '🏃', skate: '⛸️',
+  skiing: '🎿', soccer: '⚽', sprint: '🏃', surfing: '🏄', swimmer: '🏊', tennis: '🎾',
+  volleyball: '🏐', wrestler: '🤼', yoga: '🧘', race: '🏁', medal: '🥇', stadium: '🏟️',
+  trophy: '🏆', boxing: '🥊', karate: '🥋', judo: '🥋', fencing: '🤺', hockey: '🏒',
+  golf: '⛳', cricket: '🏏', baseball: '⚾', basketball: '🏀',
+  // Arts
+  ballet: '🩰', cello: '🎻', chorus: '👥', easel: '🎨', lyrics: '📝', melody: '🎵',
+  mime: '🎭', palette: '🎨', portrait: '🖼️', rhythm: '🥁', sculpture: '🗿', sonnet: '📜',
+  theatre: '🎭', theater: '🎭', trumpet: '🎺', violin: '🎻', actor: '🎭', artist: '🎨',
+  painter: '🎨', singer: '🎤',
+  // Colors
+  amber: '🟠', beige: '🟤', blond: '👱', charcoal: '⬛', coral: '🪸', crimson: '🔴',
+  indigo: '🟣', lavender: '🪻', lilac: '🪻', magenta: '🩷', maroon: '🟤', olive: '🫒',
+  peach: '🍑', sapphire: '💙', scarlet: '🔴', violet: '🟣', cream: '🥛', mustard: '🟡',
+  coffee: '☕', ginger: '🫚', honey: '🍯', lemon: '🍋', ocean: '🌊', rainbow: '🌈',
+  sunset: '🌇', sunrise: '🌅', berry: '🫐', flame: '🔥', emerald: '💚', turquoise: '🩵',
+  // People
+  acrobat: '🤸', astronaut: '👨🚀', babysitter: '🍼', barber: '💈', blacksmith: '🔨',
+  butcher: '🔪', butler: '🤵', carpenter: '🪚', clerk: '🧑', courier: '📦', cowboy: '🤠',
+  detective: '🕵️', driver: '🚗', drummer: '🥁', engineer: '👷', fireman: '🚒',
+  fisherman: '🎣', gardener: '🌱', guard: '💂', hunter: '🏹', librarian: '📚',
+  lifeguard: '⛑️', maid: '🧹', mayor: '🏛️', mechanic: '🔧', miner: '⛏️', monk: '🧘',
+  nanny: '🍼', officer: '👮', plumber: '🔧', postman: '📮', priest: '⛪', princess: '👸',
+  professor: '👨🏫', reporter: '🎤', secretary: '🗂️', shepherd: '🐑', surgeon: '🥼',
+  tailor: '🧵', thief: '🦹', trader: '🤝', waiter: '🤵', worker: '👷', writer: '✍️'
+});
+
+// ── Round-2 expansion: body, travel, sports, arts, colors, trade ─────────
+Object.assign(WORD_ART, {
+  // Body
+  elbow: '🦵', tonsil: '🦷', earlobe: '👂', eyelash: '👁️', nostril: '👃', molar: '🦷',
+  biceps: '💪', dimple: '😊', freckle: '🤎', wrinkle: '👵', tummy: '🤰', tendon: '🩻',
+  reflex: '⚡', sneeze: '🤧', blink: '👁️', frown: '🙁', giggle: '😂', laugh: '😂',
+  breath: '🌬️', throat: '🗣️',
+  // Travel
+  caboose: '🚂', caravan: '🚐', carousel: '🎠', charter: '🚤', depot: '🚉',
+  motorway: '🛣️', seaport: '⚓', sidewalk: '🚶', steamer: '🚢', turnpike: '🛣️',
+  viaduct: '🌉', walkway: '🚶', waterway: '🚣', camping: '🏕️', picnic: '🧺',
+  landmark: '🗼', scenery: '🏞️', skyline: '🌆', frontier: '🛂', customs: '🛃',
+  baggage: '🧳', boarding: '🛫', runway: '🛬', hangar: '✈️', cockpit: '🛫',
+  airship: '🎈', glider: '🪁', shuttle: '🚀', launch: '🚀',
+  // Sports
+  hurdle: '🏃', pushup: '💪', situp: '🤸', squat: '🏋️', barbell: '🏋️', weights: '🏋️',
+  exercise: '🏃', training: '🏋️', mascot: '🐻', huddle: '👥', inning: '⚾',
+  wicket: '🏏', pitcher: '⚾', catcher: '🧤', batter: '🏏', bowler: '🎳', goalie: '🧤',
+  dribble: '🏀', block: '🧱',
+  // Arts
+  tragedy: '🎭', verse: '📜', stanza: '📜', rhyme: '🎵', prose: '📖', cartoon: '🎨',
+  anime: '🎌', manga: '📖', vinyl: '💿', record: '💿', banjo: '🪕', bugle: '🎺',
+  cymbals: '🥁', kazoo: '🎺', mandolin: '🪕', maracas: '🪇', piccolo: '🪈',
+  ukulele: '🪕', clarinet: '🎷', trombone: '🎺', viola: '🎻', perform: '🎭',
+  producer: '🎬', director: '🎬',
+  // Colors
+  burgundy: '🍷', chestnut: '🌰', cinnamon: '🟤', cobalt: '🔵', denim: '👖',
+  ebony: '⬛', fuchsia: '🩷', khaki: '🫒', mauve: '🟣', ochre: '🟠', platinum: '⚪',
+  sepia: '🟤', sienna: '🟤', taupe: '🟤', topaz: '💎', avocado: '🥑',
+  // Trade
+  auction: '🔨', broker: '🤝', budget: '💰', business: '💼', cargo: '📦',
+  commerce: '🛒', credit: '💳', currency: '💱', customer: '🧑', dealer: '🚗',
+  delivery: '📦', deposit: '🏦', discount: '🏷️', export: '🚢', finance: '📊',
+  freight: '🚛', goods: '📦', import: '📥', invoice: '🧾', merchant: '🏪',
+  order: '📋', payment: '💳', purchase: '🛍️', refund: '↩️', revenue: '📈',
+  salary: '💵', sales: '🛒', shipment: '📦', shipping: '🚚', supplier: '🏭',
+  trade: '🤝', vendor: '🏪', yield: '🌾'
+});
+
 function getWordArt(word) {
   return WORD_ART[word] || null;
 }

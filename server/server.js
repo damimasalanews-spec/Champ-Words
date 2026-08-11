@@ -316,13 +316,7 @@ const CATEGORY_IDS = new Set(CATEGORIES.list.map(c => c.id));
 // Themed 'trade' pack — curated for this game (every word is 5–8 letters,
 // in the dictionary, AND has emoji art). Merged at runtime because
 // build-categories.js regenerates categories.js from words.txt.
-CATEGORIES.words.trade = ['truck', 'money', 'clock', 'plane', 'train', 'envelope', 'wheel', 'camera', 'harbor', 'pilot', 'captain', 'mirror', 'glass', 'silver', 'golden', 'banker', 'notebook', 'diary', 'tackle', 'ferry', 'yacht'];
-CATEGORIES.list.push({ id: 'trade', label: 'Trade & Export', icon: '🚢' });
-CATEGORY_IDS.add('trade');
-// Countries pack — every word is 5–8 letters, in the dictionary, with flag art.
-CATEGORIES.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
-CATEGORIES.list.push({ id: 'countries', label: 'Countries', icon: '🌍' });
-CATEGORY_IDS.add('countries');
+
 
 // ── 20s hint clues (curated + templates) ─────────────────────────────────
 const { generateClue } = require('./clues.js');
@@ -332,6 +326,30 @@ const { WORD_ART, getWordArt } = require('./wordArt.js');
 const { maskText } = require('./badWords.js'); // profanity filter for chat/guesses
 // Words that both exist in the dictionary AND have clipart — preferred picks
 const WORD_ART_POOL = Object.fromEntries(Object.entries(WORD_ART).filter(([w]) => DICT.has(w)));
+
+// ── Curated category packs (50+ drawable words each) ─────────────────────
+// Replaces the thin auto-generated lists with curated drawable packs so every
+// theme has plenty of non-repeating words. Filtered to art ∩ dictionary.
+const PACKS = require('./categoryPacks.js');
+const PACK_META = {
+  animals: { label: 'Animals', icon: '🐾' }, food: { label: 'Food', icon: '🍎' },
+  nature: { label: 'Nature', icon: '🌿' }, body: { label: 'Body', icon: '💪' },
+  home: { label: 'Home', icon: '🏠' }, clothes: { label: 'Clothes', icon: '👕' },
+  travel: { label: 'Travel', icon: '🚗' }, sports: { label: 'Sports', icon: '⚽' },
+  arts: { label: 'Arts', icon: '🎵' }, colors: { label: 'Colors', icon: '🎨' },
+  people: { label: 'People', icon: '👤' }, trade: { label: 'Trade & Export', icon: '🚢' }
+};
+for (const [id, words] of Object.entries(PACKS)) {
+  const drawable = words.filter(w => WORD_ART[w] && DICT.has(w));
+  if (drawable.length >= 6) {
+    CATEGORIES.words[id] = drawable;
+    const meta = PACK_META[id] || { label: id, icon: '🎲' };
+    if (!CATEGORY_IDS.has(id)) { CATEGORIES.list.push({ id, label: meta.label, icon: meta.icon }); CATEGORY_IDS.add(id); }
+  }
+}
+// Countries pack — every word is 5–8 letters, in the dictionary, with flag art.
+CATEGORIES.words.countries = ['india', 'china', 'france', 'egypt', 'brazil', 'canada', 'japan', 'germany', 'italy', 'spain', 'mexico', 'turkey', 'poland', 'sweden', 'norway', 'denmark', 'portugal', 'greece', 'ireland', 'iceland', 'england', 'scotland', 'wales', 'russia', 'thailand', 'vietnam', 'malaysia', 'pakistan', 'nepal', 'bhutan', 'chile', 'nigeria', 'kenya', 'ghana', 'senegal', 'morocco', 'algeria', 'tunisia', 'sudan', 'somalia', 'ethiopia', 'tanzania', 'uganda', 'zambia', 'zimbabwe', 'angola', 'cyprus', 'jordan', 'israel', 'lebanon', 'syria', 'yemen', 'qatar', 'kuwait', 'saudi', 'bahrain', 'mongolia', 'taiwan', 'cambodia', 'myanmar', 'niger', 'congo', 'rwanda', 'malawi', 'namibia', 'botswana', 'guinea', 'liberia', 'armenia', 'georgia', 'ukraine', 'belarus', 'moldova', 'romania', 'bulgaria', 'hungary', 'austria', 'belgium', 'slovakia', 'slovenia', 'croatia', 'bosnia', 'serbia', 'albania', 'estonia', 'latvia', 'finland', 'andorra', 'malta', 'monaco', 'ecuador', 'colombia', 'bolivia', 'paraguay', 'uruguay', 'guyana', 'panama', 'honduras', 'haiti', 'jamaica', 'trinidad', 'barbados', 'bahamas', 'grenada', 'samoa', 'papua', 'solomon', 'puerto'];
+if (!CATEGORY_IDS.has('countries')) { CATEGORIES.list.push({ id: 'countries', label: 'Countries', icon: '🌍' }); CATEGORY_IDS.add('countries'); }
 
 // ── Rooms ────────────────────────────────────────────────────────────────
 function makeRoomId() { return Math.random().toString(36).slice(2, 6).toUpperCase(); }
