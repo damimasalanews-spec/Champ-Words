@@ -4227,6 +4227,49 @@
 .login-page .login-legal { margin: 0; }
 /* loading state stays centered */
 .login-page .login-card .loading-spinner { margin: auto; }
+/* ═══════════════════════════════════════════════════════════════════════
+   GET STARTED FORM + DAILY WORD — fit the mobile viewport:
+   safe-centered (never clips), scrolls only if truly needed, compact.
+   ═══════════════════════════════════════════════════════════════════════ */
+.lobby-form {
+  justify-content: safe center;
+  overflow-y: auto;
+  padding: 12px 16px;
+  gap: 10px;
+}
+.lobby-form .lobby-card {
+  max-width: min(92vw, 400px);
+  padding: 16px;
+}
+.lobby-form .form-group { margin-bottom: 10px; }
+.lobby-form .form-group input,
+.lobby-form .form-group select { padding: 10px 12px; font-size: 14px; }
+.lobby-form .round-option { padding: 8px 0; font-size: 12px; }
+.lobby-form .theme-selector .round-option { padding: 6px 9px; font-size: 11px; }
+.lobby-form .round-selector-hint { font-size: 9.5px; margin-top: 4px; }
+.lobby-form .mode-tabs { max-width: 100%; }
+.lobby-form .form-heading { font-size: 19px; }
+.lobby-form .form-sub { font-size: 11px; margin-bottom: 0; }
+.lobby-form .btn-back { margin-left: 0; }
+
+/* Daily Word page */
+.wotd-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+.wotd-wrap .wotd-card {
+  width: min(92vw, 400px);
+  max-width: 100%;
+  padding: 18px 20px;
+}
+.wotd-wrap .wotd-art { font-size: 60px; margin: 14px 0 12px; }
+.wotd-wrap .wotd-brackets { margin-bottom: 14px; }
+.wotd-wrap .wotd-title { font-size: 12px; }
 .login-page .login-card::before,
 .lobby-intro .intro-card::before {
   display: none;
