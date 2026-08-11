@@ -46,6 +46,7 @@ export default function App() {
   }, [room, forcedCanvas]);
   const [chatOpen, setChatOpen] = useState(false);
   const [modOpen, setModOpen] = useState(false);
+  const [answerSlot, setAnswerSlot] = useState(null);
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
@@ -440,6 +441,7 @@ export default function App() {
           chatOpen={chatOpen}
           onChooseWord={handleChooseWord}
           messages={messages}
+          onAnswerSlot={setAnswerSlot}
         />
       )}
 
@@ -456,7 +458,7 @@ export default function App() {
           onLeave={handleLeave}
         />
       )}
-      {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
+      {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} answerSlot={answerSlot} />}
 
       {modOpen && room && (
         <div className="mod-panel">
