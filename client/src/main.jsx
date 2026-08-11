@@ -8,15 +8,17 @@ import App from './App.jsx'
 // game URL) and via `?half=1` anywhere or `?auto=1` (studio mode). The
 // login/splash page shows first on /tiktok — it renders inside the same
 // canvas, so the design matches the full-page look, just scaled.
-// /compact renders EXACTLY like /tiktok (same view, same design) — it is
-// just an alternate path to the identical half-screen experience.
+// The main root, /tiktok and /compact ALL render the identical half-screen
+// experience — champ-words.onrender.com IS the game (no redirect).
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;
   const params = new URLSearchParams(window.location.search);
-  const isTiktokPath = window.location.pathname.startsWith('/tiktok');
-  const isCompactPath = window.location.pathname.startsWith('/compact');
-  const forced = params.has('half') || isTiktokPath || isCompactPath;
+  const path = window.location.pathname;
+  const isRoot = path === '/' || path === '';
+  const isTiktokPath = path.startsWith('/tiktok');
+  const isCompactPath = path.startsWith('/compact');
+  const forced = params.has('half') || isRoot || isTiktokPath || isCompactPath;
   const studioMode = params.has('auto');
   document.documentElement.classList.toggle('tiktok-half', forced || studioMode || (isTikTok && isHalfScreen));
 }

@@ -1466,13 +1466,9 @@ if (CHAT_BRIDGE_ENABLED && TIKTOK_LIVE_USERNAME) {
 }
 
 // ── Static files ─────────────────────────────────────────────────────────
-// Single permanent entry point: the old root link (champ-words.onrender.com)
-// forwards to /tiktok, which now serves the full app — splash/login page
-// first, then the lobby and game (half-screen layout).
-app.get('/', (req, res) => {
-  const qs = req.url.indexOf('?') >= 0 ? req.url.slice(req.url.indexOf('?')) : '';
-  res.redirect('/tiktok' + qs);
-});
+// Single permanent entry point: champ-words.onrender.com IS the game —
+// it serves the same half-screen experience as /tiktok directly (no
+// redirect). /tiktok and /compact remain identical aliases.
 
 // /compact serves its own redesigned compact view (client-side mode); the
 // /tiktok link itself is untouched.
