@@ -10,6 +10,7 @@ import GameOver from './components/GameOver';
 import Chat from './components/Chat';
 import VoiceChat from './components/VoiceChat';
 import Toast from './components/Toast';
+import FloatingTiles from './components/FloatingTiles';
 import './App.css';
 
 // Persistent identity for this browser — lets a player rejoin their room
@@ -436,6 +437,7 @@ export default function App() {
 
       {screen === 'waiting' && room && (
         <div className="waiting-host">
+          <FloatingTiles />
           <div className="room-code">{room.id}</div>
           <p className="players-count"><span>{room.players.length}</span> player{room.players.length !== 1 ? 's' : ''}</p>
           <div style={{ marginTop: 16 }}>

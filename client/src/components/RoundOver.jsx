@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import FloatingTiles from './FloatingTiles';
 import { playSound } from '../sounds';
 
 export default function RoundOver({ result, room }) {
@@ -45,6 +46,7 @@ export default function RoundOver({ result, room }) {
 
   return (
     <div className="overlay roundover-overlay">
+      <FloatingTiles />
       <div className="overlay-card">
         <h2>Round {round} Over</h2>
 

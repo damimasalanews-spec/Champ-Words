@@ -5440,3 +5440,146 @@
 .intro-glow {
   background: radial-gradient(circle, rgba(37, 244, 238, 0.28), transparent 65%);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NEON SITE-WIDE POLISH — centered logo, perfect borders, floating words
+   Game format/layout untouched — design surfaces only.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Header: brand centered in the middle of the bar ─────────────────── */
+.app-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: stretch;
+}
+.app-header .brand { grid-column: 2; justify-self: center; }
+.app-header .header-right { grid-column: 3; justify-self: end; }
+
+/* ── Studio / auto-status banner + Join now button ───────────────────── */
+.auto-status {
+  max-width: 440px;
+  margin: 10px auto 0;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(37, 244, 238, 0.35);
+  border-radius: 16px;
+  color: #d9fffe;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.auto-status .btn-primary { margin: 0; }
+.tiktok-half .auto-status { max-width: 340px; }
+
+/* ── Waiting room: neon code plaque + floating tiles behind ──────────── */
+.waiting-host { position: relative; }
+.waiting-host > :not(.login-bg-tiles) { position: relative; z-index: 1; }
+.waiting-host .login-bg-tiles { z-index: 0; }
+.room-code {
+  background: rgba(37, 244, 238, 0.08);
+  border: 1px solid rgba(37, 244, 238, 0.40);
+  color: #7df5f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.players-count span { color: #25f4ee; }
+
+/* ── Buttons: primary CTA is the mint gradient ───────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, #25f4ee, #38bdf8);
+  color: #06202a;
+  box-shadow: 0 6px 18px rgba(37, 244, 238, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #25f4ee, #38bdf8);
+  color: #06202a;
+  filter: brightness(1.06);
+}
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+}
+
+/* ── Player badges + avatar rings ────────────────────────────────────── */
+.player-badge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.player-avatar { border-color: #25f4ee; }
+.player-badge .host-star { color: #25f4ee; }
+
+/* ── Unified surface recipe: perfect borders on every panel ──────────── */
+.game-frame, .grid-leader-panel, .answer-art-box, .top10-board, .overall-board,
+.side-status-card, .wotd-wrap, .alltime-panel, .paused-card, .roundover-top5,
+.lobby-card, .lobby-form, .voice-panel, .top5-row, .ticker-bar, .art-board,
+.speed-banner, .winner-banner, .found-now, .hint-clue, .champ-word-display,
+.inline-chat, .overlay-card, .pick-popup-card, .hint-action-card, .toast {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 18px;
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+}
+.lobby-card, .lobby-form, .wotd-wrap, .alltime-panel { background: rgba(0, 0, 0, 0.25); }
+
+/* ── Overlays: dark glass instead of maroon ──────────────────────────── */
+.pick-popup-overlay, .overlay {
+  background: rgba(23, 11, 46, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.overlay-card, .pick-popup-card, .hint-action-card {
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+/* Cards sit above the floating tiles inside overlays */
+.overlay .login-bg-tiles { z-index: 0; }
+.overlay-card { position: relative; z-index: 2; }
+.gameover-overlay .gameover-confetti { z-index: 3; }
+
+/* ── Chat panel: glass side sheet ────────────────────────────────────── */
+.chat-panel {
+  background: linear-gradient(180deg, rgba(23, 11, 46, 0.96), rgba(34, 16, 64, 0.98));
+  border-left: 1px solid rgba(37, 244, 238, 0.25);
+}
+
+/* ── Grid tiles: crisp hairline + mint selection (sizes untouched) ───── */
+.grid-cell, .grid-4x4 .grid-cell {
+  border: 1px solid rgba(23, 11, 46, 0.10);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+}
+.grid-cell.selected {
+  border-color: #25f4ee;
+  box-shadow: 0 0 12px rgba(37, 244, 238, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ── Timer: mint fill ────────────────────────────────────────────────── */
+.timer-bar-fill {
+  background: linear-gradient(90deg, #25f4ee, #38bdf8);
+}
+.timer-bar-fill.timer-bar-warn { background: linear-gradient(90deg, #fe2c55, #ff5c7c); }
+
+/* ── Inputs: clean glass fields ──────────────────────────────────────── */
+.type-answer input, .form-group input, .form-group select, .pick-hint-input,
+.pick-custom-input, .chat-input-area input {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text);
+}
+.type-answer input:focus, .form-group input:focus, .form-group select:focus,
+.pick-hint-input:focus, .pick-custom-input:focus, .chat-input-area input:focus {
+  border-color: rgba(37, 244, 238, 0.6);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 244, 238, 0.12);
+}
+
+/* ── Gold-tinted leftovers → mint (borders, glows, tinted strips) ────── */
+.top10-title, .overall-title, .alltime-title { border-bottom-color: rgba(125, 245, 240, 0.15); }
+.mode-tab.active { box-shadow: 0 4px 14px rgba(37, 244, 238, 0.30); }
+.congrats-line { background: rgba(37, 244, 238, 0.12); color: #7df5f0; }
+.room-badge { color: #7df5f0; }

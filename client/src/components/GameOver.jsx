@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Logo from './Logo';
+import FloatingTiles from './FloatingTiles';
 import { playSound } from '../sounds';
 
 const AUTO_RESTART_SECONDS = 20;
@@ -72,6 +73,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
 
   return (
     <div className="overlay gameover-overlay">
+      <FloatingTiles />
       {/* Confetti celebration */}
       {Array.from({ length: 40 }, (_, i) => (
         <div key={i} className="gameover-confetti"
