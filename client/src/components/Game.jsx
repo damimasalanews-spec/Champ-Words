@@ -219,13 +219,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
 
-  // Countdown
+  // Countdown (freezes while the host pauses the game)
   useEffect(() => {
-    if (state !== 'playing' || !room.endsAt) return;
+    if (state !== 'playing' || !room.endsAt || room.paused) return;
     const tick = () => { const rem = Math.max(0, Math.ceil((room.endsAt - Date.now()) / 1000)); setTimeLeft(rem); if (rem <= 0) clearInterval(iv); };
     const iv = setInterval(tick, 250); tick();
     return () => clearInterval(iv);
-  }, [state, room.endsAt, room.round]);
+  }, [state, room.endsAt, room.round, room.paused]);
 
   // Word found / time up — reveal the word and let the letters fall into the brackets
   useEffect(() => {

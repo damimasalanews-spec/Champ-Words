@@ -358,6 +358,7 @@ function handleChatAnswer({ user, text, nickname }) {
   player.score += gained;
   player.xp = (player.xp || 0) + 10;
   player.level = Math.floor(player.xp / 100) + 1;
+  checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
   addAllTime(player.playerKey, player.name, player.avatar, gained);
   bumpAllTimeFound(player.playerKey, streak);
   // Achievement toasts for the stream
@@ -432,10 +433,12 @@ function handleChatGift({ user, diamonds }) {
   }
   if (hidden === 0) return { ok: false, error: 'all letters revealed' };
   chatGiftCooldowns.set(username, now);
+  recordGift(username, d); // top-gifter stats
   if (d >= CHAT_GIFT_TIER3_DIAMONDS) {
     const r = revealAllLetters(room);
     if (!r) return { ok: false, error: 'all letters revealed' };
-    io.to(room.id).emit('chat', { system: true, green: true, text: `🎁 ${username} sent a BIG gift and revealed the whole word!` });
+    io.to(room.id).emit('chat', { system: true, green: true, text: `🎁 ${username} sent a BIG gift and revealed the whole word — round over!` });
+    endRound(room, true); // big gift = instant round end (no stump points)
     return { ok: true, full: true, name: username };
   }
   const want = d >= CHAT_GIFT_TIER2_DIAMONDS ? 2 : 1;
@@ -449,6 +452,20 @@ app.post('/api/chat-gift', (req, res) => res.json(handleChatGift(req.body || {})
 
 // All-time leaderboard (top 20 lifetime scores)
 app.get('/api/alltime', (req, res) => res.json({ ok: true, top: allTimeTop(20) }));
+
+// Today's Top 10 — daily reset race
+app.get('/api/today', (req, res) => {
+  const t = todayKey(Date.now());
+  const top = [...todayScores.entries()]
+    .filter(([, v]) => v.date === t)
+    .map(([k, v]) => ({ key: k, name: v.name, score: v.score }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+  res.json({ ok: true, top });
+});
+
+// Top gifters — biggest supporters of the stream
+app.get('/api/topgifters', (req, res) => res.json({ ok: true, top: giftTop(10) }));
 
 // Word of the Day (solo mode) — deterministic daily pick from the drawable pool
 app.get('/api/wotd', (req, res) => {
@@ -603,7 +620,57 @@ function addAllTime(key, name, avatar, gained) {
   if (name) cur.name = name;
   if (avatar) cur.avatar = avatar;
   allTime.set(key, cur);
+  addTodayScore(key, name, gained); // Today's Top 5 — daily reset race
   persistAllTime();
+}
+
+// ── Today's scores (daily reset) ──────────────────────────────────────────
+const todayScores = new Map(); // playerKey → { name, score, date }
+function todayKey(d) { return new Date(d).toISOString().slice(0, 10); }
+function addTodayScore(key, name, gained) {
+  if (!key || !gained) return;
+  const t = todayKey(Date.now());
+  const cur = todayScores.get(key);
+  if (!cur || cur.date !== t) todayScores.set(key, { name: name || key, score: gained, date: t });
+  else { cur.score += gained; if (name) cur.name = name; }
+}
+
+// ── Top gifters ───────────────────────────────────────────────────────────
+const giftStats = new Map(); // username → { name, diamonds, count }
+const GIFT_FILE = path.join(__dirname, 'data', 'gifters.json');
+function loadGiftStats() {
+  try { const raw = JSON.parse(fs.readFileSync(GIFT_FILE, 'utf-8')); (raw || []).forEach(g => giftStats.set(g.key, { name: g.name, diamonds: g.diamonds || 0, count: g.count || 0 })); } catch (_) {}
+}
+loadGiftStats();
+let giftSaveTimer = null;
+function persistGiftStats() {
+  if (giftSaveTimer) return;
+  giftSaveTimer = setTimeout(() => { giftSaveTimer = null; try { fs.mkdirSync(path.dirname(GIFT_FILE), { recursive: true }); fs.writeFileSync(GIFT_FILE, JSON.stringify([...giftStats.entries()].map(([k, v]) => ({ key: k, name: v.name, diamonds: v.diamonds, count: v.count })))); } catch (_) {} }, 2000);
+}
+function recordGift(username, diamonds) {
+  const cur = giftStats.get(username) || { name: username, diamonds: 0, count: 0 };
+  cur.diamonds += diamonds;
+  cur.count += 1;
+  giftStats.set(username, cur);
+  persistGiftStats();
+}
+function giftTop(n) {
+  return [...giftStats.entries()]
+    .map(([k, v]) => ({ key: k, name: v.name, diamonds: v.diamonds, count: v.count }))
+    .sort((a, b) => b.diamonds - a.diamonds)
+    .slice(0, n);
+}
+
+// ── Milestones (1k / 5k / 10k lifetime points) ────────────────────────────
+const milestoneShown = new Set(); // playerKey:amount — announced this session
+const MILESTONES = [1000, 5000, 10000];
+function checkMilestone(room, player, gained) {
+  for (const t of MILESTONES) {
+    if (player.score >= t && (player.score - gained) < t && !milestoneShown.has(player.playerKey + ':' + t)) {
+      milestoneShown.add(player.playerKey + ':' + t);
+      io.to(room.id).emit('milestone', { name: player.name, points: t });
+    }
+  }
 }
 function bumpAllTimeFound(key, streak) {
   const cur = allTime.get(key);
@@ -670,6 +737,7 @@ function createRoom(hostId, hostName, hostAvatar, opts) {
   const room = {
     id, host: hostId, createdAt: Date.now(),
     players: [{ id: hostId, playerKey: opts2.playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0, streak: 0 }],
+    blacklist: new Set(), paused: false, pausedAt: null, pauseRemaining: 0,
     state: 'waiting', round: 0, totalRounds: opts2.totalRounds || 5,
     roundTimeMs: opts2.roundTimeMs || 0,          // 0 = server default (60s)
     difficulty: opts2.difficulty || 'medium',     // easy | medium | hard
@@ -729,6 +797,9 @@ function sanitizeRoom(room) {
     art: room.state === 'playing' ? artForWord(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
     speedRound: !!room.speedRound,
+    paused: !!room.paused,
+    chatTotal: room.players.reduce((s, p) => s + (p.isChat ? (p.score || 0) : 0), 0),
+    hostTotal: (room.players.find(p => p.id === room.host) || {}).score || 0,
     duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
     voteOptions: (room.state === 'champ_pick' && room.voteOptions && room.voteOptions.length >= 2)
       ? room.voteOptions.map(o => ({ id: o.id, label: o.label, votes: (room.votes && room.votes[o.id]) || 0 })) : null,
@@ -972,7 +1043,9 @@ function beginChampTurn(room, champId) {
   room.offeredClues = [];
   room.roundFinds = [];
   room.allFound = false;
-  room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords); // 6 random words (no game repeats)
+  // 6 random words (no game repeats, none blacklisted by the host)
+  room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords).filter(w => !room.blacklist.has(w));
+  if (room.choices.length < 3) room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords);
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
   // Theme vote options (viewers pick the next category) — shown ON SCREEN
@@ -1152,15 +1225,17 @@ function finishGame(room) {
   });
 }
 
-function endRound(room) {
+function endRound(room, skipStump) {
   if (room.endedRound) return;
   room.endedRound = true;
   clearTimer(room);
+  room.paused = false; room.pausedAt = null; room.pauseRemaining = 0;
   room.state = 'round_over';
   const winner = playerById(room, room.roundWinnerId);
   // Nobody found the word — the player who CHOSE it takes the points
+  // (skipStump = host skip / big-gift reveal: no points awarded)
   let stumpPoints = null;
-  if (!winner) {
+  if (!winner && !skipStump) {
     const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
     const gained = Math.max(10, 100 - elapsed);
     const picker = champOf(room);
@@ -1333,6 +1408,59 @@ io.on('connection', socket => {
     cb && cb({ ok: true, wordLength: w.length });
   });
 
+  // ── Host tools: pause / resume / skip / blacklist ──
+  socket.on('pause_game', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Host only' });
+    if (room.paused) return cb && cb({ ok: false, error: 'Already paused' });
+    if (room.state !== 'playing') return cb && cb({ ok: false, error: 'Only during a round' });
+    room.pauseRemaining = Math.max(0, (room.roundStartedAt + (room.roundMs || room.roundTimeMs || ROUND_TIME_MS)) - Date.now());
+    if (room.timer) clearTimeout(room.timer);
+    room.pausedAt = Date.now();
+    room.paused = true;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, blue: true, text: '⏸️ Game paused by the host' });
+    cb && cb({ ok: true });
+  });
+  socket.on('resume_game', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Host only' });
+    if (!room.paused) return cb && cb({ ok: false, error: 'Not paused' });
+    room.roundStartedAt += Date.now() - (room.pausedAt || Date.now()); // extend deadline by paused time
+    room.timer = setTimeout(() => onTimeUp(room), Math.max(0, room.pauseRemaining || 1000));
+    room.paused = false; room.pausedAt = null; room.pauseRemaining = 0;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, blue: true, text: '▶️ Game resumed!' });
+    cb && cb({ ok: true });
+  });
+  socket.on('skip_word', ({ roomId }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Host only' });
+    if (room.state === 'playing') {
+      io.to(room.id).emit('chat', { system: true, text: '⏭️ Word skipped by the host' });
+      endRound(room, true);
+      cb && cb({ ok: true });
+      return;
+    }
+    if (room.state === 'champ_pick' && room.choices.length) {
+      room.word = room.choices[Math.floor(Math.random() * room.choices.length)];
+      room.wordHint = '';
+      startRound(room);
+      cb && cb({ ok: true });
+      return;
+    }
+    cb && cb({ ok: false, error: 'Nothing to skip' });
+  });
+  socket.on('blacklist_word', ({ roomId, word }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || room.host !== socket.id) return cb && cb({ ok: false, error: 'Host only' });
+    const w = String(word || '').toLowerCase().trim().replace(/\s+/g, '');
+    if (!w) return cb && cb({ ok: false, error: 'Empty word' });
+    room.blacklist.add(w);
+    io.to(room.id).emit('chat', { system: true, text: `🚫 "${w}" is now blacklisted` });
+    cb && cb({ ok: true });
+  });
+
   socket.on('duel_answer', ({ roomId, word }, cb) => {
     const room = rooms.get(roomId);
     if (!room || !room.duel || room.state !== 'round_over') return cb && cb({ ok: false, error: 'No duel right now' });
@@ -1408,6 +1536,7 @@ io.on('connection', socket => {
     if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
     if (room.speedRound) gained *= SPEED_MULT; // speed round: triple points
     player.score += gained;
+    checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
     addAllTime(player.playerKey, player.name, player.avatar, gained);
     bumpAllTimeFound(player.playerKey, streak);
     if (streak >= 2) io.to(roomId).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });

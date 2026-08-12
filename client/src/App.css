@@ -3416,6 +3416,139 @@
 }
 .pick-custom-go:disabled { opacity: 0.4; }
 
+/* ── Hall of Fame tabs ─────────────────────────────────────────────────── */
+.hall-tabs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.hall-tab {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(233, 218, 255, 0.7);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+.hall-tab.active {
+  background: linear-gradient(135deg, #ffcf5c, #ff9d4d);
+  color: #2a1505;
+  border-color: transparent;
+}
+.hall-empty { font-size: 11px; color: rgba(233, 218, 255, 0.5); text-align: center; margin: 6px 0; }
+
+/* ── Rivalry bar (host vs chat) ───────────────────────────────────────── */
+.rivalry-bar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 88;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(150deg, rgba(38, 16, 34, 0.94), rgba(24, 10, 22, 0.94));
+  border: 1.5px solid rgba(255, 197, 61, 0.45);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  animation: toastIn 0.35s ease both;
+}
+.rivalry-chat { color: #5ef2c6; }
+.rivalry-vs { color: rgba(233, 218, 255, 0.5); font-size: 10px; }
+.rivalry-host { color: #ffc53d; }
+.rivalry-fire { color: #ff6b6b; font-size: 11px; }
+.tiktok-half .rivalry-bar { top: 4px; font-size: 10px; padding: 4px 12px; gap: 7px; }
+
+/* ── Paused overlay ───────────────────────────────────────────────────── */
+.paused-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 5, 12, 0.55);
+  animation: fadeIn 0.25s ease both;
+}
+.paused-card {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 10px;
+  color: #ffc53d;
+  text-shadow: 0 0 30px rgba(255, 197, 61, 0.4);
+}
+
+/* ── Milestone celebration ────────────────────────────────────────────── */
+.milestone-banner {
+  position: fixed;
+  top: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 97;
+}
+.milestone-card {
+  background: linear-gradient(150deg, rgba(38, 16, 34, 0.97), rgba(24, 10, 22, 0.97));
+  border: 2px solid rgba(255, 197, 61, 0.7);
+  border-radius: 18px;
+  padding: 14px 26px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffd87a;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 40px rgba(255, 197, 61, 0.3);
+  white-space: nowrap;
+  animation: confettiChatIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+
+/* ── Host tools bar ───────────────────────────────────────────────────── */
+.host-tools {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 89;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 12, 41, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 5px 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+.host-tool {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.07);
+  color: #eef1ff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.host-tool:hover { border-color: rgba(255, 197, 61, 0.5); color: #ffd87a; }
+.host-tool:disabled { opacity: 0.4; cursor: default; }
+.host-blacklist-input {
+  width: 90px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 11px;
+}
+.host-blacklist-input:focus { border-color: rgba(255, 197, 61, 0.6); outline: none; }
+.tiktok-half .host-tools { top: 4px; right: 4px; padding: 4px 6px; }
+.tiktok-half .host-tool { padding: 3px 8px; font-size: 9px; }
+.tiktok-half .host-blacklist-input { width: 70px; padding: 3px 7px; font-size: 9px; }
+
 /* ── Theme vote bar (visible on stream during champ pick) ──────────────── */
 .vote-bar {
   position: fixed;

@@ -6,6 +6,9 @@ export default function LoginPage({ onPlayAsGuest }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [hall, setHall] = useState([]);
+  const [today, setToday] = useState([]);
+  const [gifters, setGifters] = useState([]);
+  const [tab, setTab] = useState('all');
 
   useEffect(() => {
     // Check if already logged in
@@ -24,6 +27,16 @@ export default function LoginPage({ onPlayAsGuest }) {
     fetch('/api/alltime')
       .then(r => r.json())
       .then(d => { if (d && d.ok) setHall((d.top || []).slice(0, 10)); })
+      .catch(() => {});
+    // Today's Top 10 — daily reset race
+    fetch('/api/today')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setToday((d.top || []).slice(0, 10)); })
+      .catch(() => {});
+    // Top gifters — biggest supporters of the stream
+    fetch('/api/topgifters')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setGifters((d.top || []).slice(0, 10)); })
       .catch(() => {});
 
     // Check for error in URL
@@ -95,9 +108,13 @@ export default function LoginPage({ onPlayAsGuest }) {
 
         {/* Bottom — footer */}
         <div className="login-bottom">
-          {hall.length > 0 && (
-            <div className="hall-of-fame">
-              <div className="hall-title">🏆 Hall of Fame · Top 10</div>
+          <div className="hall-of-fame">
+            <div className="hall-tabs">
+              <button className={`hall-tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>🏆 All-time</button>
+              <button className={`hall-tab${tab === 'today' ? ' active' : ''}`} onClick={() => setTab('today')}>🔥 Today</button>
+              <button className={`hall-tab${tab === 'gifters' ? ' active' : ''}`} onClick={() => setTab('gifters')}>🎁 Gifters</button>
+            </div>
+            {tab === 'all' && hall.length > 0 && (
               <div className="hall-list">
                 {hall.map((p, i) => (
                   <div key={p.key || i} className="hall-row">
@@ -108,8 +125,34 @@ export default function LoginPage({ onPlayAsGuest }) {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+            {tab === 'today' && today.length > 0 && (
+              <div className="hall-list">
+                {today.map((p, i) => (
+                  <div key={p.key || i} className="hall-row">
+                    <span className="hall-rank">{i + 1}</span>
+                    <span className="hall-name">{p.name}</span>
+                    {p.chat && <span className="hall-chat">LIVE</span>}
+                    <span className="hall-score">{p.score}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {tab === 'gifters' && gifters.length > 0 && (
+              <div className="hall-list">
+                {gifters.map((p, i) => (
+                  <div key={p.key || i} className="hall-row">
+                    <span className="hall-rank">{i + 1}</span>
+                    <span className="hall-name">{p.name}</span>
+                    <span className="hall-score">💎 {p.diamonds}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {tab === 'all' && hall.length === 0 && <p className="hall-empty">Play a game to make the leaderboard!</p>}
+            {tab === 'today' && today.length === 0 && <p className="hall-empty">No scores yet today — be the first!</p>}
+            {tab === 'gifters' && gifters.length === 0 && <p className="hall-empty">Send a gift during a live to appear here!</p>}
+          </div>
           <p className="login-note">
             No account needed to play. We only access your public profile name and avatar when you sign in with TikTok.
           </p>

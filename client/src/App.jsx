@@ -54,6 +54,9 @@ export default function App() {
   const [duelMsg, setDuelMsg] = useState(''); // speed-duel result banner
   const [duelWord, setDuelWord] = useState(''); // defender's duel answer input
   const duelMsgTimer = useRef(null);
+  const [milestoneMsg, setMilestoneMsg] = useState(''); // 1k/5k/10k celebration
+  const milestoneMsgTimer = useRef(null);
+  const [blacklistWord, setBlacklistWord] = useState(''); // host blacklist input
 
   const showToast = useCallback((text, type = 'error') => {
     setToast({ text, type });
@@ -229,6 +232,12 @@ export default function App() {
       } else {
         setDuelMsg('');
       }
+    });
+    socket.on('milestone', (data) => {
+      if (!data || !data.name || !data.points) return;
+      setMilestoneMsg(`${data.name} crossed ${data.points} points!`);
+      if (milestoneMsgTimer.current) clearTimeout(milestoneMsgTimer.current);
+      milestoneMsgTimer.current = setTimeout(() => setMilestoneMsg(''), 4000);
     });
     socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
@@ -458,6 +467,44 @@ export default function App() {
 
       {screen === 'round_over' && roundResult && (
         <RoundOver result={roundResult} room={room} />
+      )}
+
+      {/* ⏸️ Paused overlay */}
+      {room && room.paused && (
+        <div className="paused-overlay"><div className="paused-card">⏸️ PAUSED</div></div>
+      )}
+
+      {/* 🏆 Milestone celebration */}
+      {milestoneMsg && (
+        <div className="milestone-banner">
+          <div className="milestone-card">🏆 {milestoneMsg}</div>
+        </div>
+      )}
+
+      {/* 🔥 Host vs Chat rivalry */}
+      {room && (typeof room.chatTotal === 'number' || typeof room.hostTotal === 'number') && (
+        <div className="rivalry-bar">
+          <span className="rivalry-chat">CHAT {room.chatTotal || 0}</span>
+          <span className="rivalry-vs">vs</span>
+          <span className="rivalry-host">HOST {room.hostTotal || 0}</span>
+          {(room.chatTotal || 0) > (room.hostTotal || 0) && <span className="rivalry-fire">🔥 CHAT IS WINNING</span>}
+        </div>
+      )}
+
+      {/* 🛠️ Host tools (pause / resume / skip / blacklist) */}
+      {room && user && room.host === user.id && (
+        <div className="host-tools">
+          {room.paused ? (
+            <button className="host-tool" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
+          ) : (
+            <button className="host-tool" onClick={() => socket.emit('pause_game', { roomId: room.id })}>⏸️ Pause</button>
+          )}
+          <button className="host-tool" onClick={() => socket.emit('skip_word', { roomId: room.id })}>⏭️ Skip</button>
+          <input className="host-blacklist-input" value={blacklistWord} placeholder="block word…"
+            onChange={e => setBlacklistWord(e.target.value.replace(/[^a-zA-Z ]/g, '').toLowerCase().slice(0, 10))} />
+          <button className="host-tool" disabled={blacklistWord.trim().length < 3}
+            onClick={() => { socket.emit('blacklist_word', { roomId: room.id, word: blacklistWord }); setBlacklistWord(''); }}>🚫 Block</button>
+        </div>
       )}
 
       {/* 🎲 Theme vote — visible on stream while the champ picks */}
