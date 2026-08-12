@@ -7773,3 +7773,10 @@
 .top10-board {
   display: block;
 }
+
+/* ── Leaderboard fix (tiktok-half): the main site runs in the 540×960
+   canvas mode, where a legacy rule hid the TOP-5 board entirely.
+   Show it in every layout mode. */
+.tiktok-half .top10-board {
+  display: block;
+}
