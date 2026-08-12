@@ -51,6 +51,9 @@ export default function App() {
   const [gameResult, setGameResult] = useState(null);
   const [muted, setMuted] = useState(() => isMuted());
   const [autoStatus, setAutoStatus] = useState('');
+  const [duelMsg, setDuelMsg] = useState(''); // speed-duel result banner
+  const [duelWord, setDuelWord] = useState(''); // defender's duel answer input
+  const duelMsgTimer = useRef(null);
 
   const showToast = useCallback((text, type = 'error') => {
     setToast({ text, type });
@@ -217,6 +220,16 @@ export default function App() {
     socket.on('word_found', (data) => { setRoom(data.room); });
     socket.on('time_up', (data) => { setRoom(data.room); });
     socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
+    socket.on('duel_end', (data) => {
+      setDuelWord('');
+      if (duelMsgTimer.current) clearTimeout(duelMsgTimer.current);
+      if (data && data.winner) {
+        setDuelMsg(data.winner);
+        duelMsgTimer.current = setTimeout(() => setDuelMsg(''), 3500);
+      } else {
+        setDuelMsg('');
+      }
+    });
     socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
     socket.on('chat_cleared', () => setMessages([]));
@@ -446,6 +459,39 @@ export default function App() {
       {screen === 'round_over' && roundResult && (
         <RoundOver result={roundResult} room={room} />
       )}
+
+      {/* ⚔️ Speed duel — runs between rounds (round_over) */}
+      {(room && room.duel) ? (
+        <div className="duel-banner">
+          <div className="duel-card">
+            <div className="duel-title">⚔️ SPEED DUEL</div>
+            <div className="duel-art">
+              {String(room.duel.art || '').startsWith('http')
+                ? <img className="duel-art-img" src={room.duel.art} alt="" />
+                : <span className="duel-art-emoji">{room.duel.art}</span>}
+            </div>
+            <div className="duel-vs">{room.duel.challenger} <span className="duel-vs-x">vs</span> {room.duel.defender}</div>
+            <div className="duel-sub">First to find the word wins +100!</div>
+            {user && user.id === room.duel.defenderId && (
+              <div className="duel-answer-row">
+                <input className="duel-answer-input" value={duelWord} maxLength={12}
+                  onChange={e => setDuelWord(e.target.value.replace(/[^a-zA-Z ]/g, '').toLowerCase())}
+                  placeholder="type the word…" />
+                <button className="duel-answer-go" disabled={duelWord.length < 3}
+                  onClick={() => { if (duelWord.length >= 3) { socket.emit('duel_answer', { roomId: room.id, word: duelWord }); setDuelWord(''); } }}>
+                  Guess
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : duelMsg ? (
+        <div className="duel-banner">
+          <div className="duel-card duel-win">
+            <div className="duel-title">🏆 {duelMsg} wins the duel +100!</div>
+          </div>
+        </div>
+      ) : null}
 
       {screen === 'game_over' && gameResult && (
         <GameOver

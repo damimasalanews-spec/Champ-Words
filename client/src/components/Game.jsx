@@ -7,9 +7,10 @@ function isAdjacent(r1, c1, r2, c2) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
-// ── Word Pick Popup (6 choices + optional champ clue) ─────────────────────
+// ── Word Pick Popup (6 choices + optional champ clue + custom word) ─────
 function WordPickPopup({ choices, onPick, disabled, timeLeft, guesserName }) {
   const [hint, setHint] = useState('');
+  const [custom, setCustom] = useState('');
   return (
     <div className="pick-popup-overlay">
       <div className="pick-popup-card">
@@ -33,6 +34,18 @@ function WordPickPopup({ choices, onPick, disabled, timeLeft, guesserName }) {
             placeholder="leave empty for an automatic hint"
             maxLength={60} />
           <p className="pick-hint-note">Your clue is offered at 40s left · 2 letters revealed at 40s too</p>
+        </div>
+        <div className="pick-custom-box">
+          <label className="pick-hint-label">Or type your own word (3–8 letters)</label>
+          <div className="pick-custom-row">
+            <input className="pick-custom-input" value={custom}
+              onChange={e => setCustom(e.target.value.replace(/[^a-zA-Z]/g, '').toLowerCase().slice(0, 8))}
+              placeholder="e.g. champ" maxLength={8} />
+            <button className="pick-custom-go" disabled={disabled || custom.length < 3}
+              onClick={() => { if (custom.length >= 3) onPick(custom, hint); }}>
+              Go
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -143,6 +156,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
   const [toasts, setToasts] = useState([]); // achievement toasts (first blood, lightning, streak)
   const toastId = useRef(1);
+  const [ticker, setTicker] = useState([]); // winner ticker (recent finds)
+  const tickerId = useRef(1);
   const popupQueue = useRef([]); // popups show ONE BY ONE (each ~2s)
   const popupBusy = useRef(false); // true while a popup is on screen
   const popupId = useRef(1); // unique id per popup → forces a fresh mount each time
@@ -234,6 +249,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         const ts = data.toasts.map(t => ({ id: toastId.current++, icon: t.icon, text: t.text, name }));
         setToasts(prev => [...prev, ...ts]);
         ts.forEach(t => window.setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 2400));
+      }
+      // Winner ticker — recent finds scrolling at the bottom
+      if (data.winnerName && data.elapsed) {
+        setTicker(prev => [...prev.slice(-4), { id: tickerId.current++, name: data.winnerName, sec: data.elapsed }]);
       }
       // …but only the finder sees the word fall into the brackets
       if (data.word) {
@@ -527,6 +546,22 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
+      {/* Speed round banner */}
+      {room.speedRound && state === 'playing' && (
+        <div className="speed-banner">⚡ SPEED ROUND — 15s · TRIPLE POINTS</div>
+      )}
+
+      {/* Winner ticker — recent finds scrolling */}
+      {ticker.length > 0 && (
+        <div className="ticker-bar">
+          <div className="ticker-track">
+            {ticker.map(t => (
+              <span key={t.id} className="ticker-item">⚡ {t.name} found it in {t.sec}s</span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* TikTok chat solver celebration — silent, professional, one by one.
           key={id} forces a fresh mount per popup so the ~2s timer always runs
           (fixes popups getting stuck when players solve back-to-back). */}
@@ -675,9 +710,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 {p ? (
                   <>
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
+                      {!showRoundScores && i === 0 && p.score > 0 && <span className="crown-badge">👑</span>}
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
                       {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0]}
-                      {p.streak >= 2 && <span className="streak-chip">🔥{p.streak}</span>}
+                      {p.streak >= 3 && <span className="fire-badge">🔥</span>}
+                      {p.isChat && p.level > 1 && <span className="level-badge">Lv{p.level}</span>}
                       {p.isChat && <span className="chat-badge">CHAT</span>}
                     </span>
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>

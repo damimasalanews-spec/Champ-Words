@@ -3237,6 +3237,184 @@
   font-weight: 800;
   color: #ffd87a;
 }
+
+/* ── Leaderboard badges (fire / level / crown) ─────────────────────────── */
+.crown-badge { margin-right: 2px; }
+.fire-badge { margin-left: 4px; font-size: 11px; }
+.level-badge {
+  margin-left: 4px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffcf5c, #ff9d4d);
+  color: #2a1505;
+  vertical-align: middle;
+}
+
+/* ── Speed round banner ────────────────────────────────────────────────── */
+.speed-banner {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 55;
+  background: linear-gradient(135deg, rgba(255, 197, 61, 0.95), rgba(255, 107, 107, 0.95));
+  color: #2a1505;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 22px rgba(255, 197, 61, 0.4);
+  animation: toastIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  white-space: nowrap;
+}
+.tiktok-half .speed-banner { top: 30px; font-size: 10px; padding: 4px 14px; }
+
+/* ── Speed duel banner ─────────────────────────────────────────────────── */
+.duel-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 5, 12, 0.6);
+  animation: fadeIn 0.25s ease both;
+}
+.duel-card {
+  background: linear-gradient(165deg, rgba(38, 16, 34, 0.98), rgba(24, 10, 22, 0.98));
+  border: 1.5px solid rgba(255, 197, 61, 0.6);
+  border-radius: 22px;
+  padding: 22px 34px;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 44px rgba(255, 197, 61, 0.25);
+  animation: confettiChatIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  min-width: min(82vw, 340px);
+}
+.duel-title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #ffc53d;
+  margin-bottom: 12px;
+}
+.duel-art {
+  width: 84px; height: 84px;
+  margin: 0 auto 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.duel-art-img { width: 100%; height: 100%; object-fit: contain; }
+.duel-art-emoji { font-size: 52px; line-height: 1; }
+.duel-vs {
+  font-size: 18px;
+  font-weight: 800;
+  color: #eef1ff;
+}
+.duel-vs-x { color: #ffc53d; margin: 0 8px; }
+.duel-sub {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(233, 218, 255, 0.65);
+  margin-top: 4px;
+}
+.duel-answer-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.duel-answer-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 15px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.duel-answer-input:focus { border-color: rgba(255, 197, 61, 0.7); outline: none; }
+.duel-answer-go {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #ffcf5c, #ff9d4d);
+  color: #2a1505;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+}
+.duel-answer-go:disabled { opacity: 0.4; }
+.duel-win .duel-title { color: #ffd87a; letter-spacing: 2px; }
+
+/* ── Winner ticker (recent finds) ─────────────────────────────────────── */
+.ticker-bar {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96%;
+  z-index: 50;
+  overflow: hidden;
+  background: rgba(15, 12, 41, 0.6);
+  border: 1px solid rgba(255, 197, 61, 0.25);
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+.tiktok-half .ticker-bar { bottom: 4px; }
+.ticker-track {
+  display: inline-flex;
+  gap: 22px;
+  padding: 4px 14px;
+  white-space: nowrap;
+  animation: tickerScroll 14s linear infinite;
+}
+.ticker-item {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffd87a;
+  letter-spacing: 0.5px;
+}
+.tiktok-half .ticker-item { font-size: 9px; }
+@keyframes tickerScroll {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+
+/* ── Custom word input in the pick popup ─────────────────────────────── */
+.pick-custom-box { margin-top: 12px; }
+.pick-custom-row { display: flex; gap: 8px; margin-top: 6px; }
+.pick-custom-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.pick-custom-input:focus { border-color: rgba(255, 197, 61, 0.7); outline: none; }
+.pick-custom-go {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #ffcf5c, #ff9d4d);
+  color: #2a1505;
+  font-weight: 800;
+  cursor: pointer;
+}
+.pick-custom-go:disabled { opacity: 0.4; }
 .congrats { background: linear-gradient(90deg, #ffc53d, #ff6b6b, #ffc53d); background-size: 200% 100%; }
 .round-word { color: var(--gold); text-shadow: 0 0 26px rgba(255, 197, 61, 0.4); }
 

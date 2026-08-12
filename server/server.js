@@ -28,6 +28,14 @@ const CHAT_GIFT_TIER3_DIAMONDS = Number(process.env.CHAT_GIFT_TIER3_DIAMONDS) ||
 const CHAT_ANSWER_COOLDOWN_MS = Number(process.env.CHAT_ANSWER_COOLDOWN_MS) || 3000;  // per-user wrong-attempt cooldown
 const STREAK_BONUS = 50; // bonus points on every correct answer after a streak of 2+
 const FASTEST_POINTS = 200; // Skribble-style: fastest correct answer gets this flat; others scale by time left
+const HINT_COST = 50;       // !hint — spend points to reveal a letter
+const FREEZE_COST = 100;    // !freeze — spend points to add 5s to the timer
+const CHALLENGE_COST = 100; // !challenge — spend points to duel the round winner
+const DUEL_REWARD = 100;    // speed-duel winner prize
+const DUEL_MS = 30000;      // duel length
+const SPEED_EVERY = 5;      // every 5th round is a speed round
+const SPEED_MS = 15000;     // speed round length
+const SPEED_MULT = 3;       // speed round points multiplier
 
 // ── Per-room round settings (host picks at room creation) ────────────────
 const DIFFICULTY_RANGES = { easy: [3, 5], medium: [3, 8], hard: [6, 8] }; // letters
@@ -166,6 +174,109 @@ function findChatTargetRoom() {
   return active;
 }
 
+// Newest live room in a specific state (for votes/duels that run between rounds)
+function findChatRoomInState(state) {
+  if (CHAT_ROOM_PIN) {
+    const pinned = rooms.get(CHAT_ROOM_PIN);
+    if (pinned && pinned.state === state) return pinned;
+  }
+  let active = null;
+  for (const [, r] of rooms) {
+    if (r.state !== state) continue;
+    if (connectedPlayers(r).length === 0) continue;
+    if (!active || r.createdAt > active.createdAt) active = r;
+  }
+  return active;
+}
+
+// Register (or find) the virtual chat player in a room
+function ensureChatPlayer(room, username, profileFirst) {
+  let player = room.players.find(p => p.isChat && p.chatUser === username);
+  if (!player) {
+    player = {
+      id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
+      name: (profileFirst || username).slice(0, 7), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
+      foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0, xp: 0, level: 1
+    };
+    room.players.push(player);
+  }
+  return player;
+}
+
+// ── Point economy + chat commands (chat players spend what they earn) ────
+function handleChatHint(room, player) {
+  if (room.state !== 'playing') return { ok: false, error: 'no active round' };
+  if ((player.score || 0) < HINT_COST) return { ok: false, error: `need ${HINT_COST} pts for a hint` };
+  if (room.revealedMask && room.revealedMask.every(Boolean)) return { ok: false, error: 'all letters already revealed' };
+  player.score -= HINT_COST;
+  const n = revealLetters(room, 1);
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
+  if (n > 0) io.to(room.id).emit('chat', { system: true, green: true, text: `🔍 ${maskText(player.name)} bought a hint (−${HINT_COST}) and revealed a letter!` });
+  return { ok: false, error: 'hint used' };
+}
+
+function handleChatFreeze(room, player) {
+  if (room.state !== 'playing') return { ok: false, error: 'no active round' };
+  if ((room.freezeCount || 0) >= 2) return { ok: false, error: 'max 2 freezes per round' };
+  if ((player.score || 0) < FREEZE_COST) return { ok: false, error: `need ${FREEZE_COST} pts to freeze` };
+  player.score -= FREEZE_COST;
+  room.freezeCount = (room.freezeCount || 0) + 1;
+  room.roundStartedAt += 5000; // extend the deadline for everyone (clients use endsAt)
+  if (room.timer) {
+    clearTimeout(room.timer);
+    room.timer = setTimeout(() => onTimeUp(room), Math.max(0, room.roundStartedAt + (room.roundMs || room.roundTimeMs || ROUND_TIME_MS) - Date.now()));
+  }
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
+  io.to(room.id).emit('chat', { system: true, blue: true, text: `🧊 ${maskText(player.name)} froze the clock +5s!` });
+  return { ok: false, error: 'freeze used' };
+}
+
+function handleChatVote(room, player, digit) {
+  const opts = CATEGORIES.list.filter(c => c.id !== 'all' && c.id !== 'mixed').slice(0, 6);
+  const opt = opts[parseInt(digit, 10) - 1];
+  if (!opt) return { ok: false, error: 'invalid vote' };
+  room.votes = room.votes || {};
+  room.votes[opt.id] = (room.votes[opt.id] || 0) + 1;
+  io.to(room.id).emit('chat', { system: true, text: `🗳️ ${maskText(player.name)} voted for ${opt.label}!` });
+  return { ok: false, error: 'vote counted' };
+}
+
+function resolveDuel(room, winner) {
+  const duel = room.duel;
+  room.duel = null;
+  room.duelEndsAt = null;
+  if (room.duelTimer) { clearTimeout(room.duelTimer); room.duelTimer = null; }
+  winner.score += DUEL_REWARD;
+  addAllTime(winner.playerKey, winner.name, winner.avatar, DUEL_REWARD);
+  io.to(room.id).emit('duel_end', { winner: winner.name });
+  io.to(room.id).emit('chat', { system: true, gold: true, text: `🏆 ${maskText(winner.name)} wins the speed duel +${DUEL_REWARD}!` });
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
+}
+
+function handleChatChallenge(room, player) {
+  if (room.state !== 'round_over') return { ok: false, error: 'challenge works after a round' };
+  if (!room.roundWinnerId || room.duel) return { ok: false, error: 'no challengable winner right now' };
+  const winner = playerById(room, room.roundWinnerId);
+  if (!winner || winner.id === player.id) return { ok: false, error: 'challenge the round winner' };
+  if ((player.score || 0) < CHALLENGE_COST) return { ok: false, error: `need ${CHALLENGE_COST} pts to challenge` };
+  player.score -= CHALLENGE_COST;
+  const w = pickRandomWord(room.difficulty, room.wordPack, room.usedWords);
+  room.usedWords.push(w);
+  room.duel = { word: w, winnerId: winner.id, winnerName: winner.name, challengerKey: player.playerKey, challengerName: player.name, startedAt: Date.now() };
+  room.duelEndsAt = Date.now() + DUEL_MS;
+  if (room.duelTimer) clearTimeout(room.duelTimer);
+  room.duelTimer = setTimeout(() => {
+    if (!room.duel) return;
+    room.duel = null;
+    room.duelEndsAt = null;
+    io.to(room.id).emit('duel_end', { winner: null });
+    io.to(room.id).emit('chat', { system: true, text: 'Duel over — nobody found the word!' });
+  }, DUEL_MS);
+  io.to(room.id).emit('duel_start', { room: sanitizeRoom(room) });
+  io.to(room.id).emit('chat', { system: true, gold: true, text: `⚔️ ${maskText(player.name)} challenges ${maskText(winner.name)} to a speed duel! First to find the word wins +${DUEL_REWARD}!` });
+  return { ok: false, error: 'duel started' };
+}
+
 // Shared handler used by both the HTTP endpoint and the live-chat bridge.
 const chatAnswerCooldowns = new Map(); // user → last wrong-attempt timestamp
 function handleChatAnswer({ user, text, nickname }) {
@@ -175,6 +286,43 @@ function handleChatAnswer({ user, text, nickname }) {
   // TikTok PROFILE first name — used ONLY in the correct-answer popup.
   // The leaderboard keeps the short @username (player.name).
   const profileFirst = String(nickname || '').trim().split(/\s+/)[0] || '';
+
+  // ── Chat commands (point economy, votes) — run in any room state ──
+  if (guess.startsWith('!hint') || guess.startsWith('!freeze')) {
+    const room = findChatTargetRoom();
+    if (!room) return { ok: false, error: 'no active round' };
+    const player = ensureChatPlayer(room, username, profileFirst);
+    return guess.startsWith('!hint') ? handleChatHint(room, player) : handleChatFreeze(room, player);
+  }
+  if (guess.startsWith('!challenge')) {
+    const room = findChatRoomInState('round_over');
+    if (!room) return { ok: false, error: 'no finished round to challenge' };
+    const player = ensureChatPlayer(room, username, profileFirst);
+    return handleChatChallenge(room, player);
+  }
+  if (/^[1-9]$/.test(guess)) {
+    const room = findChatRoomInState('champ_pick');
+    if (room) {
+      const player = ensureChatPlayer(room, username, profileFirst);
+      return handleChatVote(room, player, guess);
+    }
+  }
+  // Speed-duel answer: challenger (or chat-playing defender) during round_over
+  const duelRoom = findChatRoomInState('round_over');
+  if (duelRoom && duelRoom.duel) {
+    const player = ensureChatPlayer(duelRoom, username, profileFirst);
+    const duel = duelRoom.duel;
+    const isParticipant = player.playerKey === duel.challengerKey || player.id === duel.winnerId;
+    if (isParticipant) {
+      if (guess === String(duel.word || '').replace(/\s+/g, '')) {
+        resolveDuel(duelRoom, player);
+        return { ok: true, error: 'duel won' };
+      }
+      return { ok: false, error: 'duel wrong word' };
+    }
+  }
+
+  // ── Regular guess against a playing round ──
   const room = findChatTargetRoom();
   if (!room) return { ok: false, error: 'no active round' };
   if (guess !== room.word.replace(/\s+/g, '')) {
@@ -186,17 +334,7 @@ function handleChatAnswer({ user, text, nickname }) {
     return { ok: false, error: 'wrong word' };
   }
 
-  let player = room.players.find(p => p.isChat && p.chatUser === username);
-  if (!player) {
-    player = {
-      id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
-      // Leaderboard name = TikTok PROFILE first name, capped at 7 letters
-      // (fallback: @username). The full username stays in chatUser for identity.
-      name: (profileFirst || username).slice(0, 7), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
-      foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0
-    };
-    room.players.push(player);
-  }
+  const player = ensureChatPlayer(room, username, profileFirst);
   if (player.foundWord) return { ok: true, already: true, score: player.score };
 
   const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
@@ -209,14 +347,17 @@ function handleChatAnswer({ user, text, nickname }) {
     room.roundElapsed = elapsed;
     room.roundScore = FASTEST_POINTS;
   }
-  const roundSeconds = Math.max(1, Math.round((room.roundTimeMs || ROUND_TIME_MS) / 1000));
+  const roundSeconds = Math.max(1, Math.round((room.roundMs || room.roundTimeMs || ROUND_TIME_MS) / 1000));
   const timeLeft = Math.max(0, roundSeconds - elapsed);
   let gained = (player.id === room.roundWinnerId)
     ? FASTEST_POINTS
     : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
   if (streak >= 2) gained += STREAK_BONUS;
   if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
+  if (room.speedRound) gained *= SPEED_MULT; // speed round: triple points
   player.score += gained;
+  player.xp = (player.xp || 0) + 10;
+  player.level = Math.floor(player.xp / 100) + 1;
   addAllTime(player.playerKey, player.name, player.avatar, gained);
   bumpAllTimeFound(player.playerKey, streak);
   // Achievement toasts for the stream
@@ -582,12 +723,14 @@ function sanitizeRoom(room) {
     revealedLetters: room.word && room.revealedMask
       ? room.word.split('').map((ch, i) => ch === ' ' ? ' ' : room.revealedMask[i] ? ch : '')
       : [],
-    endsAt: room.roundStartedAt ? room.roundStartedAt + (room.roundTimeMs || ROUND_TIME_MS) : null,
+    endsAt: room.roundStartedAt ? room.roundStartedAt + (room.roundMs || room.roundTimeMs || ROUND_TIME_MS) : null,
     pickEndsAt: room.pickStartedAt ? room.pickStartedAt + 15000 : null,
     finds: room.roundFinds || [],
     art: room.state === 'playing' ? artForWord(room.word) : null,
     grid: room.state === 'playing' ? room.grid : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
+    speedRound: !!room.speedRound,
+    duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
+    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -813,6 +956,12 @@ function beginChampTurn(room, champId) {
   room.roundStartedAt = null;
   room.roundWinnerId = null;
   room.roundScore = 0;
+  // Theme vote from the last pick: most-voted category wins (chat players)
+  if (room.votes && Object.keys(room.votes).length > 0) {
+    const top = Object.entries(room.votes).sort((a, b) => b[1] - a[1])[0];
+    if (top && top[1] > 0) room.wordPack = top[0];
+    room.votes = {};
+  }
   room.roundElapsed = 0;
   room.endedRound = false;
   room.category = null;
@@ -824,6 +973,11 @@ function beginChampTurn(room, champId) {
   room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords); // 6 random words (no game repeats)
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
+  // Announce the theme vote in chat (viewers pick the next category)
+  const voteOpts = CATEGORIES.list.filter(c => c.id !== 'all' && c.id !== 'mixed').slice(0, 6);
+  if (voteOpts.length >= 2) {
+    setTimeout(() => io.to(room.id).emit('chat', { system: true, text: `🎲 Vote the next theme in TikTok chat! ${voteOpts.map((c, i) => `${i + 1}=${c.label}`).join(' · ')}` }), 400);
+  }
   clearTimer(room);
   // 15s auto-pass if champ doesn't pick a category/word
   room.champTimer = setTimeout(() => {
@@ -894,19 +1048,24 @@ function startRound(room) {
   room.roundScore = 0;
   room.roundElapsed = 0;
   room.endedRound = false;
+  room.freezeCount = 0;
+  room.duel = null; room.duelEndsAt = null;
+  if (room.duelTimer) { clearTimeout(room.duelTimer); room.duelTimer = null; }
+  room.speedRound = room.round % SPEED_EVERY === 0; // every 5th round: 15s + triple points
+  room.roundMs = room.speedRound ? SPEED_MS : (room.roundTimeMs || ROUND_TIME_MS);
   room.grid = generateWordGrid(room.word); // 4×4 grid with the word embedded
   room.roundStartedAt = Date.now();
   clearTimer(room);
-  const roundMs = room.roundTimeMs || ROUND_TIME_MS;
-  room.timer = setTimeout(() => onTimeUp(room), roundMs);
+  room.timer = setTimeout(() => onTimeUp(room), room.roundMs);
   // Auto hint: 2 letters revealed with ~40s remaining (scaled to round length;
   // short rounds get the reveal early instead of never)
-  const hintAt = Math.max(8000, roundMs - 40000);
+  const hintAt = Math.max(8000, room.roundMs - 40000);
   room.hintTimer1 = setTimeout(() => {
     if (room.state !== 'playing') return;
     revealRandomHint(room);
     revealRandomHint(room);
   }, hintAt);
+  if (room.speedRound) io.to(room.id).emit('chat', { system: true, gold: true, text: `⚡ SPEED ROUND! 15 seconds · TRIPLE points!` });
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
@@ -1161,13 +1320,29 @@ io.on('connection', socket => {
     if (room.champId !== socket.id) return cb && cb({ ok: false, error: 'Only the champ can pick the word' });
     const w = String(word || '').toLowerCase().trim();
     if (w.length < 3 || w.length > 8) return cb && cb({ ok: false, error: 'Word must be 3-8 letters' });
-    if (!room.choices.includes(w)) return cb && cb({ ok: false, error: 'Please pick one of the words shown' });
+    if (!/[a-z]/.test(w)) return cb && cb({ ok: false, error: 'Letters only' });
+    // Custom words allowed: the champ may type ANY 3-8 letter word (not just
+    // the shown choices) — the art falls back to a random emoji if unknown.
     room.usedWords.push(w); // no repeats this game
     room.word = w;
     room.hintText = typeof hintText === 'string' ? hintText.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
     room.hintText = room.hintText || null;
     startRound(room);
     cb && cb({ ok: true, wordLength: w.length });
+  });
+
+  socket.on('duel_answer', ({ roomId, word }, cb) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.duel || room.state !== 'round_over') return cb && cb({ ok: false, error: 'No duel right now' });
+    const player = playerById(room, socket.id);
+    if (!player || player.id !== room.duel.winnerId) return cb && cb({ ok: false, error: 'Not your duel' });
+    const w = String(word || '').toLowerCase().trim().replace(/\s+/g, '');
+    if (w === String(room.duel.word).replace(/\s+/g, '')) {
+      resolveDuel(room, player);
+      cb && cb({ ok: true });
+    } else {
+      cb && cb({ ok: false, error: 'Wrong word' });
+    }
   });
 
   socket.on('send_word_hint', ({ roomId, text }, cb) => {
@@ -1222,13 +1397,14 @@ io.on('connection', socket => {
       room.roundElapsed = elapsed;
       room.roundScore = FASTEST_POINTS;
     }
-    const roundSeconds = Math.max(1, Math.round((room.roundTimeMs || ROUND_TIME_MS) / 1000));
+    const roundSeconds = Math.max(1, Math.round((room.roundMs || room.roundTimeMs || ROUND_TIME_MS) / 1000));
     const timeLeft = Math.max(0, roundSeconds - elapsed);
     let gained = (socket.id === room.roundWinnerId)
       ? FASTEST_POINTS
       : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
     if (streak >= 2) gained += STREAK_BONUS;
     if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
+    if (room.speedRound) gained *= SPEED_MULT; // speed round: triple points
     player.score += gained;
     addAllTime(player.playerKey, player.name, player.avatar, gained);
     bumpAllTimeFound(player.playerKey, streak);
