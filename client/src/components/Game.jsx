@@ -708,7 +708,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
               <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
-                <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : i === 3 ? ' rank-4' : ' rank-5'}`}>{i + 1}</span>
+                <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
