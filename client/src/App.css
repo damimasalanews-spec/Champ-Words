@@ -7946,3 +7946,117 @@
   height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2);
   margin-top: 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 PREMIUM — bigger bordered rows, larger type, medal ranks.
+   Grid cells enlarged to 46px so the board and grid sit perfectly.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .play-col {
+  --cell: 46px;
+  --gap: 6px;
+  --pad: 10px;
+}
+.tiktok-half .grid-4x4 {
+  padding: var(--pad);
+  gap: var(--gap);
+}
+.tiktok-half .grid-row {
+  gap: var(--gap);
+}
+.tiktok-half .grid-4x4 .grid-cell {
+  width: var(--cell);
+  height: var(--cell);
+  font-size: 22px;
+  border-radius: 10px;
+}
+.tiktok-half .leader-col {
+  --cell: 46px;
+  --gap: 6px;
+  --pad: 10px;
+  width: 200px;
+  height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2);
+  margin-top: 0;
+}
+.grid-leader-panel {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.tiktok-half .grid-leader-panel {
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+.top10-board,
+.tiktok-half .top10-board {
+  padding: 8px 10px;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.20);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+}
+.top10-title,
+.tiktok-half .top10-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  color: var(--text-dim);
+  padding: 0 2px 7px;
+  margin: 0 2px 2px;
+}
+.top10-row,
+.tiktok-half .top10-row {
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.top10-row:hover,
+.tiktok-half .top10-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+.top10-rank,
+.tiktok-half .top10-rank {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 50%;
+}
+.top10-rank.rank-1,
+.tiktok-half .top10-rank.rank-1 {
+  background: linear-gradient(180deg, #f7d98a, #e0a83c);
+  color: #3a2a05;
+  box-shadow: 0 2px 8px rgba(224, 168, 60, 0.35);
+}
+.top10-rank.rank-2,
+.tiktok-half .top10-rank.rank-2 {
+  background: linear-gradient(180deg, #e9eef8, #b7c2d9);
+  color: #222b3d;
+}
+.top10-rank.rank-3,
+.tiktok-half .top10-rank.rank-3 {
+  background: linear-gradient(180deg, #efc4a2, #c9814f);
+  color: #3c2410;
+}
+.top10-name,
+.tiktok-half .top10-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #f2f5fb;
+}
+.top10-pts,
+.tiktok-half .top10-pts {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.top10-empty .top10-name { font-size: 13px; }
+.top10-row.top10-me,
+.tiktok-half .top10-row.top10-me {
+  background: var(--accent-soft);
+  border-color: rgba(53, 212, 149, 0.45);
+}
