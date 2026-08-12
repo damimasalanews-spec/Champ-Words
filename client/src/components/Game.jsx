@@ -495,7 +495,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
+      {/* In-game finder popup — SAME professional style as the TikTok chat popup */}
+      {confetti && (
+        <Confetti
+          variant="chat"
+          silent
+          word={(me && me.name) || 'You'}
+          onDone={clearConfetti}
+          msg="You found a Champ Word!"
+        />
+      )}
 
       {/* TikTok chat solver celebration — silent, professional, one by one.
           key={id} forces a fresh mount per popup so the ~2s timer always runs

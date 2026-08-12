@@ -213,6 +213,7 @@ function handleChatAnswer({ user, text, nickname }) {
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
+  applyRoundScoreSplit(room); // live: THIS ROUND board shows the 60/40 time-based scores
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
   // Mirror the browser 'word_found' event: this is what makes the client's
@@ -974,20 +975,22 @@ function finishGame(room) {
 }
 
 // ── Round score split ───────────────────────────────────────────────────
-// New rule: the FASTEST correct player takes 60% of the round's total
-// points; the next 4 fastest share the remaining 40%, weighted by their
-// speed (1/elapsed). Any further finders get 0 for the round. Applied as a
-// delta at round end, so the live in-round board keeps working and the
-// round-over list shows the final split.
+// Rule: the FASTEST correct player takes 60% of the round's total points;
+// the next 4 fastest share the remaining 40%, weighted by their speed
+// (1/elapsed). Any further finders get 0 for the round. Applied LIVE after
+// every solve (idempotent — deltas converge to the final split), so the
+// "THIS ROUND" board always shows the time-based scores, and player totals
+// only ever accumulate the final rule-consistent amounts.
+// room.roundFinds[].score stays the PROVISIONAL gain (the pot contribution);
+// player.roundScore holds the current allocation (used for deltas).
 function applyRoundScoreSplit(room) {
   const finds = room.roundFinds.slice().sort((a, b) => a.elapsed - b.elapsed);
   if (finds.length < 2) return; // a single finder keeps the full gain
-  const total = finds.reduce((s, f) => s + (f.score || 0), 0); // what was provisionally awarded
+  const total = finds.reduce((s, f) => s + (f.score || 0), 0); // the pot
   const alloc = new Map();
   const fastest = finds[0];
-  const fastestShare = Math.round(total * 0.6);
-  alloc.set(fastest.id, fastestShare);
-  const rest = total - fastestShare;
+  alloc.set(fastest.id, Math.round(total * 0.6));
+  const rest = total - alloc.get(fastest.id);
   const others = finds.slice(1, 5); // next 4 fastest
   if (others.length > 0) {
     const sumW = others.reduce((s, f) => s + 1 / f.elapsed, 0);
@@ -1002,13 +1005,12 @@ function applyRoundScoreSplit(room) {
     const player = playerById(room, f.id);
     if (!player) continue;
     const final = alloc.has(f.id) ? alloc.get(f.id) : 0;
-    const delta = final - (player.roundScore || 0);
+    const delta = final - (player.roundScore || 0); // player.roundScore = previous allocation
     if (delta !== 0) {
       player.score += delta;
-      player.roundScore = final;
       addAllTime(player.playerKey, player.name, player.avatar, delta);
     }
-    f.score = final; // round-over list shows the final split
+    player.roundScore = final;
   }
   // Winner display = fastest finder's 60% share
   room.roundScore = alloc.get(fastest.id);
@@ -1261,6 +1263,7 @@ io.on('connection', socket => {
     // Correct guess — celebrate in chat (green) WITHOUT revealing the answer
     io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
+    applyRoundScoreSplit(room); // live: THIS ROUND board shows the 60/40 time-based scores
 
     // Round ends early only when EVERY ONLINE player has found the word
     const active = connectedPlayers(room);
