@@ -3445,10 +3445,10 @@
 /* ── Rivalry bar (host vs chat) ───────────────────────────────────────── */
 .rivalry-bar {
   position: fixed;
-  top: 10px;
+  top: 56px;   /* below the sticky header */
   left: 50%;
   transform: translateX(-50%);
-  z-index: 88;
+  z-index: 91;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3466,7 +3466,7 @@
 .rivalry-vs { color: rgba(233, 218, 255, 0.5); font-size: 10px; }
 .rivalry-host { color: #ffc53d; }
 .rivalry-fire { color: #ff6b6b; font-size: 11px; }
-.tiktok-half .rivalry-bar { top: 4px; font-size: 10px; padding: 4px 12px; gap: 7px; }
+.tiktok-half .rivalry-bar { top: 48px; font-size: 10px; padding: 4px 12px; gap: 7px; }
 
 /* ── Paused overlay ───────────────────────────────────────────────────── */
 .paused-overlay {
@@ -3511,9 +3511,9 @@
 /* ── Host tools bar ───────────────────────────────────────────────────── */
 .host-tools {
   position: fixed;
-  top: 10px;
+  top: 56px;   /* below the sticky header (z-index above it) */
   right: 10px;
-  z-index: 89;
+  z-index: 91;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3545,7 +3545,7 @@
   font-size: 11px;
 }
 .host-blacklist-input:focus { border-color: rgba(255, 197, 61, 0.6); outline: none; }
-.tiktok-half .host-tools { top: 4px; right: 4px; padding: 4px 6px; }
+.tiktok-half .host-tools { top: 46px; right: 4px; padding: 4px 6px; }
 .tiktok-half .host-tool { padding: 3px 8px; font-size: 9px; }
 .tiktok-half .host-blacklist-input { width: 70px; padding: 3px 7px; font-size: 9px; }
 
