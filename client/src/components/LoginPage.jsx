@@ -5,6 +5,7 @@ import { playSound } from '../sounds';
 export default function LoginPage({ onPlayAsGuest }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hall, setHall] = useState([]);
 
   useEffect(() => {
     // Check if already logged in
@@ -18,6 +19,12 @@ export default function LoginPage({ onPlayAsGuest }) {
         }
       })
       .catch(() => setLoading(false));
+
+    // Hall of Fame — top 10 lifetime scores
+    fetch('/api/alltime')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setHall((d.top || []).slice(0, 10)); })
+      .catch(() => {});
 
     // Check for error in URL
     const params = new URLSearchParams(window.location.search);
@@ -88,6 +95,21 @@ export default function LoginPage({ onPlayAsGuest }) {
 
         {/* Bottom — footer */}
         <div className="login-bottom">
+          {hall.length > 0 && (
+            <div className="hall-of-fame">
+              <div className="hall-title">🏆 Hall of Fame · Top 10</div>
+              <div className="hall-list">
+                {hall.map((p, i) => (
+                  <div key={p.key || i} className="hall-row">
+                    <span className="hall-rank">{i + 1}</span>
+                    <span className="hall-name">{p.name}</span>
+                    {p.chat && <span className="hall-chat">LIVE</span>}
+                    <span className="hall-score">{p.score}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <p className="login-note">
             No account needed to play. We only access your public profile name and avatar when you sign in with TikTok.
           </p>

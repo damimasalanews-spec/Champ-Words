@@ -141,6 +141,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [confetti, setConfetti] = useState(null);
   const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
   const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
+  const [toasts, setToasts] = useState([]); // achievement toasts (first blood, lightning, streak)
+  const toastId = useRef(1);
   const popupQueue = useRef([]); // popups show ONE BY ONE (each ~2s)
   const popupBusy = useRef(false); // true while a popup is on screen
   const popupId = useRef(1); // unique id per popup → forces a fresh mount each time
@@ -197,6 +199,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     popupQueue.current = [];
     setFoundPopup(null);
+    setToasts([]);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
     setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
@@ -224,6 +227,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // Shows the profile FIRST name when available, else the @username.
       if (data.fromChat && (data.winnerNick || data.winnerName)) {
         pushFoundPopup({ name: data.winnerNick || data.winnerName, score: data.score, word: data.solved || '' });
+      }
+      // Achievement toasts (first blood / lightning fast / streak) — for the stream
+      if (data.toasts && data.toasts.length) {
+        const name = data.winnerNick || data.winnerName || '';
+        const ts = data.toasts.map(t => ({ id: toastId.current++, icon: t.icon, text: t.text, name }));
+        setToasts(prev => [...prev, ...ts]);
+        ts.forEach(t => window.setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 2400));
       }
       // …but only the finder sees the word fall into the brackets
       if (data.word) {
@@ -504,6 +514,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           onDone={clearConfetti}
           msg="You found a Champ Word!"
         />
+      )}
+
+      {/* Achievement toasts — stacked pills for the stream */}
+      {toasts.length > 0 && (
+        <div className="toast-stack">
+          {toasts.map(t => (
+            <div key={t.id} className="toast-pill">
+              {t.icon} {t.name} — {t.text}
+            </div>
+          ))}
+        </div>
       )}
 
       {/* TikTok chat solver celebration — silent, professional, one by one.

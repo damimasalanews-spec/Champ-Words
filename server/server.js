@@ -215,9 +215,15 @@ function handleChatAnswer({ user, text, nickname }) {
     ? FASTEST_POINTS
     : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
   if (streak >= 2) gained += STREAK_BONUS;
+  if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
   player.score += gained;
   addAllTime(player.playerKey, player.name, player.avatar, gained);
   bumpAllTimeFound(player.playerKey, streak);
+  // Achievement toasts for the stream
+  const toasts = [];
+  if (room.roundWinnerId === player.id) toasts.push({ icon: '🎯', text: 'First Blood!' });
+  if (elapsed <= 5) toasts.push({ icon: '⚡', text: 'Lightning Fast!' });
+  if (streak >= 5) toasts.push({ icon: '🔥', text: `${streak} in a row!` });
   player.hintsLeft++; // same bonus as a browser correct guess
   player.foundWord = true;
   player.roundFoundAt = elapsed;
@@ -243,7 +249,8 @@ function handleChatAnswer({ user, text, nickname }) {
     self: false,
     word: null,
     fromChat: true, // client shows the "found a Champ Word!" popup for chat solvers
-    solved: room.word // current correct word, shown in the popup text (kept out of `word` so it doesn't fall into the brackets)
+    solved: room.word, // current correct word, shown in the popup text (kept out of `word` so it doesn't fall into the brackets)
+    toasts
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
   return { ok: true, word: room.word, score: gained, elapsed, name: player.name };
@@ -1221,10 +1228,16 @@ io.on('connection', socket => {
       ? FASTEST_POINTS
       : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
     if (streak >= 2) gained += STREAK_BONUS;
+    if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
     player.score += gained;
     addAllTime(player.playerKey, player.name, player.avatar, gained);
     bumpAllTimeFound(player.playerKey, streak);
     if (streak >= 2) io.to(roomId).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
+    // Achievement toasts for the stream
+    const toasts = [];
+    if (room.roundWinnerId === socket.id) toasts.push({ icon: '🎯', text: 'First Blood!' });
+    if (elapsed <= 5) toasts.push({ icon: '⚡', text: 'Lightning Fast!' });
+    if (streak >= 5) toasts.push({ icon: '🔥', text: `${streak} in a row!` });
     player.hintsLeft++; // bonus hint for guessing correctly
     player.foundWord = true;
     player.roundFoundAt = elapsed;
@@ -1249,7 +1262,8 @@ io.on('connection', socket => {
       finds: room.roundFinds,
       allFound,
       round: room.round,
-      totalRounds: room.totalRounds
+      totalRounds: room.totalRounds,
+      toasts
     };
     io.to(socket.id).emit('word_found', { ...base, self: true, word: room.word });
     socket.to(roomId).emit('word_found', { ...base, self: false, word: null });
