@@ -126,7 +126,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const roomCode = String(params.get('room') || '').toUpperCase().trim();
     if (!roomCode) {
-      setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
+      if (params.has('auto')) setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
       return;
     }
     let stopped = false;
