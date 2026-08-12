@@ -27,6 +27,7 @@ const CHAT_GIFT_TIER2_DIAMONDS = Number(process.env.CHAT_GIFT_TIER2_DIAMONDS) ||
 const CHAT_GIFT_TIER3_DIAMONDS = Number(process.env.CHAT_GIFT_TIER3_DIAMONDS) || 100; // ≥ this → full word
 const CHAT_ANSWER_COOLDOWN_MS = Number(process.env.CHAT_ANSWER_COOLDOWN_MS) || 3000;  // per-user wrong-attempt cooldown
 const STREAK_BONUS = 50; // bonus points on every correct answer after a streak of 2+
+const FASTEST_POINTS = 200; // Skribble-style: fastest correct answer gets this flat; others scale by time left
 
 // ── Per-room round settings (host picks at room creation) ────────────────
 const DIFFICULTY_RANGES = { easy: [3, 5], medium: [3, 8], hard: [6, 8] }; // letters
@@ -199,9 +200,20 @@ function handleChatAnswer({ user, text, nickname }) {
   if (player.foundWord) return { ok: true, already: true, score: player.score };
 
   const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
-  let gained = CHAT_FIXED_POINTS > 0 ? CHAT_FIXED_POINTS : Math.max(10, 100 - elapsed);
   player.streak = (player.streak || 0) + 1;
   const streak = player.streak;
+  // Same Skribble-style scoring as browser players: first = flat 200,
+  // everyone else scaled by the time left when they solved.
+  if (!room.roundWinnerId) {
+    room.roundWinnerId = player.id;
+    room.roundElapsed = elapsed;
+    room.roundScore = FASTEST_POINTS;
+  }
+  const roundSeconds = Math.max(1, Math.round((room.roundTimeMs || ROUND_TIME_MS) / 1000));
+  const timeLeft = Math.max(0, roundSeconds - elapsed);
+  let gained = (player.id === room.roundWinnerId)
+    ? FASTEST_POINTS
+    : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
   if (streak >= 2) gained += STREAK_BONUS;
   player.score += gained;
   addAllTime(player.playerKey, player.name, player.avatar, gained);
@@ -211,7 +223,6 @@ function handleChatAnswer({ user, text, nickname }) {
   player.roundFoundAt = elapsed;
   player.roundScore = gained;
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
-  if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
@@ -973,49 +984,6 @@ function finishGame(room) {
   });
 }
 
-// ── Round score split ───────────────────────────────────────────────────
-// Rule: the FASTEST correct player takes 60% of the round's total points;
-// the next 4 fastest share the remaining 40%, weighted by their speed
-// (1/elapsed). Any further finders get 0 for the round. Applied LIVE after
-// every solve (idempotent — deltas converge to the final split), so the
-// "THIS ROUND" board always shows the time-based scores, and player totals
-// only ever accumulate the final rule-consistent amounts.
-// room.roundFinds[].score stays the PROVISIONAL gain (the pot contribution);
-// player.roundScore holds the current allocation (used for deltas).
-function applyRoundScoreSplit(room) {
-  const finds = room.roundFinds.slice().sort((a, b) => a.elapsed - b.elapsed);
-  if (finds.length < 2) return; // a single finder keeps the full gain
-  const total = finds.reduce((s, f) => s + (f.score || 0), 0); // the pot
-  const alloc = new Map();
-  const fastest = finds[0];
-  alloc.set(fastest.id, Math.round(total * 0.6));
-  const rest = total - alloc.get(fastest.id);
-  const others = finds.slice(1, 5); // next 4 fastest
-  if (others.length > 0) {
-    const sumW = others.reduce((s, f) => s + 1 / f.elapsed, 0);
-    let used = 0;
-    others.forEach((f, i) => {
-      const share = i === others.length - 1 ? rest - used : Math.round(rest * (1 / f.elapsed) / sumW);
-      used += share;
-      alloc.set(f.id, share);
-    });
-  }
-  for (const f of finds) {
-    const player = playerById(room, f.id);
-    if (!player) continue;
-    const final = alloc.has(f.id) ? alloc.get(f.id) : 0;
-    const delta = final - (player.roundScore || 0); // player.roundScore = previous allocation
-    if (delta !== 0) {
-      player.score += delta;
-      addAllTime(player.playerKey, player.name, player.avatar, delta);
-    }
-    player.roundScore = final;
-  }
-  // Winner display = fastest finder's 60% share
-  room.roundScore = alloc.get(fastest.id);
-  room.roundElapsed = fastest.elapsed;
-}
-
 function endRound(room) {
   if (room.endedRound) return;
   room.endedRound = true;
@@ -1035,9 +1003,6 @@ function endRound(room) {
       room.roundElapsed = elapsed;
       stumpPoints = gained;
     }
-  } else {
-    // Fastest = 60%, next 4 fastest share 40% by speed
-    applyRoundScoreSplit(room);
   }
   const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
   scores.sort((a, b) => b.score - a.score);
@@ -1241,9 +1206,20 @@ io.on('connection', socket => {
     if (player.foundWord) return cb && cb({ ok: false, error: 'You already found the word!' });
 
     const elapsed = Math.max(1, Math.round((Date.now() - room.roundStartedAt) / 1000));
-    let gained = Math.max(10, 100 - elapsed); // faster guess = more points
     player.streak = (player.streak || 0) + 1;
     const streak = player.streak;
+    // The FIRST correct answer is the fastest → flat 200. Everyone else gets
+    // Skribble-style points scaled by the time left when they solved.
+    if (!room.roundWinnerId) {
+      room.roundWinnerId = socket.id;
+      room.roundElapsed = elapsed;
+      room.roundScore = FASTEST_POINTS;
+    }
+    const roundSeconds = Math.max(1, Math.round((room.roundTimeMs || ROUND_TIME_MS) / 1000));
+    const timeLeft = Math.max(0, roundSeconds - elapsed);
+    let gained = (socket.id === room.roundWinnerId)
+      ? FASTEST_POINTS
+      : Math.max(10, Math.round(FASTEST_POINTS * timeLeft / roundSeconds));
     if (streak >= 2) gained += STREAK_BONUS;
     player.score += gained;
     addAllTime(player.playerKey, player.name, player.avatar, gained);
@@ -1254,11 +1230,6 @@ io.on('connection', socket => {
     player.roundFoundAt = elapsed;
     player.roundScore = gained;
     player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed); // fastest correct answer
-    if (!room.roundWinnerId) { // the fastest finder
-      room.roundWinnerId = socket.id;
-      room.roundScore = gained;
-      room.roundElapsed = elapsed;
-    }
     // Correct guess — celebrate in chat (green) WITHOUT revealing the answer
     io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
