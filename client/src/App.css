@@ -3415,6 +3415,50 @@
   cursor: pointer;
 }
 .pick-custom-go:disabled { opacity: 0.4; }
+
+/* ── Theme vote bar (visible on stream during champ pick) ──────────────── */
+.vote-bar {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  max-width: 94vw;
+  background: linear-gradient(150deg, rgba(38, 16, 34, 0.96), rgba(24, 10, 22, 0.96));
+  border: 1.5px solid rgba(255, 197, 61, 0.5);
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 22px rgba(255, 197, 61, 0.15);
+  animation: toastIn 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.vote-bar-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #ffc53d;
+  white-space: nowrap;
+}
+.vote-option {
+  font-size: 12px;
+  font-weight: 700;
+  color: #eef1ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.vote-count {
+  font-size: 10px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffcf5c, #ff9d4d);
+  color: #2a1505;
+  border-radius: 999px;
+  padding: 1px 7px;
+}
 .congrats { background: linear-gradient(90deg, #ffc53d, #ff6b6b, #ffc53d); background-size: 200% 100%; }
 .round-word { color: var(--gold); text-shadow: 0 0 26px rgba(255, 197, 61, 0.4); }
 

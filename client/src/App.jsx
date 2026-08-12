@@ -460,6 +460,19 @@ export default function App() {
         <RoundOver result={roundResult} room={room} />
       )}
 
+      {/* 🎲 Theme vote — visible on stream while the champ picks */}
+      {room && room.state === 'champ_pick' && room.voteOptions && (
+        <div className="vote-bar">
+          <span className="vote-bar-title">🎲 VOTE NEXT THEME in TikTok chat</span>
+          {room.voteOptions.map((o, i) => (
+            <span key={o.id} className="vote-option">
+              {i + 1}={o.label}
+              {o.votes > 0 && <span className="vote-count">{o.votes}</span>}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* ⚔️ Speed duel — runs between rounds (round_over) */}
       {(room && room.duel) ? (
         <div className="duel-banner">

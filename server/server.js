@@ -730,6 +730,8 @@ function sanitizeRoom(room) {
     grid: room.state === 'playing' ? room.grid : null,
     speedRound: !!room.speedRound,
     duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
+    voteOptions: (room.state === 'champ_pick' && room.voteOptions && room.voteOptions.length >= 2)
+      ? room.voteOptions.map(o => ({ id: o.id, label: o.label, votes: (room.votes && room.votes[o.id]) || 0 })) : null,
     players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
   };
 }
@@ -973,10 +975,10 @@ function beginChampTurn(room, champId) {
   room.choices = generateChoices(room.difficulty, room.wordPack, room.usedWords); // 6 random words (no game repeats)
   room.pickStartedAt = Date.now();
   room.players.forEach(p => { p.foundWord = false; p.roundFoundAt = 0; p.roundScore = 0; });
-  // Announce the theme vote in chat (viewers pick the next category)
-  const voteOpts = CATEGORIES.list.filter(c => c.id !== 'all' && c.id !== 'mixed').slice(0, 6);
-  if (voteOpts.length >= 2) {
-    setTimeout(() => io.to(room.id).emit('chat', { system: true, text: `🎲 Vote the next theme in TikTok chat! ${voteOpts.map((c, i) => `${i + 1}=${c.label}`).join(' · ')}` }), 400);
+  // Theme vote options (viewers pick the next category) — shown ON SCREEN
+  room.voteOptions = CATEGORIES.list.filter(c => c.id !== 'all' && c.id !== 'mixed').slice(0, 6);
+  if (room.voteOptions.length >= 2) {
+    setTimeout(() => io.to(room.id).emit('chat', { system: true, text: `🎲 Vote the next theme in TikTok chat! ${room.voteOptions.map((c, i) => `${i + 1}=${c.label}`).join(' · ')}` }), 400);
   }
   clearTimer(room);
   // 15s auto-pass if champ doesn't pick a category/word
