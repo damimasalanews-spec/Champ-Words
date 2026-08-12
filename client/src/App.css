@@ -4353,11 +4353,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   TOP 5 LEADERBOARD FIT — final sizing pass (appended so it always wins).
-   The Top 5 board crossed the frame border on mobile. Fix: compress the
-   letter grid a little (48px cells, tighter gaps) so the leaderboard column
-   gets ~25px more, then bump the player fonts slightly.
-   Grid width: 4×48 + 3×8 + 2×10 = 236px (was 262) → leader column ~265px.
+   GRID COMPRESSION (kept) — slightly smaller letter tiles give the layout
+   breathing room. The TOP 5 board itself is intentionally NOT overridden:
+   it keeps its original style (rank 24px / name 20px / score 24px) so the
+   "THIS ROUND" tick ✓ and round score stay visible.
+   Grid width: 4×48 + 3×8 + 2×10 = 236px (was 262).
    ═══════════════════════════════════════════════════════════════════════ */
 .tiktok-half .play-col {
   --cell: 48px;
@@ -4372,14 +4372,6 @@
 .tiktok-half .grid-4x4 .grid-cell {
   font-size: 20px; /* was 22px — letters compress with the tiles */
 }
-/* Bigger leaderboard text now that the column is wider */
-.tiktok-half .top10-title { font-size: 13px; letter-spacing: 2.5px; }
-.tiktok-half .top10-row { padding: 5px 10px; }
-.tiktok-half .top10-rank { font-size: 19px; min-width: 26px; }
-.tiktok-half .top10-name { font-size: 18px; }
-.tiktok-half .top10-pts { font-size: 19px; min-width: 38px; }
-/* Rows must never push past the panel — name ellipsizes, board clips */
-.tiktok-half .top10-board { overflow: hidden; }
 
 /* ═══════════════════════════════════════════════════════════════════════
    ARTIST DRAWING — show the FULL drawing inside the box.
@@ -4402,3 +4394,4 @@
   object-fit: contain;      /* whole flag/drawing visible — no cropping */
   border-radius: 8px;
 }
+
