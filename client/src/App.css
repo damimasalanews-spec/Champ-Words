@@ -7696,3 +7696,73 @@
 .lobby-intro .login-bg-tiles {
   z-index: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROFESSIONAL THEME — final token + leftover sweep
+   Re-asserts the professional palette last in the cascade so no legacy
+   mint/gold variable values or purple/cyan surfaces survive.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #0c111d;
+  --bg-2: #121a2c;
+  --surface: #182136;
+  --surface-2: #1f2a42;
+  --surface-3: #26324d;
+  --text: #eef2f9;
+  --text-dim: #97a1b8;
+  --text-faint: #6b7690;
+  --accent: #35d495;
+  --accent-strong: #1fbf80;
+  --accent-soft: rgba(53, 212, 149, 0.14);
+  --sky: #5ea2ff;
+  --sky-soft: rgba(94, 162, 255, 0.14);
+  --amber: #f5b544;
+  --amber-soft: rgba(245, 181, 68, 0.14);
+  --danger: #f2606b;
+  --danger-soft: rgba(242, 96, 107, 0.14);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --bg-light: var(--surface);
+  --key-bg: rgba(255, 255, 255, 0.06);
+  --green: var(--accent);
+  --gold: var(--amber);
+  --yellow: var(--amber);
+  --gray: var(--surface-3);
+  --bracket-bg: var(--accent-soft);
+  --bracket-border: rgba(53, 212, 149, 0.35);
+  --border-empty: var(--border-strong);
+  --tile: #ffffff;
+  --tile-text: #1b2436;
+}
+
+/* Lobby intro: slate background (kills the purple gradient) */
+.lobby-intro {
+  background: transparent;
+}
+.lobby-intro::before,
+.lobby-intro::after {
+  display: none;
+}
+.lobby-intro .btn-get-started {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  color: #06130e;
+  box-shadow: 0 6px 18px rgba(31, 191, 128, 0.28);
+}
+.lobby-intro .btn-get-started:hover {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  color: #06130e;
+  filter: brightness(1.06);
+}
+.lobby-intro .btn-wotd {
+  background: var(--key-bg);
+  border: 1.5px solid var(--border-strong);
+  color: var(--text);
+}
+.lobby-intro .btn-wotd:hover {
+  border-color: rgba(53, 212, 149, 0.5);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.lobby-intro .intro-glow {
+  background: radial-gradient(circle, rgba(53, 212, 149, 0.14), transparent 65%);
+}
