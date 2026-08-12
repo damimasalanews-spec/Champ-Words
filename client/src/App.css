@@ -5435,3 +5435,8 @@
   box-shadow: 0 0 24px rgba(37, 244, 238, 0.25);
 }
 .lobby-intro .intro-foot { color: rgba(255, 255, 255, 0.55); }
+
+/* ── Neon alignment: intro logo halo (was orange) ────────────────────── */
+.intro-glow {
+  background: radial-gradient(circle, rgba(37, 244, 238, 0.28), transparent 65%);
+}
