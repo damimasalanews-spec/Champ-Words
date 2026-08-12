@@ -210,10 +210,24 @@ function handleChatAnswer({ user, text }) {
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
-  io.to(room.id).emit('chat', { system: true, green: true, sound: 'found', text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
+  io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
-  // NOTE: chat players are NOT counted in the allFound check — browser-player
-  // round timing is unchanged even if chat players stay silent.
+  // Mirror the browser 'word_found' event: this is what makes the client's
+  // TOP 5 board flip to "THIS ROUND" (✓ tick + round score) and plays the
+  // 'found' fanfare. Chat players are NOT counted in the allFound check, so
+  // allFound stays false here (browser round timing is unchanged).
+  io.to(room.id).emit('word_found', {
+    winnerId: player.id,
+    winnerName: player.name,
+    score: gained,
+    elapsed,
+    finds: room.roundFinds,
+    allFound: false,
+    round: room.round,
+    totalRounds: room.totalRounds,
+    self: false,
+    word: null
+  });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
   return { ok: true, word: room.word, score: gained, elapsed, name: player.name };
 }
