@@ -77,7 +77,8 @@ function Confetti({ word, onDone, msg, silent, variant }) {
     <div className={`confetti-overlay${variant ? ' confetti-' + variant : ''}`}>
       {Array.from({ length: 36 }, (_, i) => {
         const c = palette[i % 6];
-        return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':(6+Math.random()*6)+'px',left:Math.random()*100+'%'}}/>;
+        const size = variant === 'chat' ? (3 + Math.random() * 3) : (6 + Math.random() * 6);
+        return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':size+'px',left:Math.random()*100+'%'}}/>;
       })}
       <div className="confetti-center">
         <div className="confetti-star">{variant === 'chat' ? '🎉' : '✨'}</div>

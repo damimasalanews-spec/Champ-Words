@@ -3097,17 +3097,25 @@
   background: linear-gradient(160deg, rgba(255, 106, 109, 0.94), rgba(255, 140, 74, 0.94));
   border: 2px solid rgba(255, 216, 122, 0.75);
   box-shadow: 0 20px 60px rgba(255, 106, 109, 0.45), 0 0 44px rgba(255, 197, 61, 0.4);
-  padding: 16px 30px;
+  /* Half-size popup — everything inside scales down to fit */
+  padding: 8px 15px;   /* was 16px 30px */
+  border-radius: 14px;
+}
+.confetti-overlay.confetti-chat .confetti-star {
+  font-size: 23px;     /* was 46px */
+  animation: winnerBounce 0.9s ease-in-out infinite;
 }
 .confetti-overlay.confetti-chat .confetti-word {
+  font-size: 20px;     /* was 40px */
+  letter-spacing: 4px; /* was 8px */
+  margin: 4px 0;       /* was 8px 0 */
   color: #2a1505;
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.28);
 }
 .confetti-overlay.confetti-chat .confetti-msg {
+  font-size: 9px;      /* was 13px */
+  margin-top: 3px;
   color: #3a1d08;
-}
-.confetti-overlay.confetti-chat .confetti-star {
-  animation: winnerBounce 0.9s ease-in-out infinite;
 }
 .congrats { background: linear-gradient(90deg, #ffc53d, #ff6b6b, #ffc53d); background-size: 200% 100%; }
 .round-word { color: var(--gold); text-shadow: 0 0 26px rgba(255, 197, 61, 0.4); }
