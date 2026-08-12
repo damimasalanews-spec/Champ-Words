@@ -599,7 +599,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
             </form>
           )}
-          <span className="round-info">RD <span>{room.round}</span><em> / {totalRounds}</em></span>
+          <span className="round-info">#ID <span>{room.round}</span><em> / {totalRounds}</em></span>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}
@@ -706,7 +706,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
               <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
-                <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
+                <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : i === 3 ? ' rank-4' : ' rank-5'}`}>{i + 1}</span>
                 {p ? (
                   <>
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
