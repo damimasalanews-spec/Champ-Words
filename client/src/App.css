@@ -7927,3 +7927,22 @@
 .timer-bar {
   width: 100%;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 EXACT HEIGHT MATCH — the canvas leader-col had a hard-coded
+   height for the OLD 48px cells; the grid now uses 42px cells, so the
+   leader-col height formula is re-synced to the real grid metrics.
+   Board height = 4 cells + 3 gaps + 2 paddings = grid height, 1:1.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .play-col {
+  --cell: 42px;
+  --gap: 5px;
+  --pad: 8px;
+}
+.tiktok-half .leader-col {
+  --cell: 42px;
+  --gap: 5px;
+  --pad: 8px;
+  height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2);
+  margin-top: 0;
+}
