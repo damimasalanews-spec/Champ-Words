@@ -8222,3 +8222,108 @@
 
 /* Ticker */
 .ticker-bar { border-radius: 12px; padding: 8px 14px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE — original purple-era look (matches reference screenshot)
+   Deep purple panels, 5-color rank circles, blue rivalry pill, grey
+   ROOM badge. Game logic untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Panels: purple gradient surfaces */
+.game-frame,
+.grid-leader-panel,
+.answer-art-box,
+.overall-board,
+.side-status-card {
+  background: linear-gradient(170deg, rgba(37, 31, 80, 0.92), rgba(19, 14, 43, 0.96));
+  border: 1px solid rgba(125, 90, 160, 0.28);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.40);
+}
+.tiktok-half .game-frame,
+.tiktok-half .grid-leader-panel,
+.tiktok-half .answer-art-box,
+.tiktok-half .overall-board,
+.tiktok-half .side-status-card {
+  background: linear-gradient(170deg, rgba(37, 31, 80, 0.92), rgba(19, 14, 43, 0.96));
+  border: 1px solid rgba(125, 90, 160, 0.28);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.40);
+}
+
+/* TOP-5 rows: original purple gradient cards */
+.top10-row,
+.tiktok-half .top10-row {
+  background: linear-gradient(170deg, rgba(37, 31, 80, 0.90), rgba(19, 14, 43, 0.95));
+  border: 1px solid rgba(125, 90, 160, 0.25);
+  border-radius: 9px;
+}
+.top10-row:hover,
+.tiktok-half .top10-row:hover {
+  background: linear-gradient(170deg, rgba(48, 40, 100, 0.92), rgba(24, 18, 55, 0.96));
+  border-color: rgba(125, 90, 160, 0.4);
+}
+.top10-row.top10-me,
+.tiktok-half .top10-row.top10-me {
+  background: linear-gradient(170deg, rgba(30, 70, 66, 0.9), rgba(16, 40, 40, 0.95));
+  border-color: rgba(94, 242, 198, 0.55);
+  box-shadow: 0 0 10px rgba(94, 242, 198, 0.22);
+}
+.top10-row.top10-me:hover,
+.tiktok-half .top10-row.top10-me:hover {
+  border-color: rgba(94, 242, 198, 0.75);
+}
+
+/* Rank circles: 5 distinct colors (gold, silver, bronze, purple, blue) */
+.top10-rank.rank-4,
+.tiktok-half .top10-rank.rank-4 {
+  background: linear-gradient(180deg, #6b5fd8, #433a9e);
+  color: #e6e2ff;
+}
+.top10-rank.rank-5,
+.tiktok-half .top10-rank.rank-5 {
+  background: linear-gradient(180deg, #6da5e6, #3f6fbf);
+  color: #e9f2ff;
+}
+.overall-rank.rank-4 { background: linear-gradient(180deg, #6b5fd8, #433a9e); color: #e6e2ff; }
+.overall-rank.rank-5 { background: linear-gradient(180deg, #6da5e6, #3f6fbf); color: #e9f2ff; }
+
+/* Room badge: grey bubble, green text, "ROOM:" prefix */
+.app-header .room-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--accent);
+  border-radius: 999px;
+}
+.app-header .room-badge::before {
+  content: 'ROOM:\00a0';
+  color: var(--text-dim);
+}
+
+/* ALL PLAYERS rows: original maroon-purple gradient, no gold tint */
+.overall-row,
+.tiktok-half .overall-row {
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.80), rgba(66, 28, 60, 0.90));
+  border: 1px solid rgba(125, 90, 160, 0.18);
+}
+.overall-row.overall-me,
+.tiktok-half .overall-row.overall-me {
+  background: linear-gradient(170deg, rgba(112, 48, 96, 0.92), rgba(66, 28, 60, 0.95));
+  border-color: rgba(94, 242, 198, 0.4);
+}
+
+/* Rivalry bar: blue pill */
+.rivalry-bar,
+.tiktok-half .rivalry-bar {
+  background: linear-gradient(90deg, rgba(37, 77, 161, 0.92), rgba(23, 45, 95, 0.95));
+  border: 1px solid rgba(94, 162, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+.rivalry-chat { color: #8ab4ff; }
+.rivalry-host { color: #ffc53d; }
+
+/* Round info: purple pill */
+.round-info,
+.tiktok-half .round-info {
+  background: rgba(37, 31, 80, 0.85);
+  border: 1px solid rgba(125, 90, 160, 0.3);
+  border-radius: 20px;
+}

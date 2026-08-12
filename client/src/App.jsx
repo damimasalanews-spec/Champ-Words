@@ -394,7 +394,7 @@ export default function App() {
             {room && socket.id === room.host && (
               <button className="mod-toggle" title="Moderation"
                 onClick={() => setModOpen(o => !o)}>
-                🛡️
+                ⓘ
               </button>
             )}
             <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
@@ -504,10 +504,8 @@ export default function App() {
       {/* 🔥 Host vs Chat rivalry */}
       {room && (typeof room.chatTotal === 'number' || typeof room.hostTotal === 'number') && (
         <div className="rivalry-bar">
-          <span className="rivalry-chat">CHAT {room.chatTotal || 0}</span>
-          <span className="rivalry-vs">vs</span>
-          <span className="rivalry-host">HOST {room.hostTotal || 0}</span>
-          {(room.chatTotal || 0) > (room.hostTotal || 0) && <span className="rivalry-fire">🔥 CHAT IS WINNING</span>}
+          <span className="rivalry-chat">CHAT & 🏆</span>
+          <span className="rivalry-host">HOST 🏆</span>
         </div>
       )}
 
