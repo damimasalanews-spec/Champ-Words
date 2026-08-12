@@ -5002,3 +5002,48 @@
   white-space: nowrap;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HEADER RESTORE — professional slate + emerald style (login/lobby era)
+   Game page internals untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+.app-header .brand-name {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 21px;
+  letter-spacing: 2px;
+  text-shadow: none;
+}
+.app-header .room-badge {
+  background: var(--accent-soft);
+  border: 1px solid rgba(53, 212, 149, 0.35);
+  color: var(--accent);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  padding: 4px 12px;
+}
+.app-header .room-badge::before {
+  content: 'ROOM\00a0';
+  color: var(--text-faint);
+}
+.app-header .logout-btn {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  color: #06130e;
+  border-radius: 999px;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 14px rgba(31, 191, 128, 0.28);
+}
+.app-header .logout-btn:hover {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+  color: #06130e;
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.app-header .user-name {
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  color: var(--text);
+}
