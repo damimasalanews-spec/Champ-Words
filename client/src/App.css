@@ -8522,3 +8522,10 @@
   font-family: 'Fredoka', 'Outfit', sans-serif;
   font-size: 14px;
 }
+
+/* TOP 5 / ANSWER / ALL PLAYERS labels must be GOLD in the canvas mode too */
+.tiktok-half .top10-title,
+.tiktok-half .overall-title,
+.tiktok-half .brackets-label {
+  color: #ffc53d;
+}
