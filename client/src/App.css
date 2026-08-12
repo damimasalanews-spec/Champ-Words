@@ -3416,6 +3416,31 @@
 }
 .pick-custom-go:disabled { opacity: 0.4; }
 
+/* ── Game controls inside the moderation panel ────────────────────────── */
+.mod-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.mod-blacklist-row {
+  display: flex;
+  gap: 8px;
+}
+.mod-blacklist-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 13px;
+}
+.mod-blacklist-input:focus { border-color: rgba(255, 197, 61, 0.6); outline: none; }
+
 /* ── Hall of Fame tabs ─────────────────────────────────────────────────── */
 .hall-tabs {
   display: flex;

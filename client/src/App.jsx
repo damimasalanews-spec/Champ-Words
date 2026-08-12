@@ -498,22 +498,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 🛠️ Host tools (pause / resume / skip / blacklist) */}
-      {room && socket.id === room.host && (
-        <div className="host-tools">
-          {room.paused ? (
-            <button className="host-tool" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
-          ) : (
-            <button className="host-tool" onClick={() => socket.emit('pause_game', { roomId: room.id })}>⏸️ Pause</button>
-          )}
-          <button className="host-tool" onClick={() => socket.emit('skip_word', { roomId: room.id })}>⏭️ Skip</button>
-          <input className="host-blacklist-input" value={blacklistWord} placeholder="block word…"
-            onChange={e => setBlacklistWord(e.target.value.replace(/[^a-zA-Z ]/g, '').toLowerCase().slice(0, 10))} />
-          <button className="host-tool" disabled={blacklistWord.trim().length < 3}
-            onClick={() => { socket.emit('blacklist_word', { roomId: room.id, word: blacklistWord }); setBlacklistWord(''); }}>🚫 Block</button>
-        </div>
-      )}
-
       {/* 🎲 Theme vote — visible on stream while the champ picks */}
       {room && room.state === 'champ_pick' && room.voteOptions && (
         <div className="vote-bar">
@@ -592,6 +576,22 @@ export default function App() {
             {room.players.length <= 1 && <p className="mod-empty">No other players yet</p>}
           </div>
           <button className="btn btn-small mod-clear" onClick={() => socket.emit('clear_chat', { roomId: room.id })}>Clear Chat</button>
+
+          <div className="mod-controls">
+            <div className="mod-panel-title">Game Controls</div>
+            {room.paused ? (
+              <button className="btn btn-small mod-clear" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
+            ) : (
+              <button className="btn btn-small mod-clear" onClick={() => socket.emit('pause_game', { roomId: room.id })}>⏸️ Pause</button>
+            )}
+            <button className="btn btn-small mod-clear" onClick={() => socket.emit('skip_word', { roomId: room.id })}>⏭️ Skip Word</button>
+            <div className="mod-blacklist-row">
+              <input className="mod-blacklist-input" value={blacklistWord} placeholder="block word…"
+                onChange={e => setBlacklistWord(e.target.value.replace(/[^a-zA-Z ]/g, '').toLowerCase().slice(0, 10))} />
+              <button className="btn btn-small" disabled={blacklistWord.trim().length < 3}
+                onClick={() => { socket.emit('blacklist_word', { roomId: room.id, word: blacklistWord }); setBlacklistWord(''); }}>🚫 Block</button>
+            </div>
+          </div>
         </div>
       )}
 
