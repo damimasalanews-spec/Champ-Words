@@ -218,7 +218,7 @@ export default function App() {
     socket.on('time_up', (data) => { setRoom(data.room); });
     socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
     socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
-    socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound('chat'); });
+    socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
     socket.on('chat_cleared', () => setMessages([]));
     socket.on('kicked', () => {
       showToast('You were removed by the host', 'error');
