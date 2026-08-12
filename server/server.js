@@ -186,9 +186,9 @@ function handleChatAnswer({ user, text }) {
   if (!player) {
     player = {
       id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
-      // TikTok chat usernames are capped at 10 letters in every list/leaderboard
-      // (the full username stays in chatUser for identity + matching).
-      name: username.slice(0, 10), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
+      // TikTok chat usernames are capped at 7 front letters in every
+      // list/leaderboard (the full username stays in chatUser for identity).
+      name: username.slice(0, 7), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
       foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0
     };
     room.players.push(player);
