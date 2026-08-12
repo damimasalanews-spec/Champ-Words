@@ -5002,3 +5002,159 @@
   white-space: nowrap;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CHAMP ROYALE — luxury header redesign (gold + serif premium)
+   Appended override block — wins over all earlier themes & media queries.
+   ═══════════════════════════════════════════════════════════════════════ */
+.app-header {
+  --royal-gold: #e9c46a;
+  --royal-gold-bright: #f7e7b4;
+  --royal-gold-deep: #b8860b;
+  background:
+    radial-gradient(120% 180% at 50% -50%, rgba(233, 196, 106, 0.18), transparent 55%),
+    linear-gradient(180deg, #1a0b1e 0%, #241126 100%);
+  border-bottom: 1px solid rgba(233, 196, 106, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(247, 231, 180, 0.12),
+    0 10px 30px rgba(0, 0, 0, 0.45);
+  padding: 12px 20px 14px;
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  left: 20px; right: 20px; bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(233, 196, 106, 0.7), transparent);
+  pointer-events: none;
+}
+.app-header .brand > svg {
+  filter: drop-shadow(0 0 8px rgba(233, 196, 106, 0.35)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+  border-radius: 12px;
+}
+.app-header .brand-name {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #fdf3cf 0%, #f0d48a 30%, #e9c46a 50%, #c9972e 72%, #f7e7b4 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: #e9c46a;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+  animation: royalShimmer 7s ease-in-out infinite;
+}
+@keyframes royalShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.app-header .room-badge {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #f7e7b4;
+  background: linear-gradient(180deg, rgba(233, 196, 106, 0.16), rgba(184, 134, 11, 0.10));
+  border: 1px solid rgba(233, 196, 106, 0.55);
+  border-radius: 999px;
+  padding: 5px 14px 5px 15px;
+  box-shadow: inset 0 0 0 1px rgba(247, 231, 180, 0.08), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.app-header .room-badge::before {
+  content: 'ROOM\00a0';
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: rgba(247, 231, 180, 0.65);
+}
+.header-right { gap: 10px; }
+.header-controls {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(233, 196, 106, 0.18);
+  border-radius: 14px;
+  padding: 4px;
+  gap: 4px;
+}
+.app-header .mod-toggle,
+.app-header .sound-toggle,
+.app-header .voice-btn {
+  background: transparent;
+  border: 1px solid rgba(233, 196, 106, 0.22);
+  box-shadow: none;
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.12s, background 0.2s;
+}
+.app-header .mod-toggle:hover,
+.app-header .sound-toggle:hover,
+.app-header .voice-btn:hover {
+  border-color: rgba(233, 196, 106, 0.75);
+  background: rgba(233, 196, 106, 0.10);
+  box-shadow: 0 0 10px rgba(233, 196, 106, 0.25);
+  transform: translateY(-1px);
+}
+.app-header .user-info {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(233, 196, 106, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.app-header .user-avatar {
+  border-color: #e9c46a;
+  box-shadow: 0 0 6px rgba(233, 196, 106, 0.45);
+}
+.app-header .user-name {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.app-header .logout-btn {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #1f0b18;
+  background: linear-gradient(180deg, #f7e7b4 0%, #e9c46a 45%, #c9972e 100%);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: 0 3px 12px rgba(233, 196, 106, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+}
+.app-header .logout-btn:hover {
+  color: #1f0b18;
+  border-color: transparent;
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(233, 196, 106, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.app-header .logout-btn:active { transform: translateY(0); }
+
+/* ── Rivalry bar (CHAT vs HOST) — floating gold plaque ───────────────── */
+.rivalry-bar {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, rgba(26, 11, 30, 0.94), rgba(36, 17, 38, 0.9));
+  border: 1px solid rgba(233, 196, 106, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(247, 231, 180, 0.12);
+}
+.rivalry-chat { color: #f0d48a; }
+.rivalry-vs { font-style: italic; color: rgba(247, 231, 180, 0.55); }
+.rivalry-host { color: #ffd76a; }
+.rivalry-fire { color: #ff9d9d; font-style: italic; }
+
+/* ── Compact variants (tiktok half-view + small screens) ─────────────── */
+.tiktok-half .app-header { padding: 8px 12px 10px; }
+.tiktok-half .app-header .brand-name { font-size: 16px; letter-spacing: 1.5px; }
+.tiktok-half .app-header .room-badge { font-size: 10px; padding: 3px 10px; letter-spacing: 2px; }
+.tiktok-half .app-header .logout-btn { padding: 5px 12px; font-size: 11px; }
+.tiktok-half .header-controls { padding: 3px; gap: 2px; }
+.tiktok-half .app-header .user-name { font-size: 11px; }
+@media (max-width: 560px) {
+  .app-header { padding: 10px 14px 12px; }
+  .app-header .brand-name { font-size: 19px; letter-spacing: 2px; }
+  .app-header .room-badge { font-size: 10px; padding: 4px 10px; letter-spacing: 2px; }
+  .app-header .logout-btn { padding: 6px 14px; font-size: 11px; }
+  .header-right { gap: 6px; }
+}
