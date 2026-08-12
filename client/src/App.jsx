@@ -209,6 +209,17 @@ export default function App() {
     });
   }, [pendingRoom, cancelAutoRejoin, applyJoinedRoom, showToast]);
 
+  // Instant re-join on reconnect — fixes "Player not found" after a network
+  // blip (socket.io gets a NEW id; the server re-associates it via join_room)
+  useEffect(() => {
+    if (!room) return;
+    const onConnect = () => {
+      socket.emit('join_room', { roomId: room.id, playerKey: getPlayerKey() }, () => {});
+    };
+    socket.on('connect', onConnect);
+    return () => { socket.off('connect', onConnect); };
+  }, [socket, room]);
+
   // Socket events (only after auth/guest)
   useEffect(() => {
     if (!user) return;
