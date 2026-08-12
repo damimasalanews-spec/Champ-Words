@@ -8111,3 +8111,114 @@
 .tiktok-half .top10-row.top10-me {
   border-color: rgba(53, 212, 149, 0.55);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE — professional composition (login/lobby design language)
+   Airier spacing, hero timer with label, pill metadata, unified panels.
+   Game logic untouched — visual layer only.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Layout air */
+.game-area { padding: 4px 0 24px; }
+.game-layout { gap: 18px; }
+.tiktok-half .game-layout { gap: 12px; }
+.game-frame { padding: 20px; border-radius: 20px; }
+.tiktok-half .game-frame { padding: 12px; border-radius: 14px; }
+.grid-leader-panel { gap: 18px; padding: 18px; }
+.tiktok-half .grid-leader-panel { gap: 12px; padding: 12px; }
+.answer-art-box { gap: 18px; padding: 18px; border-radius: 18px; }
+.tiktok-half .answer-art-box { gap: 12px; padding: 14px; border-radius: 14px; }
+
+/* Header row: answer input + round pill + chat */
+.game-header-row { gap: 12px; flex-wrap: wrap; }
+.type-answer { gap: 8px; }
+.type-answer input {
+  padding: 11px 14px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+.round-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  background: var(--key-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+.round-info em { font-style: normal; }
+.chat-toggle { padding: 8px 16px; font-size: 12px; }
+
+/* Hero timer */
+.timer-display {
+  font-size: 46px;
+  margin: 6px 0 4px;
+}
+.tiktok-half .timer-display { font-size: 34px; }
+.timer-display::before {
+  content: 'ROUND TIME';
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+.timer-bar { height: 7px; margin-bottom: 14px; }
+.tiktok-half .timer-bar { height: 6px; margin-bottom: 8px; }
+
+/* Grid polish (metrics untouched — stays synced with TOP-5 height) */
+.tiktok-half .grid-4x4 { border-radius: 14px; background: rgba(0, 0, 0, 0.25); }
+.grid-4x4 { border-radius: 14px; background: rgba(0, 0, 0, 0.25); }
+.tiktok-half .grid-4x4 .grid-cell {
+  border-radius: 11px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+}
+.grid-4x4 .grid-cell {
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Answer brackets */
+.brackets-section { text-align: center; }
+.brackets-label { letter-spacing: 3.5px; margin-bottom: 10px; }
+.bracket-row { gap: 7px; }
+.tiktok-half .bracket-box { border-radius: 10px; }
+.bracket-box { border-radius: 11px; }
+
+/* Found chips */
+.found-now { margin: 12px 0 4px; }
+.found-chip { padding: 6px 13px; font-size: 12.5px; }
+
+/* ALL PLAYERS board */
+.overall-board { padding: 16px; }
+.tiktok-half .overall-board { padding: 12px; }
+.overall-title { font-size: 11px; letter-spacing: 2.5px; margin-bottom: 12px; }
+.overall-row {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.overall-row:hover { background: rgba(255, 255, 255, 0.05); }
+.overall-rank { width: 22px; height: 22px; font-size: 11px; }
+
+/* Side status card */
+.side-status-card { padding: 18px; border-radius: 16px; }
+.tiktok-half .side-status-card { padding: 14px; }
+
+/* Spot banner */
+.spot-banner { padding: 12px 14px; border-radius: 14px; margin: 4px 0 12px; }
+
+/* Champ word + hint */
+.champ-word-display { padding: 8px 14px; border-radius: 11px; margin-bottom: 10px; }
+.hint-clue { padding: 10px 14px; border-radius: 11px; }
+
+/* Top-5 celebration */
+.top5-celebration { border-radius: 16px; }
+.celeb-title { letter-spacing: 5px; }
+
+/* Ticker */
+.ticker-bar { border-radius: 12px; padding: 8px 14px; }
