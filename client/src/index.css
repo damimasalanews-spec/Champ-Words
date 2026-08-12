@@ -1,52 +1,29 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CHAMP WORDS — "Professional" design system
-   Deep slate base · emerald accent · Outfit type · crisp hairline borders
+   CHAMP WORDS — "Ember" design system
+   Warm dark plum gradient, amber-gold + coral accents, white tiles.
+   (theme + top-area polish only — game format unchanged)
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Surfaces */
-  --bg: #0c111d;
-  --bg-2: #121a2c;
-  --surface: #182136;
-  --surface-2: #1f2a42;
-  --surface-3: #26324d;
+  --bg: #261120;
+  --bg-light: #35203a;
+  --bg-tile: #ffffff;
+  --border: #4f2e4c;
+  --border-empty: #70405f;
+  --text: #ffeff6;
+  --text-dark: #1f0b18;
+  --text-dim: #cd9fb0;
+  --green: #ffc53d;
+  --yellow: #ff9f43;
+  --gray: #3d2a3f;
+  --gold: #ffe08a;
+  --danger: #ff6b6b;
+  --accent: #ff9f68;
+  --key-bg: #3d2a3f;
+  --bracket-bg: rgba(255, 197, 61, 0.10);
+  --bracket-border: #70405f;
 
-  /* Text */
-  --text: #eef2f9;
-  --text-dim: #97a1b8;
-  --text-faint: #6b7690;
-
-  /* Accents */
-  --accent: #35d495;          /* emerald — primary / correct */
-  --accent-strong: #1fbf80;
-  --accent-soft: rgba(53, 212, 149, 0.14);
-  --sky: #5ea2ff;             /* secondary accent */
-  --sky-soft: rgba(94, 162, 255, 0.14);
-  --amber: #f5b544;           /* hints / medals / stars */
-  --amber-soft: rgba(245, 181, 68, 0.14);
-  --danger: #f2606b;
-  --danger-soft: rgba(242, 96, 107, 0.14);
-
-  /* Borders */
-  --border: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.18);
-
-  /* Legacy aliases used by components */
-  --bg-light: var(--surface);
-  --key-bg: rgba(255, 255, 255, 0.06);
-  --green: var(--accent);
-  --gold: var(--amber);
-  --yellow: var(--amber);
-  --gray: var(--surface-3);
-  --bracket-bg: var(--accent-soft);
-  --bracket-border: rgba(53, 212, 149, 0.35);
-  --border-empty: var(--border-strong);
-
-  /* Word tiles */
-  --tile: #ffffff;
-  --tile-text: #1b2436;
-
-  font-family: 'Outfit', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Fredoka', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
 html, body {
@@ -58,16 +35,10 @@ html, body {
 html, body, #root {
   height: 100%;
   width: 100%;
-  background: var(--bg);
+  /* One uniform dark purple — every section matches the left/right edges
+     (the old radial glows made the center/bottom look like a different color) */
+  background: #221020;
   background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
-
-* { box-sizing: border-box; }
-
-::selection { background: var(--accent-soft); }
-
-button { font-family: inherit; }
-input, select, textarea { font-family: inherit; }

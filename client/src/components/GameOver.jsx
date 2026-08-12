@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import Logo from './Logo';
-import FloatingTiles from './FloatingTiles';
 import { playSound } from '../sounds';
 
 const AUTO_RESTART_SECONDS = 20;
@@ -50,14 +49,14 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
       grad.addColorStop(0, '#1a1440'); grad.addColorStop(1, '#2b1a52');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 1000);
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#7df5f0';
+      ctx.fillStyle = '#ffd25e';
       ctx.font = '900 64px sans-serif';
       ctx.fillText('🏆 CHAMP WORDS', 400, 120);
       ctx.fillStyle = '#ffeff6';
       ctx.font = '600 30px sans-serif';
       ctx.fillText('Final Results', 400, 180);
       sorted.slice(0, 5).forEach((p, i) => {
-        ctx.fillStyle = i === 0 ? '#25f4ee' : i === 1 ? '#cdd6f4' : i === 2 ? '#38bdf8' : '#e6e2ff';
+        ctx.fillStyle = i === 0 ? '#ffd25e' : i === 1 ? '#cdd6f4' : i === 2 ? '#f0b27a' : '#e6e2ff';
         ctx.font = '700 42px sans-serif';
         ctx.fillText(`${['🥇', '🥈', '🥉'][i] || `#${i + 1}`}  ${p.name}  —  ${p.score} pts`, 400, 280 + i * 95);
       });
@@ -73,7 +72,6 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
 
   return (
     <div className="overlay gameover-overlay">
-      <FloatingTiles />
       {/* Confetti celebration */}
       {Array.from({ length: 40 }, (_, i) => (
         <div key={i} className="gameover-confetti"

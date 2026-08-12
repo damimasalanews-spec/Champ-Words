@@ -599,7 +599,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               <button type="submit" className="btn btn-primary btn-small" disabled={submitting}>Go</button>
             </form>
           )}
-          <span className="round-info">#ID <span>{room.round}</span><em> / {totalRounds}</em></span>
+          <span className="round-info">RD <span>{room.round}</span><em> / {totalRounds}</em></span>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}

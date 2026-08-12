@@ -10,7 +10,6 @@ import GameOver from './components/GameOver';
 import Chat from './components/Chat';
 import VoiceChat from './components/VoiceChat';
 import Toast from './components/Toast';
-import FloatingTiles from './components/FloatingTiles';
 import './App.css';
 
 // Persistent identity for this browser — lets a player rejoin their room
@@ -127,7 +126,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const roomCode = String(params.get('room') || '').toUpperCase().trim();
     if (!roomCode) {
-      if (params.has('auto')) setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
+      setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
       return;
     }
     let stopped = false;
@@ -394,7 +393,7 @@ export default function App() {
             {room && socket.id === room.host && (
               <button className="mod-toggle" title="Moderation"
                 onClick={() => setModOpen(o => !o)}>
-                ⓘ
+                🛡️
               </button>
             )}
             <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
@@ -437,7 +436,6 @@ export default function App() {
 
       {screen === 'waiting' && room && (
         <div className="waiting-host">
-          <FloatingTiles />
           <div className="room-code">{room.id}</div>
           <p className="players-count"><span>{room.players.length}</span> player{room.players.length !== 1 ? 's' : ''}</p>
           <div style={{ marginTop: 16 }}>
@@ -504,8 +502,10 @@ export default function App() {
       {/* 🔥 Host vs Chat rivalry */}
       {room && (typeof room.chatTotal === 'number' || typeof room.hostTotal === 'number') && (
         <div className="rivalry-bar">
-          <span className="rivalry-chat">CHAT & 🏆</span>
-          <span className="rivalry-host">HOST 🏆</span>
+          <span className="rivalry-chat">CHAT {room.chatTotal || 0}</span>
+          <span className="rivalry-vs">vs</span>
+          <span className="rivalry-host">HOST {room.hostTotal || 0}</span>
+          {(room.chatTotal || 0) > (room.hostTotal || 0) && <span className="rivalry-fire">🔥 CHAT IS WINNING</span>}
         </div>
       )}
 

@@ -661,45 +661,6 @@ function giftTop(n) {
     .slice(0, n);
 }
 
-// ── Demo leaderboard seed ────────────────────────────────────────────────
-// Keeps the leaderboards looking alive. Runs only when a board is empty
-// (e.g. right after a Render deploy wipes the ephemeral filesystem), so
-// real game scores always mix in on top of the demo entries.
-// Disable with env LEADERBOARD_SEED=0.
-const SEED_LEADERBOARD = process.env.LEADERBOARD_SEED !== '0';
-const DEMO_PLAYERS = [
-  { key: 'seed:lexi', name: 'LexiBoss', score: 2480, found: 41, games: 12, bestStreak: 5 },
-  { key: 'seed:wordwiz', name: 'WordWiz99', score: 2215, found: 37, games: 11, bestStreak: 4 },
-  { key: 'seed:vowel', name: 'VowelQueen', score: 1950, found: 33, games: 10, bestStreak: 6 },
-  { key: 'seed:gridguru', name: 'GridGuru', score: 1720, found: 29, games: 9, bestStreak: 3 },
-  { key: 'seed:letterlad', name: 'LetterLad', score: 1540, found: 26, games: 8, bestStreak: 4 },
-  { key: 'seed:champcherry', name: 'ChampCherry', score: 1280, found: 22, games: 7, bestStreak: 2 },
-  { key: 'seed:scramblesue', name: 'ScrambleSue', score: 990, found: 18, games: 6, bestStreak: 3 },
-  { key: 'seed:tiletitan', name: 'TileTitan', score: 760, found: 14, games: 5, bestStreak: 2 },
-];
-const DEMO_GIFTERS = [
-  { key: 'seed:bigfanbella', name: 'BigFanBella', diamonds: 420, count: 12 },
-  { key: 'seed:stargazer', name: 'StarGazer', diamonds: 260, count: 7 },
-  { key: 'seed:mintmomo', name: 'MintMomo', diamonds: 150, count: 4 },
-  { key: 'seed:pixelpete', name: 'PixelPete', diamonds: 90, count: 2 },
-];
-function seedLeaderboards() {
-  if (!SEED_LEADERBOARD) return;
-  if (allTime.size === 0) {
-    DEMO_PLAYERS.forEach(s => allTime.set(s.key, { name: s.name, avatar: '', score: s.score, found: s.found, games: s.games, bestStreak: s.bestStreak }));
-    persistAllTime();
-  }
-  if (todayScores.size === 0) {
-    const t = todayKey(Date.now());
-    DEMO_PLAYERS.slice(0, 5).forEach(s => todayScores.set(s.key, { name: s.name, score: Math.round(s.score * 0.3), date: t }));
-  }
-  if (giftStats.size === 0) {
-    DEMO_GIFTERS.forEach(g => giftStats.set(g.key, { name: g.name, diamonds: g.diamonds, count: g.count }));
-    persistGiftStats();
-  }
-}
-seedLeaderboards();
-
 // ── Milestones (1k / 5k / 10k lifetime points) ────────────────────────────
 const milestoneShown = new Set(); // playerKey:amount — announced this session
 const MILESTONES = [1000, 5000, 10000];
