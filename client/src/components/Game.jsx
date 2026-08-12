@@ -73,16 +73,18 @@ function Confetti({ word, onDone, msg, silent, variant }) {
   const palette = variant === 'chat'
     ? ['#ffc53d','#ff6b6b','#ff9d4d','#ffd87a','#ff5c7c','#f9a825']
     : ['#fe2c55','#00e676','#ffab00','#25f4ee','#7a74b8','#ff6d00'];
+  const pieces = variant === 'chat' ? 16 : 36;
   return (
     <div className={`confetti-overlay${variant ? ' confetti-' + variant : ''}`}>
-      {Array.from({ length: 36 }, (_, i) => {
+      {Array.from({ length: pieces }, (_, i) => {
         const c = palette[i % 6];
         const size = variant === 'chat' ? (3 + Math.random() * 3) : (6 + Math.random() * 6);
         return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':size+'px',left:Math.random()*100+'%'}}/>;
       })}
       <div className="confetti-center">
-        <div className="confetti-star">{variant === 'chat' ? '🎉' : '✨'}</div>
+        <div className="confetti-star">{variant === 'chat' ? '✦' : '✨'}</div>
         <div className="confetti-word">{word.toUpperCase()}</div>
+        {variant === 'chat' && <div className="confetti-divider" />}
         <div className="confetti-msg">{msg}</div>
       </div>
     </div>

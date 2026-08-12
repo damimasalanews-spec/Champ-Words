@@ -3092,30 +3092,50 @@
 }
 .confetti-word { color: var(--gold); text-shadow: 0 0 30px rgba(255, 197, 61, 0.45); }
 
-/* ── Chat-solver celebration popup — warm gold/coral variant, silent ───── */
+/* ── Chat-solver popup — professional "Ember" style ──────────────────────
+   Dark plum glass card, gold gradient username, thin gold divider, refined
+   uppercase caption. Silent, compact, entrance animation. */
 .confetti-overlay.confetti-chat .confetti-center {
-  background: linear-gradient(160deg, rgba(255, 106, 109, 0.94), rgba(255, 140, 74, 0.94));
-  border: 2px solid rgba(255, 216, 122, 0.75);
-  box-shadow: 0 20px 60px rgba(255, 106, 109, 0.45), 0 0 44px rgba(255, 197, 61, 0.4);
-  /* Half-size popup — everything inside scales down to fit */
-  padding: 8px 15px;   /* was 16px 30px */
-  border-radius: 14px;
+  background: linear-gradient(165deg, rgba(38, 16, 34, 0.96), rgba(24, 10, 22, 0.96));
+  border: 1.5px solid rgba(255, 197, 61, 0.55);
+  border-radius: 18px;
+  padding: 12px 28px 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 30px rgba(255, 197, 61, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: confettiChatIn 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
 }
 .confetti-overlay.confetti-chat .confetti-star {
-  font-size: 23px;     /* was 46px */
+  font-size: 13px;
+  line-height: 1;
+  margin-bottom: 6px;
+  color: #ffc53d;
   animation: winnerBounce 0.9s ease-in-out infinite;
 }
 .confetti-overlay.confetti-chat .confetti-word {
-  font-size: 20px;     /* was 40px */
-  letter-spacing: 4px; /* was 8px */
-  margin: 4px 0;       /* was 8px 0 */
-  color: #2a1505;
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.28);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0;
+  background: linear-gradient(90deg, #ffcf5c, #ff9d4d);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(255, 197, 61, 0.35));
+}
+.confetti-overlay.confetti-chat .confetti-divider {
+  width: 44px;
+  height: 1.5px;
+  margin: 7px auto;
+  background: linear-gradient(90deg, transparent, rgba(255, 197, 61, 0.7), transparent);
+  border-radius: 2px;
 }
 .confetti-overlay.confetti-chat .confetti-msg {
-  font-size: 9px;      /* was 13px */
-  margin-top: 3px;
-  color: #3a1d08;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(233, 218, 255, 0.75);
+}
+@keyframes confettiChatIn {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 .congrats { background: linear-gradient(90deg, #ffc53d, #ff6b6b, #ffc53d); background-size: 200% 100%; }
 .round-word { color: var(--gold); text-shadow: 0 0 26px rgba(255, 197, 61, 0.4); }
