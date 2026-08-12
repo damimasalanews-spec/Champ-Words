@@ -469,9 +469,16 @@ export default function App() {
         <RoundOver result={roundResult} room={room} />
       )}
 
-      {/* ⏸️ Paused overlay */}
+      {/* ⏸️ Paused overlay — Resume button lives INSIDE so it can't be blocked */}
       {room && room.paused && (
-        <div className="paused-overlay"><div className="paused-card">⏸️ PAUSED</div></div>
+        <div className="paused-overlay">
+          <div className="paused-card">
+            <div className="paused-title">⏸️ PAUSED</div>
+            {socket.id === room.host && (
+              <button className="paused-resume" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
+            )}
+          </div>
+        </div>
       )}
 
       {/* 🏆 Milestone celebration */}
