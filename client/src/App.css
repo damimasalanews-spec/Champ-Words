@@ -5331,3 +5331,64 @@
   font-weight: 600;
 }
 .btn-link:hover { color: var(--text); }
+/* ═══════════════════════════════════════════════════════════════════════
+   SITE-WIDE CONSISTENCY — same professional design on every page
+   EXCEPT the game page (.game-area keeps its own purple design).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Word of the Day page: glass card like the rest */
+.wotd-card {
+  background: rgba(24, 33, 54, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.wotd-title {
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--accent);
+}
+.wotd-date { font-size: 13px; }
+.wotd-form input {
+  background: rgba(0, 0, 0, 0.30);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+.wotd-form input:focus {
+  outline: none;
+  border-color: rgba(53, 212, 149, 0.6);
+  box-shadow: 0 0 0 3px rgba(53, 212, 149, 0.12);
+}
+.wotd-done { color: var(--accent); }
+.wotd-streak { color: var(--amber); }
+.wotd-sub { font-size: 12.5px; }
+
+/* Waiting room: glass player pills + refined plaque */
+.waiting-host .player-badge {
+  background: rgba(24, 33, 54, 0.72);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.waiting-host .room-code {
+  background: var(--accent-soft);
+  border: 1px solid rgba(53, 212, 149, 0.45);
+  color: var(--accent);
+  border-radius: 16px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Studio/auto-status banner: glass */
+.auto-status {
+  background: rgba(24, 33, 54, 0.72);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
