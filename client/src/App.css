@@ -5610,3 +5610,71 @@
   border-radius: 16px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROFESSIONAL POLISH — final accent sweep
+   Recolor the design-system variables so every var() usage becomes neon:
+   success/mint, light hairline borders, glass surfaces.
+   ═══════════════════════════════════════════════════════════════════════ */
+:root {
+  --green: #25f4ee;
+  --gold: #7df5f0;
+  --yellow: #38bdf8;
+  --accent: #fe2c55;
+  --text-dim: rgba(255, 255, 255, 0.58);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-empty: rgba(255, 255, 255, 0.20);
+  --bracket-bg: rgba(37, 244, 238, 0.10);
+  --bracket-border: rgba(125, 245, 240, 0.40);
+  --bg-light: #2b1247;
+  --key-bg: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Hardcoded accent leftovers → neon ───────────────────────────────── */
+.timer-display {
+  text-shadow: 0 0 18px rgba(37, 244, 238, 0.30);
+}
+.art-progress-fill {
+  background: linear-gradient(90deg, #25f4ee, #38bdf8);
+}
+.spot-banner {
+  background: linear-gradient(90deg, rgba(37, 244, 238, 0.10), rgba(254, 44, 85, 0.08), rgba(37, 244, 238, 0.10));
+  border: 1px solid rgba(37, 244, 238, 0.35);
+}
+.spot-banner span {
+  background: linear-gradient(180deg, #7df5f0, #25f4ee 55%, #fe2c55);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.pick-popup-word:hover {
+  border-color: #25f4ee;
+  background: rgba(37, 244, 238, 0.08);
+}
+.hint-clue-option {
+  border: 1px solid rgba(37, 244, 238, 0.35);
+  background: rgba(37, 244, 238, 0.06);
+  color: #d9fffe;
+}
+.hint-clue-option:hover {
+  border-color: #25f4ee;
+  background: rgba(37, 244, 238, 0.12);
+  box-shadow: 0 0 14px rgba(37, 244, 238, 0.25);
+}
+.found-chip {
+  background: rgba(37, 244, 238, 0.10);
+  border: 1px solid rgba(37, 244, 238, 0.40);
+  color: #7df5f0;
+}
+.found-chip.found-self {
+  background: rgba(37, 244, 238, 0.20);
+  box-shadow: 0 0 12px rgba(37, 244, 238, 0.35);
+}
+.gameover-final-title {
+  color: #7df5f0;
+}
+.champ-word-display b { color: #25f4ee; }
+.drag-word-display { color: #25f4ee; }
+.winner-name { color: #7df5f0; }
+.round-info span { color: #7df5f0; }
+.top10-pts, .overall-pts, .player-score { color: #25f4ee; }
+.hall-score, .alltime-pts { color: #7df5f0; }
