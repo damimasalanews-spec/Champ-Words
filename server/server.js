@@ -226,7 +226,9 @@ function handleChatAnswer({ user, text }) {
     round: room.round,
     totalRounds: room.totalRounds,
     self: false,
-    word: null
+    word: null,
+    fromChat: true, // client shows the "found a Champ Word!" popup for chat solvers
+    solved: room.word // current correct word, shown in the popup text (kept out of `word` so it doesn't fall into the brackets)
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
   return { ok: true, word: room.word, score: gained, elapsed, name: player.name };

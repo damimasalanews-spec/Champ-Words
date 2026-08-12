@@ -130,6 +130,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [falling, setFalling] = useState(false);
   const [confetti, setConfetti] = useState(null);
   const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
+  const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
+  const foundPopupTimer = useRef(null);
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
 
@@ -169,6 +171,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFoundList([]); setAllFound(false);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
+    setFoundPopup(null);
+    if (foundPopupTimer.current) { window.clearTimeout(foundPopupTimer.current); foundPopupTimer.current = null; }
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
     setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
@@ -184,11 +188,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Word found / time up — reveal the word and let the letters fall into the brackets
   useEffect(() => {
     const onFound = (data) => {
-      playSound('found');
+      // TikTok chat solvers get the celebration popup + ta-da sound instead
+      // of the regular 'found' blip (so it doesn't double-play).
+      if (!data.fromChat) playSound('found');
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
+      }
+      // TikTok chat solver: pop up the username + "You found a Champ Word: …"
+      if (data.fromChat && data.winnerName) {
+        setFoundPopup({ name: data.winnerName, score: data.score, word: data.solved || '' });
+        if (foundPopupTimer.current) window.clearTimeout(foundPopupTimer.current);
+        foundPopupTimer.current = window.setTimeout(() => setFoundPopup(null), 2600);
       }
       // …but only the finder sees the word fall into the brackets
       if (data.word) {
@@ -461,6 +473,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       )}
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
+
+      {/* TikTok chat solver celebration — username big, "You found a Champ Word: …" below */}
+      {foundPopup && (
+        <Confetti
+          word={foundPopup.name}
+          onDone={() => setFoundPopup(null)}
+          msg={foundPopup.word
+            ? `You found a Champ Word: ${foundPopup.word.toUpperCase()}`
+            : `You found a Champ Word! +${foundPopup.score} pts`}
+        />
+      )}
 
       {/* Flying "+N" popup on a correct guess */}
       {scorePop !== null && <div className="score-pop">+{scorePop}</div>}
