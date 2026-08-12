@@ -5121,3 +5121,98 @@
   --tile-text: #1f0b18;
   font-family: 'Fredoka', 'Outfit', 'Segoe UI', sans-serif;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROFESSIONAL SWEEP — kill leftover gold/pink/purple accents on all
+   non-game pages (login, lobby, waiting, admin gate). Scoped OUTSIDE
+   .game-area so the game page stays exactly as it is.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Titles: solid white (no gradient text) */
+.login-page .login-logo h1,
+.lobby-intro .intro-title,
+.tiktok-half .login-page .login-logo h1,
+.tiktok-half .lobby-intro .intro-title {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  animation: none !important;
+}
+
+/* LIVE pill dot: emerald */
+.login-page .login-live-badge .live-dot,
+.tiktok-half .login-page .login-live-badge .live-dot {
+  background: var(--accent) !important;
+  box-shadow: 0 0 0 0 rgba(53, 212, 149, 0.5) !important;
+  animation: loginLivePulse 1.8s ease-out infinite !important;
+}
+
+/* Leaderboard active tab: emerald tint */
+.login-page .hall-tab.active,
+.tiktok-half .login-page .hall-tab.active {
+  background: var(--accent-soft) !important;
+  border-color: rgba(53, 212, 149, 0.5) !important;
+  color: var(--accent) !important;
+  box-shadow: none !important;
+}
+
+/* Legal links: dim */
+.login-page .login-legal a,
+.tiktok-half .login-page .login-legal a {
+  color: var(--text-dim) !important;
+}
+.login-page .login-legal a:hover,
+.tiktok-half .login-page .login-legal a:hover {
+  color: var(--accent) !important;
+}
+
+/* Primary buttons on non-game pages: emerald */
+.login-page .btn-primary,
+.lobby-intro .btn-primary,
+.lobby-intro .btn-get-started,
+.lobby-form .btn-primary,
+.lobby-card .btn-primary,
+.waiting-host .btn-primary,
+.auto-status .btn-primary,
+.tiktok-half .login-page .btn-primary,
+.tiktok-half .lobby-intro .btn-primary,
+.tiktok-half .lobby-intro .btn-get-started,
+.tiktok-half .lobby-form .btn-primary,
+.tiktok-half .lobby-card .btn-primary,
+.tiktok-half .waiting-host .btn-primary,
+.tiktok-half .auto-status .btn-primary {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong)) !important;
+  color: #06130e !important;
+  box-shadow: 0 6px 18px rgba(31, 191, 128, 0.28) !important;
+  border: none !important;
+}
+.login-page .btn-primary:hover,
+.lobby-intro .btn-primary:hover,
+.lobby-intro .btn-get-started:hover,
+.lobby-form .btn-primary:hover,
+.lobby-card .btn-primary:hover,
+.waiting-host .btn-primary:hover,
+.auto-status .btn-primary:hover,
+.tiktok-half .login-page .btn-primary:hover,
+.tiktok-half .lobby-intro .btn-primary:hover,
+.tiktok-half .lobby-intro .btn-get-started:hover,
+.tiktok-half .lobby-form .btn-primary:hover,
+.tiktok-half .lobby-card .btn-primary:hover,
+.tiktok-half .waiting-host .btn-primary:hover,
+.tiktok-half .auto-status .btn-primary:hover {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong)) !important;
+  color: #06130e !important;
+  filter: brightness(1.06);
+}
+
+/* Host "Create Room" secondary button: glass, not dark purple */
+.lobby-card .btn-secondary.btn-host-create,
+.tiktok-half .lobby-card .btn-secondary.btn-host-create {
+  background: var(--key-bg) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
