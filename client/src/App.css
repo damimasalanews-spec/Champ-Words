@@ -7766,3 +7766,10 @@
 .lobby-intro .intro-glow {
   background: radial-gradient(circle, rgba(53, 212, 149, 0.14), transparent 65%);
 }
+
+/* ── Leaderboard visibility fix ───────────────────────────────────────── */
+/* The TOP-5 board was hidden by a legacy rule; show it during play so the
+   live leaderboard is always visible (desktop + mobile). */
+.top10-board {
+  display: block;
+}
