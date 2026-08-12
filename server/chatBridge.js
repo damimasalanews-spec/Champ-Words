@@ -91,11 +91,12 @@ function start() {
   conn.on('chat', (data) => {
     const user = String((data && data.uniqueId) || '').trim();
     const text = String((data && data.comment) || '').trim();
+    const nickname = String((data && data.nickname) || '').trim(); // TikTok profile name
     if (!user || !text) return;
     state.chatCount++;
     state.lastChatAt = Date.now();
     if (onAnswer) {
-      const res = onAnswer({ user, text });
+      const res = onAnswer({ user, text, nickname });
       const ok = !!(res && res.ok);
       if (ok) state.correctCount++;
       pushRecent({

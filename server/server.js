@@ -167,10 +167,14 @@ function findChatTargetRoom() {
 
 // Shared handler used by both the HTTP endpoint and the live-chat bridge.
 const chatAnswerCooldowns = new Map(); // user → last wrong-attempt timestamp
-function handleChatAnswer({ user, text }) {
+function handleChatAnswer({ user, text, nickname }) {
   const username = String(user || '').trim().slice(0, 30);
   const guess = String(text || '').trim().toLowerCase().replace(/\s+/g, '');
   if (!username || !guess) return { ok: false, error: 'missing user or text' };
+  // Display name = first name of the TikTok PROFILE name (nickname), falling
+  // back to the @username. Used in the popup, leaderboard and chat messages.
+  const profileFirst = String(nickname || '').trim().split(/\s+/)[0] || '';
+  const displayName = (profileFirst || username).slice(0, 14);
   const room = findChatTargetRoom();
   if (!room) return { ok: false, error: 'no active round' };
   if (guess !== room.word.replace(/\s+/g, '')) {
@@ -186,9 +190,9 @@ function handleChatAnswer({ user, text }) {
   if (!player) {
     player = {
       id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
-      // TikTok chat usernames are capped at 7 front letters in every
-      // list/leaderboard (the full username stays in chatUser for identity).
-      name: username.slice(0, 7), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
+      // Display name = TikTok profile first name (fallback: @username).
+      // The full username stays in chatUser for identity + matching.
+      name: displayName, avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
       foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0
     };
     room.players.push(player);
