@@ -5158,3 +5158,222 @@
   .app-header .logout-btn { padding: 6px 14px; font-size: 11px; }
   .header-right { gap: 6px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NEON GAME NIGHT — header + login/home page v2
+   Replaces the gold/luxury look with a fresh mint + coral neon style
+   (TikTok-inspired) on the deep purple theme. Font sizes unchanged.
+   Full-screen mobile layout; centered card on desktop. Responsive both.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Header: glassy dark bar, mint→coral accents ─────────────────────── */
+.app-header {
+  background:
+    radial-gradient(90% 150% at 50% -30%, rgba(37, 244, 238, 0.10), transparent 60%),
+    linear-gradient(180deg, #170b2e 0%, #221040 100%);
+  border-bottom: 1px solid rgba(37, 244, 238, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  padding: 12px 20px;
+}
+.app-header::after {
+  background: linear-gradient(90deg, transparent, rgba(37, 244, 238, 0.55), transparent);
+}
+.app-header .brand > svg {
+  filter: drop-shadow(0 0 8px rgba(37, 244, 238, 0.30)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+}
+.app-header .brand-name {
+  font-family: 'Fredoka', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  background: linear-gradient(90deg, #7df5f0 0%, #25f4ee 40%, #fe2c55 100%);
+  background-size: auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: #25f4ee;
+  filter: drop-shadow(0 2px 8px rgba(37, 244, 238, 0.25));
+  animation: none;
+}
+.app-header .room-badge {
+  font-family: 'Fredoka', 'Segoe UI', sans-serif;
+  color: #7df5f0;
+  background: rgba(37, 244, 238, 0.10);
+  border: 1px solid rgba(37, 244, 238, 0.45);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(125, 245, 240, 0.06), 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+.app-header .room-badge::before {
+  content: 'ROOM\00a0';
+  color: rgba(125, 245, 240, 0.65);
+  font-family: 'Fredoka', sans-serif;
+}
+.header-controls {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+}
+.app-header .mod-toggle,
+.app-header .sound-toggle,
+.app-header .voice-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 11px;
+}
+.app-header .mod-toggle:hover,
+.app-header .sound-toggle:hover,
+.app-header .voice-btn:hover {
+  border-color: rgba(37, 244, 238, 0.70);
+  background: rgba(37, 244, 238, 0.10);
+  box-shadow: 0 0 12px rgba(37, 244, 238, 0.30);
+}
+.app-header .user-info {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(37, 244, 238, 0.30);
+}
+.app-header .user-avatar {
+  border-color: #25f4ee;
+  box-shadow: 0 0 8px rgba(37, 244, 238, 0.40);
+}
+.app-header .user-name { font-family: 'Fredoka', 'Segoe UI', sans-serif; }
+.app-header .logout-btn {
+  font-family: 'Fredoka', 'Segoe UI', sans-serif;
+  color: #06202a;
+  background: linear-gradient(135deg, #25f4ee 0%, #38bdf8 100%);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: 0 4px 14px rgba(37, 244, 238, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.app-header .logout-btn:hover {
+  color: #06202a;
+  border-color: transparent;
+  filter: brightness(1.07);
+  box-shadow: 0 6px 20px rgba(37, 244, 238, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ── Rivalry bar — neon plaque ───────────────────────────────────────── */
+.rivalry-bar {
+  font-family: 'Fredoka', 'Segoe UI', sans-serif;
+  letter-spacing: 1.5px;
+  background: linear-gradient(180deg, rgba(23, 11, 46, 0.94), rgba(34, 16, 64, 0.90));
+  border: 1px solid rgba(37, 244, 238, 0.40);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(125, 245, 240, 0.12);
+}
+.rivalry-chat { color: #25f4ee; }
+.rivalry-vs { color: rgba(255, 255, 255, 0.5); font-style: normal; }
+.rivalry-host { color: #fe2c55; }
+.rivalry-fire { color: #ff8fa3; font-style: normal; }
+
+/* ── Login / home page: full-screen neon gradient + glassy card ──────── */
+.login-page {
+  min-height: 100dvh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(37, 244, 238, 0.10), transparent 55%),
+    radial-gradient(120% 90% at 88% 112%, rgba(254, 44, 85, 0.14), transparent 55%),
+    linear-gradient(180deg, #170b2e 0%, #241140 55%, #1b0b30 100%);
+}
+.login-page .login-card {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: min(92vw, 420px);
+  max-width: 100%;
+  margin: 0;
+  padding: 34px 28px 26px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(170deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  animation: loginCardIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.login-page .login-card::before {
+  content: '';
+  position: absolute; top: 0; left: 18%; right: 18%; height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #25f4ee 40%, #fe2c55 60%, transparent);
+  opacity: 0.8;
+}
+.login-page .login-card::after { content: ''; display: none; }
+.login-page .login-logo h1 {
+  font-size: clamp(32px, 9vw, 44px);
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #7df5f0 0%, #25f4ee 40%, #fe2c55 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 6px 18px rgba(37, 244, 238, 0.25));
+}
+.login-page .login-logo p { color: rgba(255, 255, 255, 0.65); }
+.login-page .login-logo p::before,
+.login-page .login-logo p::after { color: #25f4ee; }
+.login-page .login-live-badge {
+  background: rgba(37, 244, 238, 0.08);
+  border: 1px solid rgba(37, 244, 238, 0.35);
+  color: #d9fffe;
+}
+.login-page .login-divider span { color: rgba(255, 255, 255, 0.55); }
+.login-page .login-divider::before,
+.login-page .login-divider::after {
+  background: linear-gradient(90deg, transparent, rgba(37, 244, 238, 0.50), transparent);
+}
+.login-page .tiktok-login-btn {
+  background: linear-gradient(180deg, #ffffff, #eef1fb);
+  color: #101024;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+.login-page .guest-login-btn {
+  border: 1.5px solid rgba(37, 244, 238, 0.40);
+  background: rgba(37, 244, 238, 0.06);
+  color: #eafefe;
+}
+.login-page .guest-login-btn:hover {
+  background: rgba(37, 244, 238, 0.12);
+  border-color: #25f4ee;
+  box-shadow: 0 0 24px rgba(37, 244, 238, 0.25);
+}
+.login-page .hall-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.70);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.login-page .hall-tab.active {
+  background: linear-gradient(135deg, #25f4ee, #38bdf8);
+  color: #06202a;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(37, 244, 238, 0.35);
+}
+.login-page .hall-rank { color: #25f4ee; font-weight: 800; }
+.login-page .hall-score { color: #7df5f0; font-weight: 800; }
+.login-page .hall-chat { color: #fe2c55; }
+.login-page .hall-empty { color: rgba(255, 255, 255, 0.50); }
+.login-page .login-note { color: rgba(255, 255, 255, 0.55); }
+.login-page .login-legal a { color: #7df5f0; }
+
+/* ── Responsive: desktop centers the card, mobile goes full width ────── */
+@media (min-width: 768px) {
+  .login-page .login-card { width: 420px; }
+  .app-header { padding: 14px 24px; }
+}
+@media (max-width: 480px) {
+  .login-page { padding: 12px; }
+  .login-page .login-card { padding: 26px 20px 22px; border-radius: 22px; }
+  .app-header { padding: 10px 12px; }
+  .app-header .brand-name { font-size: 17px; letter-spacing: 1.5px; }
+  .app-header .room-badge { font-size: 10px; padding: 4px 10px; letter-spacing: 2px; }
+  .app-header .logout-btn { padding: 6px 14px; font-size: 11px; }
+  .header-right { gap: 6px; }
+}
+.tiktok-half .app-header { padding: 8px 12px; }
+.tiktok-half .app-header .brand-name { font-size: 15px; letter-spacing: 1px; }
+.tiktok-half .app-header .logout-btn { padding: 5px 12px; font-size: 11px; }
