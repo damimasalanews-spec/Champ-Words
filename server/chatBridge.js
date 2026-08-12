@@ -33,6 +33,16 @@ const state = {
 let onAnswer = null; // set by server.js → handleChatAnswer({ user, text })
 let onGift = null;   // set by server.js → handleChatGift({ user, diamonds })
 
+// Diagnostics: last few chat attempts + their outcome (SCORED / wrong word /
+// no active round / slow down / …). Lets you verify "is the TikTok chat
+// reaching the game" from /api/bridge/status without digging through logs.
+const RECENT_MAX = 10;
+const recent = [];
+function pushRecent(entry) {
+  recent.push(entry);
+  if (recent.length > RECENT_MAX) recent.shift();
+}
+
 function loadConnector() {
   try {
     return require('tiktok-live-connector');
@@ -86,7 +96,17 @@ function start() {
     state.lastChatAt = Date.now();
     if (onAnswer) {
       const res = onAnswer({ user, text });
-      if (res && res.ok) state.correctCount++;
+      const ok = !!(res && res.ok);
+      if (ok) state.correctCount++;
+      pushRecent({
+        t: Date.now(),
+        user: user.slice(0, 30),
+        text: text.slice(0, 60),
+        ok,
+        result: ok ? 'SCORED' : ((res && res.error) || 'rejected')
+      });
+    } else {
+      pushRecent({ t: Date.now(), user: user.slice(0, 30), text: text.slice(0, 60), ok: false, result: 'no handler' });
     }
   });
 
@@ -154,7 +174,11 @@ function status() {
     giftReveals: state.giftReveals,
     lastChatAt: state.lastChatAt,
     startedAt: state.startedAt,
-    lastError: state.lastError
+    lastError: state.lastError,
+    roomPin: (process.env.CHAT_ROOM_PIN || '').trim().toUpperCase() || null,
+    // last RECENT_MAX chat attempts: { t, user, text, ok, result }
+    // result: SCORED | wrong word | no active round | slow down | no handler | …
+    recent: recent.slice(-RECENT_MAX)
   };
 }
 
