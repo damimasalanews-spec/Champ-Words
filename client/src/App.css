@@ -5583,3 +5583,30 @@
 .mode-tab.active { box-shadow: 0 4px 14px rgba(37, 244, 238, 0.30); }
 .congrats-line { background: rgba(37, 244, 238, 0.12); color: #7df5f0; }
 .room-badge { color: #7df5f0; }
+
+/* ── Fix: floating tiles animate in ANY screen (waiting room, overlays) ─ */
+.login-bg-tiles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.login-bg-tiles span {
+  position: absolute;
+  bottom: -50px;
+  font-weight: 800;
+  font-family: 'Fredoka', 'Segoe UI', sans-serif;
+  opacity: 0;
+  animation-name: loginTileUp;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* ── Fix: room-code plaque wins the specificity fight (mint, solid) ──── */
+.waiting-host .room-code {
+  background: rgba(37, 244, 238, 0.08);
+  border: 1px solid rgba(37, 244, 238, 0.40);
+  color: #7df5f0;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
