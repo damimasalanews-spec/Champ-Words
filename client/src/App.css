@@ -4423,3 +4423,37 @@
   min-width: 40px; /* score stays visible, never squeezed out */
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 — guaranteed fit inside the border. Same fonts; rows compacted
+   (4px padding) so 5 rows + the title always fit the board height, and
+   rank/score slots tightened a touch so names get maximum room. The board
+   clips at its edge as the final guarantee — nothing can ever cross it.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .top10-board {
+  width: 100%;
+  overflow: hidden; /* final guarantee: nothing crosses the board border */
+}
+.tiktok-half .top10-title {
+  white-space: nowrap; /* never wraps to a second line */
+}
+.tiktok-half .top10-row {
+  padding: 4px 8px; /* compact: 5 rows + title always fit vertically */
+}
+.tiktok-half .top10-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tiktok-half .top10-rank {
+  flex: 0 0 auto;
+  min-width: 24px;
+  white-space: nowrap;
+}
+.tiktok-half .top10-pts {
+  flex: 0 0 auto;
+  min-width: 36px;
+  white-space: nowrap;
+}
+
