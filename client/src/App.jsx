@@ -492,7 +492,7 @@ export default function App() {
       )}
 
       {/* 🛠️ Host tools (pause / resume / skip / blacklist) */}
-      {room && user && room.host === user.id && (
+      {room && socket.id === room.host && (
         <div className="host-tools">
           {room.paused ? (
             <button className="host-tool" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
@@ -532,7 +532,7 @@ export default function App() {
             </div>
             <div className="duel-vs">{room.duel.challenger} <span className="duel-vs-x">vs</span> {room.duel.defender}</div>
             <div className="duel-sub">First to find the word wins +100!</div>
-            {user && user.id === room.duel.defenderId && (
+            {socket.id === room.duel.defenderId && (
               <div className="duel-answer-row">
                 <input className="duel-answer-input" value={duelWord} maxLength={12}
                   onChange={e => setDuelWord(e.target.value.replace(/[^a-zA-Z ]/g, '').toLowerCase())}
