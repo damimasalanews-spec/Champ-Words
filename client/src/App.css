@@ -7893,3 +7893,37 @@
   border-color: rgba(53, 212, 149, 0.35);
 }
 .top10-row.top10-me:hover { border-color: rgba(53, 212, 149, 0.55); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 HEIGHT MATCH — timer stacks above the panel, so the TOP-5 board
+   sits beside the letter grid and matches its height exactly.
+   ═══════════════════════════════════════════════════════════════════════ */
+.grid-score-row {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+.tiktok-half .grid-score-row {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding-left: 0;
+  width: 100%;
+}
+.grid-leader-panel {
+  align-self: stretch;
+  width: 100%;
+}
+.tiktok-half .grid-leader-panel {
+  align-self: stretch;
+  width: 100%;
+}
+.timer-display {
+  text-align: center;
+}
+.timer-bar {
+  width: 100%;
+}
