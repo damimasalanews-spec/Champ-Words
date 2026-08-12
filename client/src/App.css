@@ -4395,3 +4395,31 @@
   border-radius: 8px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 ROW CONTAINMENT — sizes & fonts untouched. The tick ✓, name and
+   round score must ALL stay inside the board border. Root cause:
+   .top10-name is flex:1 WITHOUT min-width:0, so a long TikTok name plus the
+   🔥 streak + CHAT badges refused to shrink and pushed the score out of the
+   border. min-width:0 lets ellipsis clip the trailing chips instead.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .top10-board {
+  overflow: hidden; /* hard guarantee: nothing crosses the board border */
+}
+.tiktok-half .top10-row {
+  width: 100%;
+  box-sizing: border-box; /* row padding/border included in the width */
+}
+.tiktok-half .top10-name {
+  flex: 1 1 auto;
+  min-width: 0; /* lets ellipsis kick in instead of overflowing */
+}
+.tiktok-half .top10-rank {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.tiktok-half .top10-pts {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-width: 40px; /* score stays visible, never squeezed out */
+}
+
