@@ -3091,6 +3091,24 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 .confetti-word { color: var(--gold); text-shadow: 0 0 30px rgba(255, 197, 61, 0.45); }
+
+/* ── Chat-solver celebration popup — warm gold/coral variant, silent ───── */
+.confetti-overlay.confetti-chat .confetti-center {
+  background: linear-gradient(160deg, rgba(255, 106, 109, 0.94), rgba(255, 140, 74, 0.94));
+  border: 2px solid rgba(255, 216, 122, 0.75);
+  box-shadow: 0 20px 60px rgba(255, 106, 109, 0.45), 0 0 44px rgba(255, 197, 61, 0.4);
+  padding: 16px 30px;
+}
+.confetti-overlay.confetti-chat .confetti-word {
+  color: #2a1505;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.28);
+}
+.confetti-overlay.confetti-chat .confetti-msg {
+  color: #3a1d08;
+}
+.confetti-overlay.confetti-chat .confetti-star {
+  animation: winnerBounce 0.9s ease-in-out infinite;
+}
 .congrats { background: linear-gradient(90deg, #ffc53d, #ff6b6b, #ffc53d); background-size: 200% 100%; }
 .round-word { color: var(--gold); text-shadow: 0 0 26px rgba(255, 197, 61, 0.4); }
 

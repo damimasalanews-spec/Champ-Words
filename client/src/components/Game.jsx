@@ -64,16 +64,23 @@ function playCelebrationSound() {
   } catch (_) {}
 }
 
-function Confetti({ word, onDone, msg }) {
-  useEffect(() => { playCelebrationSound(); const t = setTimeout(onDone, 2000); return () => clearTimeout(t); }, [onDone]);
+function Confetti({ word, onDone, msg, silent, variant }) {
+  useEffect(() => {
+    if (!silent) playCelebrationSound();
+    const t = setTimeout(onDone, 2000);
+    return () => clearTimeout(t);
+  }, [onDone, silent]);
+  const palette = variant === 'chat'
+    ? ['#ffc53d','#ff6b6b','#ff9d4d','#ffd87a','#ff5c7c','#f9a825']
+    : ['#fe2c55','#00e676','#ffab00','#25f4ee','#7a74b8','#ff6d00'];
   return (
-    <div className="confetti-overlay">
+    <div className={`confetti-overlay${variant ? ' confetti-' + variant : ''}`}>
       {Array.from({ length: 36 }, (_, i) => {
-        const c = ['#fe2c55','#00e676','#ffab00','#25f4ee','#7a74b8','#ff6d00'][i % 6];
+        const c = palette[i % 6];
         return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':(6+Math.random()*6)+'px',left:Math.random()*100+'%'}}/>;
       })}
       <div className="confetti-center">
-        <div className="confetti-star">✨</div>
+        <div className="confetti-star">{variant === 'chat' ? '🎉' : '✨'}</div>
         <div className="confetti-word">{word.toUpperCase()}</div>
         <div className="confetti-msg">{msg}</div>
       </div>
@@ -131,7 +138,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [confetti, setConfetti] = useState(null);
   const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
   const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
-  const foundPopupTimer = useRef(null);
+  const popupQueue = useRef([]); // popups show ONE BY ONE (each ~2s)
+  const showNextPopup = useCallback(() => {
+    const next = popupQueue.current.shift();
+    setFoundPopup(next || null);
+  }, []);
+  const pushFoundPopup = useCallback((p) => {
+    popupQueue.current.push(p);
+    setFoundPopup(prev => (prev ? prev : (popupQueue.current.shift() || null)));
+  }, []);
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
 
@@ -171,8 +186,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setChoices([]); setChampWord(''); setSolvedWord(''); setSolvedBy(null); setSolvedByName('');
     setFoundList([]); setAllFound(false);
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
+    popupQueue.current = [];
     setFoundPopup(null);
-    if (foundPopupTimer.current) { window.clearTimeout(foundPopupTimer.current); foundPopupTimer.current = null; }
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
     setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
@@ -196,11 +211,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // TikTok chat solver: pop up the username + "You found a Champ Word: …"
+      // TikTok chat solver: queue the popup (shown one by one, ~2s each)
       if (data.fromChat && data.winnerName) {
-        setFoundPopup({ name: data.winnerName, score: data.score, word: data.solved || '' });
-        if (foundPopupTimer.current) window.clearTimeout(foundPopupTimer.current);
-        foundPopupTimer.current = window.setTimeout(() => setFoundPopup(null), 2600);
+        pushFoundPopup({ name: data.winnerName, score: data.score, word: data.solved || '' });
       }
       // …but only the finder sees the word fall into the brackets
       if (data.word) {
@@ -474,11 +487,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
-      {/* TikTok chat solver celebration — username big, "You found a Champ Word: …" below */}
+      {/* TikTok chat solver celebration — silent, warm colors, one by one */}
       {foundPopup && (
         <Confetti
+          variant="chat"
+          silent
           word={foundPopup.name}
-          onDone={() => setFoundPopup(null)}
+          onDone={showNextPopup}
           msg={foundPopup.word
             ? `You found a Champ Word: ${foundPopup.word.toUpperCase()}`
             : `You found a Champ Word! +${foundPopup.score} pts`}
