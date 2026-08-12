@@ -969,6 +969,48 @@ function finishGame(room) {
   });
 }
 
+// ── Round score split ───────────────────────────────────────────────────
+// New rule: the FASTEST correct player takes 60% of the round's total
+// points; the next 4 fastest share the remaining 40%, weighted by their
+// speed (1/elapsed). Any further finders get 0 for the round. Applied as a
+// delta at round end, so the live in-round board keeps working and the
+// round-over list shows the final split.
+function applyRoundScoreSplit(room) {
+  const finds = room.roundFinds.slice().sort((a, b) => a.elapsed - b.elapsed);
+  if (finds.length < 2) return; // a single finder keeps the full gain
+  const total = finds.reduce((s, f) => s + (f.score || 0), 0); // what was provisionally awarded
+  const alloc = new Map();
+  const fastest = finds[0];
+  const fastestShare = Math.round(total * 0.6);
+  alloc.set(fastest.id, fastestShare);
+  const rest = total - fastestShare;
+  const others = finds.slice(1, 5); // next 4 fastest
+  if (others.length > 0) {
+    const sumW = others.reduce((s, f) => s + 1 / f.elapsed, 0);
+    let used = 0;
+    others.forEach((f, i) => {
+      const share = i === others.length - 1 ? rest - used : Math.round(rest * (1 / f.elapsed) / sumW);
+      used += share;
+      alloc.set(f.id, share);
+    });
+  }
+  for (const f of finds) {
+    const player = playerById(room, f.id);
+    if (!player) continue;
+    const final = alloc.has(f.id) ? alloc.get(f.id) : 0;
+    const delta = final - (player.roundScore || 0);
+    if (delta !== 0) {
+      player.score += delta;
+      player.roundScore = final;
+      addAllTime(player.playerKey, player.name, player.avatar, delta);
+    }
+    f.score = final; // round-over list shows the final split
+  }
+  // Winner display = fastest finder's 60% share
+  room.roundScore = alloc.get(fastest.id);
+  room.roundElapsed = fastest.elapsed;
+}
+
 function endRound(room) {
   if (room.endedRound) return;
   room.endedRound = true;
@@ -988,6 +1030,9 @@ function endRound(room) {
       room.roundElapsed = elapsed;
       stumpPoints = gained;
     }
+  } else {
+    // Fastest = 60%, next 4 fastest share 40% by speed
+    applyRoundScoreSplit(room);
   }
   const scores = room.players.map(p => ({ id: p.id, name: p.name, score: p.score }));
   scores.sort((a, b) => b.score - a.score);
