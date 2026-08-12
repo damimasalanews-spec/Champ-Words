@@ -8364,3 +8364,124 @@
   border: 1px solid rgba(125, 90, 160, 0.3);
   border-radius: 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP-5 + GRID — restored to the ORIGINAL design (as at the beginning)
+   Purple TOP-5 card, big names, purple rank circles with colored numbers,
+   green points; 48px lavender-white grid tiles. Timer left + TOP-5 right.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Grid: original 48px tiles, white→lavender gradient */
+.tiktok-half .play-col {
+  --cell: 48px;
+  --gap: 8px;
+  --pad: 10px;
+}
+.tiktok-half .leader-col {
+  --cell: 48px;
+  --gap: 8px;
+  --pad: 10px;
+  width: 180px;
+  height: calc(var(--cell) * 4 + var(--gap) * 3 + var(--pad) * 2 + 31px);
+  margin-top: 0;
+}
+.tiktok-half .grid-4x4 {
+  padding: var(--pad);
+  gap: var(--gap);
+}
+.tiktok-half .grid-row {
+  gap: var(--gap);
+}
+.tiktok-half .grid-4x4 .grid-cell {
+  width: var(--cell);
+  height: var(--cell);
+  background: linear-gradient(145deg, #ffffff 0%, #e8e4ff 100%);
+  border-radius: 10px;
+  font-size: 22px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+}
+
+/* TOP-5 board: original purple card */
+.tiktok-half .top10-board {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: none;
+  width: 100%;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px 8px 5px;
+  gap: 0;
+}
+.tiktok-half .top10-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  text-align: center;
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* TOP-5 rows: original purple gradient cards */
+.tiktok-half .top10-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: linear-gradient(170deg, rgba(37, 31, 80, 0.85), rgba(19, 14, 43, 0.9));
+  border: 1px solid var(--border);
+  margin-top: 4px;
+  flex: none;
+}
+.tiktok-half .top10-row:hover {
+  background: linear-gradient(170deg, rgba(48, 40, 100, 0.9), rgba(24, 18, 55, 0.95));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.tiktok-half .top10-row.top10-me {
+  border-color: var(--green);
+  box-shadow: 0 0 8px rgba(94, 242, 198, 0.25);
+}
+.tiktok-half .top10-row.top10-empty { opacity: 0.3; }
+
+/* Rank circles: original purple circles + colored numbers */
+.tiktok-half .top10-rank {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #433a9e, #292269);
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 800;
+  min-width: 30px;
+  color: var(--text-dim);
+  line-height: 1;
+  padding: 0;
+}
+.tiktok-half .top10-rank.rank-1 { color: var(--gold); }
+.tiktok-half .top10-rank.rank-2 { color: #c0c0c0; }
+.tiktok-half .top10-rank.rank-3 { color: #cd7f32; }
+
+/* Names + points: original sizes */
+.tiktok-half .top10-name {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tiktok-half .top10-pts {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+  min-width: 40px;
+  text-align: right;
+}
