@@ -4328,3 +4328,26 @@
 .lobby-intro .intro-card {
   gap: 4px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DRAWING SQUARE CONTAINMENT — the artist drawing (art-board-inline) must
+   stay fully INSIDE the bordered answer-art-box. On narrow screens the
+   bracket row pushed it into the right padding and its shadow clipped the
+   border. Fix: allow the board to shrink slightly instead of overflowing,
+   clip anything that would cross the rounded border, and let brackets
+   give way first. Drawing keeps its full size except in the tightest case.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .answer-art-box {
+  overflow: hidden; /* hard guarantee: nothing crosses the rounded border */
+}
+.tiktok-half .answer-art-box .art-board-inline {
+  flex: 0 1 auto;  /* may shrink a few px instead of wedging into the padding */
+  min-width: 0;
+}
+.tiktok-half .answer-art-box .art-canvas {
+  max-width: 100%; /* square never larger than its own board */
+}
+.tiktok-half .answer-art-box .brackets-section {
+  min-width: 0;
+  overflow: hidden; /* brackets give way before the drawing does */
+}
