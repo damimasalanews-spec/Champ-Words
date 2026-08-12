@@ -211,9 +211,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // TikTok chat solver: queue the popup (shown one by one, ~2s each)
-      if (data.fromChat && data.winnerName) {
-        pushFoundPopup({ name: data.winnerName, score: data.score, word: data.solved || '' });
+      // TikTok chat solver: queue the popup (shown one by one, ~2s each).
+      // Shows the profile FIRST name when available, else the @username.
+      if (data.fromChat && (data.winnerNick || data.winnerName)) {
+        pushFoundPopup({ name: data.winnerNick || data.winnerName, score: data.score, word: data.solved || '' });
       }
       // …but only the finder sees the word fall into the brackets
       if (data.word) {

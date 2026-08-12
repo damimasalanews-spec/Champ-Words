@@ -167,10 +167,13 @@ function findChatTargetRoom() {
 
 // Shared handler used by both the HTTP endpoint and the live-chat bridge.
 const chatAnswerCooldowns = new Map(); // user → last wrong-attempt timestamp
-function handleChatAnswer({ user, text }) {
+function handleChatAnswer({ user, text, nickname }) {
   const username = String(user || '').trim().slice(0, 30);
   const guess = String(text || '').trim().toLowerCase().replace(/\s+/g, '');
   if (!username || !guess) return { ok: false, error: 'missing user or text' };
+  // TikTok PROFILE first name — used ONLY in the correct-answer popup.
+  // The leaderboard keeps the short @username (player.name).
+  const profileFirst = String(nickname || '').trim().split(/\s+/)[0] || '';
   const room = findChatTargetRoom();
   if (!room) return { ok: false, error: 'no active round' };
   if (guess !== room.word.replace(/\s+/g, '')) {
@@ -219,6 +222,7 @@ function handleChatAnswer({ user, text }) {
   io.to(room.id).emit('word_found', {
     winnerId: player.id,
     winnerName: player.name,
+    winnerNick: profileFirst.slice(0, 14) || null, // profile first name → popup only
     score: gained,
     elapsed,
     finds: room.roundFinds,
