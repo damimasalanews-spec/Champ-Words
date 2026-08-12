@@ -7780,3 +7780,116 @@
 .tiktok-half .top10-board {
   display: block;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 PANEL — professional, full-height beside the letter grid
+   Rows stretch evenly so the list aligns with the 4×4 grid height.
+   ═══════════════════════════════════════════════════════════════════════ */
+.leader-col {
+  display: flex;
+  min-width: 0;
+}
+.tiktok-half .leader-col {
+  display: flex;
+  min-width: 0;
+}
+.top10-board {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tiktok-half .top10-board {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.top10-title {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 0 2px 8px;
+  margin: 0 2px 2px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.top10-row {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--key-bg);
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tiktok-half .top10-row {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: var(--key-bg);
+  border: 1px solid transparent;
+}
+.top10-row:hover { border-color: var(--border); }
+.tiktok-half .top10-row:hover { border-color: var(--border); }
+.top10-rank {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-dim);
+}
+.top10-rank.rank-1 { background: var(--amber-soft); color: var(--amber); }
+.top10-rank.rank-2 { background: rgba(205, 214, 244, 0.12); color: #cdd6f4; }
+.top10-rank.rank-3 { background: rgba(232, 154, 110, 0.14); color: #e89a6e; }
+.top10-name {
+  min-width: 0;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tiktok-half .top10-name { font-size: 12px; }
+.top10-name .crown-badge,
+.top10-name .champ-crown { margin-right: 3px; }
+.top10-pts {
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.top10-empty { opacity: 0.4; }
+.top10-empty .top10-name { color: var(--text-faint); }
+.top10-row.top10-me {
+  background: var(--accent-soft);
+  border-color: rgba(53, 212, 149, 0.35);
+}
+.top10-row.top10-me:hover { border-color: rgba(53, 212, 149, 0.55); }
