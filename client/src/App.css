@@ -8364,3 +8364,161 @@
   border: 1px solid rgba(125, 90, 160, 0.3);
   border-radius: 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE — EXACT original design (matches the first screenshot)
+   Dark purple + GOLD accents, Fredoka font, timer left + TOP-5 right.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Header: gold title, purple room box, dark-purple Log in */
+.app-header .brand-name {
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  color: #ffc53d;
+  font-size: 20px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+.app-header .room-badge {
+  background: #4f2e4c;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  border-radius: 9px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  padding: 4px 11px;
+}
+.app-header .room-badge::before {
+  content: none;
+}
+.app-header .logout-btn {
+  background: #4f2e4c;
+  color: #ffffff;
+  border-radius: 9px;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  box-shadow: none;
+}
+.app-header .logout-btn:hover {
+  background: #5d3a59;
+  color: #ffffff;
+  filter: none;
+  transform: none;
+}
+.app-header .user-name {
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  color: #ffffff;
+}
+.app-header .mod-toggle,
+.app-header .sound-toggle,
+.app-header .voice-btn {
+  font-size: 15px;
+}
+
+/* Timer: GOLD number + GOLD progress bar, no label */
+.timer-display {
+  color: #ffc53d;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  text-shadow: 0 0 14px rgba(255, 197, 61, 0.35);
+}
+.tiktok-half .timer-display { font-size: 32px; }
+.timer-display::before { content: none; }
+.timer-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+.timer-bar-fill {
+  background: linear-gradient(90deg, #ffc53d, #ff9f43);
+}
+.timer-warn { color: #ff6b6b; text-shadow: 0 0 14px rgba(255, 107, 107, 0.4); }
+.timer-bar-fill.timer-bar-warn { background: linear-gradient(90deg, #ff6b6b, #ff9d9d); }
+
+/* GO button: GOLD with black text */
+.footer-answer .btn-primary,
+.type-answer .btn-primary {
+  background: linear-gradient(180deg, #ffc53d, #ff9f43);
+  color: #241a05;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(255, 159, 67, 0.35);
+}
+.footer-answer .btn-primary:hover,
+.type-answer .btn-primary:hover {
+  background: linear-gradient(180deg, #ffd25e, #ffb02e);
+  color: #241a05;
+  filter: none;
+}
+
+/* Round label: GOLD "RD1 / 30" */
+.round-info,
+.tiktok-half .round-info {
+  background: none;
+  border: none;
+  border-radius: 0;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffc53d;
+}
+.round-info span { color: #ffc53d; }
+.round-info em { color: rgba(255, 197, 61, 0.7); font-style: normal; }
+
+/* Rivalry pill: blue, CHAT green + HOST gold */
+.rivalry-chat { color: #5ef2c6; }
+.rivalry-vs { color: rgba(255, 255, 255, 0.75); font-size: 10px; }
+.rivalry-host { color: #ffc53d; }
+.rivalry-fire { color: #ff6b6b; font-size: 11px; }
+
+/* Section labels: GOLD */
+.top10-title,
+.overall-title,
+.brackets-label {
+  color: #ffc53d;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+}
+
+/* Answer slots: dark purple, revealed letters GOLD */
+.bracket-box {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+}
+.bracket-box.hint-revealed {
+  border-color: rgba(255, 197, 61, 0.6);
+}
+.bracket-box.hint-revealed .bracket-letter { color: #ffc53d; }
+.bracket-box.found-me { border-color: #5ef2c6; }
+.bracket-box.found-me .bracket-letter { color: #5ef2c6; }
+
+/* Art: slots LEFT, art frame RIGHT, GOLD progress line under art */
+.answer-art-box {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.answer-art-box .art-board { grid-column: 2; }
+.answer-art-box .brackets-section { grid-column: 1; }
+.art-progress-fill {
+  background: linear-gradient(90deg, #ffc53d, #ff9f43);
+}
+
+/* TOP-5 + ALL PLAYERS: Fredoka, gold labels, muted rank circles */
+.top10-name,
+.top10-pts,
+.overall-name,
+.overall-pts,
+.found-chip,
+.champ-word-display,
+.solved-text,
+.hint-clue,
+.inline-chat,
+.auto-status,
+.player-badge {
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+}
+
+/* Game panels: Fredoka text */
+.type-answer input {
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+  font-size: 14px;
+}
