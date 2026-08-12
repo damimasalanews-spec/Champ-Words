@@ -8327,3 +8327,20 @@
   border: 1px solid rgba(125, 90, 160, 0.3);
   border-radius: 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RANK BADGE CENTERING FIX — digits were sitting low inside the circles
+   because of inherited line-height. Force pixel-perfect centering.
+   ═══════════════════════════════════════════════════════════════════════ */
+.top10-rank,
+.tiktok-half .top10-rank,
+.overall-rank,
+.tiktok-half .overall-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
