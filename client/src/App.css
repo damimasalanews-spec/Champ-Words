@@ -8060,3 +8060,54 @@
   background: var(--accent-soft);
   border-color: rgba(53, 212, 149, 0.45);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP 5 PREMIUM v2 — larger type (canvas scales down on phones, so the
+   unscaled sizes are raised) and stronger visible borders.
+   ═══════════════════════════════════════════════════════════════════════ */
+.grid-leader-panel,
+.tiktok-half .grid-leader-panel {
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+}
+.top10-board,
+.tiktok-half .top10-board {
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 10px;
+}
+.top10-title,
+.tiktok-half .top10-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+.top10-row,
+.tiktok-half .top10-row {
+  padding: 6px 11px;
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  border-radius: 11px;
+}
+.top10-row:hover,
+.tiktok-half .top10-row:hover {
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.top10-rank,
+.tiktok-half .top10-rank {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+}
+.top10-name,
+.tiktok-half .top10-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.top10-pts,
+.tiktok-half .top10-pts {
+  font-size: 15px;
+  font-weight: 800;
+}
+.top10-empty .top10-name { font-size: 14px; }
+.top10-row.top10-me,
+.tiktok-half .top10-row.top10-me {
+  border-color: rgba(53, 212, 149, 0.55);
+}
