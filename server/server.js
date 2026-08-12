@@ -213,7 +213,6 @@ function handleChatAnswer({ user, text, nickname }) {
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   if (!room.roundWinnerId) { room.roundWinnerId = player.id; room.roundScore = gained; room.roundElapsed = elapsed; }
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
-  applyRoundScoreSplit(room); // live: THIS ROUND board shows the 60/40 time-based scores
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
   // Mirror the browser 'word_found' event: this is what makes the client's
@@ -1263,7 +1262,6 @@ io.on('connection', socket => {
     // Correct guess — celebrate in chat (green) WITHOUT revealing the answer
     io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
     room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
-    applyRoundScoreSplit(room); // live: THIS ROUND board shows the 60/40 time-based scores
 
     // Round ends early only when EVERY ONLINE player has found the word
     const active = connectedPlayers(room);
