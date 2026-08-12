@@ -8239,3 +8239,23 @@
   font-family: 'Outfit', 'Segoe UI', sans-serif;
   font-variant-numeric: tabular-nums;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ORIGINAL LAYOUT — timer back in the LEFT column above the grid,
+   TOP-5 board stays on the RIGHT at grid height, top-aligned.
+   ═══════════════════════════════════════════════════════════════════════ */
+.grid-leader-panel,
+.tiktok-half .grid-leader-panel {
+  align-items: start;
+}
+.grid-score-row,
+.tiktok-half .grid-score-row {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+.timer-display {
+  text-align: center;
+}

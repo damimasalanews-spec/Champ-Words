@@ -624,24 +624,22 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="game-col-left">
         <div className="game-frame">
         <div className="grid-score-row">
-        {/* ── Timer sits above the grid + TOP 5 panel so the board
-             matches the letter-grid height ── */}
-        {(state === 'playing' || state === 'round_over') && (
-          <>
-            <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
-            <div className="timer-bar">
-              <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
-                style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />
-            </div>
-          </>
-        )}
-
         {/* ── Grid + TOP 5 share ONE bordered panel (TikTok half view) ── */}
         <div className="grid-leader-panel">
         <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
           )}
+
+      {(state === 'playing' || state === 'round_over') && (
+        <>
+          <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+          <div className="timer-bar">
+            <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
+              style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />
+          </div>
+        </>
+      )}
 
       {/* ── 4×4 Grid (play column) — stays visible the 6s after the round ends ── */}
       {(state === 'playing' || state === 'round_over') && grid.length > 0 && (
