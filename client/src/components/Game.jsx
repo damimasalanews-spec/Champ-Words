@@ -142,13 +142,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
   const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
   const popupQueue = useRef([]); // popups show ONE BY ONE (each ~2s)
+  const popupBusy = useRef(false); // true while a popup is on screen
+  const popupId = useRef(1); // unique id per popup → forces a fresh mount each time
+  useEffect(() => { popupBusy.current = !!foundPopup; }, [foundPopup]);
   const showNextPopup = useCallback(() => {
     const next = popupQueue.current.shift();
     setFoundPopup(next || null);
   }, []);
   const pushFoundPopup = useCallback((p) => {
-    popupQueue.current.push(p);
-    setFoundPopup(prev => (prev ? prev : (popupQueue.current.shift() || null)));
+    popupQueue.current.push({ ...p, id: popupId.current++ });
+    if (!popupBusy.current) {
+      const next = popupQueue.current.shift();
+      if (next) setFoundPopup(next);
+    }
   }, []);
   const [timeLeft, setTimeLeft] = useState(60);
   const [submitting, setSubmitting] = useState(false);
@@ -491,16 +497,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {confetti && <Confetti word={confetti.word} onDone={clearConfetti} msg={confetti.msg || ''} />}
 
-      {/* TikTok chat solver celebration — silent, warm colors, one by one */}
+      {/* TikTok chat solver celebration — silent, professional, one by one.
+          key={id} forces a fresh mount per popup so the ~2s timer always runs
+          (fixes popups getting stuck when players solve back-to-back). */}
       {foundPopup && (
         <Confetti
+          key={foundPopup.id}
           variant="chat"
           silent
           word={foundPopup.name}
           onDone={showNextPopup}
-          msg={foundPopup.word
-            ? `You found a Champ Word: ${foundPopup.word.toUpperCase()}`
-            : `You found a Champ Word! +${foundPopup.score} pts`}
+          msg="You found a Champ Word!"
         />
       )}
 
