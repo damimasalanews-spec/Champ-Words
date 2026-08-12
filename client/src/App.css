@@ -5216,3 +5216,118 @@
   color: var(--text) !important;
   box-shadow: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOBBY PROFESSIONAL — menu + join/create room sections in the same
+   glassy slate + emerald design as the login page.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Menu (intro) card: glass + emerald hairline */
+.lobby-intro .intro-card {
+  background: rgba(24, 33, 54, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border-strong);
+  border-radius: 22px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.lobby-intro .intro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 18%;
+  right: 18%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(53, 212, 149, 0.9) 40%, rgba(94, 162, 255, 0.9) 60%, transparent);
+  opacity: 0.85;
+}
+.lobby-intro .intro-title {
+  color: var(--text);
+  font-size: 32px;
+  letter-spacing: 2px;
+}
+.lobby-intro .intro-tagline { font-size: 13.5px; }
+
+/* Form cards: glass surfaces */
+.lobby-card {
+  background: rgba(24, 33, 54, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 26px;
+}
+.lobby-card h2 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+.lobby-card .subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+.form-heading {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 6px 0 2px;
+  color: var(--text);
+}
+.form-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+/* Selector pills: emerald selected state */
+.round-option {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--key-bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.round-option:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.round-option.selected {
+  background: var(--accent-soft);
+  border-color: rgba(53, 212, 149, 0.55);
+  color: var(--accent);
+  box-shadow: 0 0 12px rgba(53, 212, 149, 0.15);
+}
+.round-selector-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 8px;
+}
+
+/* Join/Create option cards */
+.lobby-options {
+  gap: 16px;
+  width: min(92vw, 420px);
+}
+.host-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.btn-host-create {
+  width: 100%;
+  margin-top: 4px;
+}
+.btn-link {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-link:hover { color: var(--text); }
