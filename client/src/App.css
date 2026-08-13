@@ -2526,9 +2526,11 @@
 }
 .tiktok-half .footer-chat {
   position: static !important;
-  margin-top: 10px;
+  order: 3 !important;               /* sits below the answer bar = bottom of the page */
+  margin-top: 8px;
   margin-bottom: 0;
 }
+.tiktok-half .game-header-row { order: 1 !important; }
 .tiktok-half .footer-chat {
   border: none; background: none; padding: 0 4px;
   max-height: none; margin-top: 0;
