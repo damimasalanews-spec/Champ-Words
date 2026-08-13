@@ -554,6 +554,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     .filter(p => p && p.name)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5), [room.players]);
+  // Speed/UX features below are mobile-only (the desktop canvas keeps its
+  // exact original behavior — never touched). Declared HERE (before any use)
+  // to avoid a temporal-dead-zone crash when Game.jsx mounts.
+  const isWeb = typeof document !== 'undefined' && document.documentElement.classList.contains('cw-web');
   // ── TOP 5 slide (mobile only): FLIP animation so rows glide to their new
   //    position when a correct answer changes the order. Desktop canvas is
   //    untouched — this effect is gated to cw-web mode.
@@ -588,9 +592,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // Round-intro animation: shows "ROUND N" when a new round starts
   const [roundIntro, setRoundIntro] = useState(null);
-  // Speed/UX features below are mobile-only (the desktop canvas keeps its
-  // exact original behavior — never touched).
-  const isWeb = typeof document !== 'undefined' && document.documentElement.classList.contains('cw-web');
   const [fastestSec, setFastestSec] = useState(null); // fastest find this round
   useEffect(() => { setFastestSec(null); }, [room && room.round]);
   useEffect(() => {
