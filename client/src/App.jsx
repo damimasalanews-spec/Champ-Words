@@ -56,6 +56,10 @@ export default function App() {
   const duelMsgTimer = useRef(null);
   const [milestoneMsg, setMilestoneMsg] = useState(''); // 1k/5k/10k celebration
   const [notifications, setNotifications] = useState([]); // live ticker messages
+  const [watching, setWatching] = useState(0); // live viewer count
+  const [achPopup, setAchPopup] = useState(null); // achievement unlock toast
+  const [achOpen, setAchOpen] = useState(false); // achievements cabinet
+  const [achList, setAchList] = useState(null);
   const milestoneMsgTimer = useRef(null);
   const [blacklistWord, setBlacklistWord] = useState(''); // host blacklist input
 
@@ -264,13 +268,33 @@ export default function App() {
       setRoom(null); setScreen('lobby'); setRoundResult(null); setGameResult(null); setMessages([]); setChatOpen(false); setModOpen(false);
     });
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
+    socket.on('viewers', (d) => setWatching(d && d.count ? d.count : 0));
+    socket.on('achieve', (d) => {
+      if (!d) return;
+      setAchPopup(d);
+      playSound('popup');
+      setTimeout(() => setAchPopup(p => (p && p.id === d.id ? null : p)), 4200);
+    });
 
     return () => {
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
       socket.off('game_over'); socket.off('chat'); socket.off('chat_cleared'); socket.off('kicked'); socket.off('connect_error');
+      socket.off('viewers'); socket.off('achieve');
     };
   }, [user, showToast]);
+
+  const openAchievements = async () => {
+    try {
+      const key = localStorage.getItem('cw_player_key') || '';
+      const res = await fetch(`/api/achievements?key=${encodeURIComponent(key)}`);
+      const data = await res.json();
+      if (data && data.ok) setAchList(data.achievements);
+      setAchOpen(true);
+    } catch (_) {
+      setAchOpen(true);
+    }
+  };
 
   const handleCreateRoom = (name, opts = {}) => {
     cancelAutoRejoin();
@@ -392,6 +416,10 @@ export default function App() {
           {room && <span className="room-badge">{room.id}</span>}
         </div>
         <div className="header-right">
+          {watching > 0 && <span className="viewers-badge"><span className="live-dot" />{watching} watching</span>}
+          <button className="ach-btn" title="Achievements" onClick={openAchievements}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/></svg>
+          </button>
           <div className="header-controls">
             {room && socket.id === room.host && (
               <button className="mod-toggle" title="Moderation"
@@ -487,6 +515,40 @@ export default function App() {
         <RoundOver result={roundResult} room={room} />
       )}
       </div>
+
+      {/* Achievement unlock toast */}
+      {achPopup && (
+        <div className="ach-toast" key={achPopup.id}>
+          <span className="ach-toast-icon">{achPopup.icon}</span>
+          <div className="ach-toast-body">
+            <div className="ach-toast-title">Achievement Unlocked</div>
+            <div className="ach-toast-name">{achPopup.playerName ? `${achPopup.playerName} · ` : ''}{achPopup.name}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Achievements cabinet */}
+      {achOpen && (
+        <div className="ach-overlay" onClick={() => setAchOpen(false)}>
+          <div className="ach-modal" onClick={e => e.stopPropagation()}>
+            <div className="ach-modal-head">🏆 Achievements</div>
+            <div className="ach-list">
+              {(achList || []).map(a => (
+                <div key={a.id} className={`ach-item${a.unlocked ? ' unlocked' : ''}`}>
+                  <span className="ach-icon">{a.icon}</span>
+                  <div className="ach-info">
+                    <div className="ach-name">{a.name}</div>
+                    <div className="ach-desc">{a.desc}</div>
+                    <div className="ach-bar"><div className="ach-fill" style={{ width: `${Math.min(100, Math.round((a.progress / a.max) * 100))}%` }} /></div>
+                  </div>
+                  {a.unlocked && <span className="ach-check">✓</span>}
+                </div>
+              ))}
+            </div>
+            <button className="btn btn-secondary" style={{ marginTop: 14, width: '100%' }} onClick={() => setAchOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
 
       {/* ⏸️ Paused overlay — Resume button lives INSIDE so it can't be blocked */}
       {room && room.paused && (

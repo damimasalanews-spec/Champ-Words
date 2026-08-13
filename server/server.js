@@ -287,6 +287,14 @@ function handleChatAnswer({ user, text, nickname }) {
   // The leaderboard keeps the short @username (player.name).
   const profileFirst = String(nickname || '').trim().split(/\s+/)[0] || '';
 
+  // Pure emoji message → stream reaction (flies over the grid), not an answer
+  const rawText = String(text || '').trim();
+  if (REACTION_EMOJIS.has(rawText)) {
+    const reactRoom = findChatTargetRoom();
+    if (reactRoom) io.to(reactRoom.id).emit('reaction', { emoji: rawText, name: maskText(username) });
+    return { ok: true, reaction: rawText };
+  }
+
   // ── Chat commands (point economy, votes) — run in any room state ──
   if (guess.startsWith('!hint') || guess.startsWith('!freeze')) {
     const room = findChatTargetRoom();
@@ -366,6 +374,7 @@ function handleChatAnswer({ user, text, nickname }) {
   checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
   addAllTime(player.playerKey, player.name, player.avatar, gained);
   bumpAllTimeFound(player.playerKey, streak);
+  noteSolveAchievements(room, player, gained, elapsed);
   // Achievement toasts for the stream
   const toasts = [];
   if (room.roundWinnerId === player.id) toasts.push({ icon: '🎯', text: 'First Blood!' });
@@ -742,8 +751,73 @@ function bumpAllTimeFound(key, streak) {
   const cur = allTime.get(key);
   if (!cur) return;
   cur.found = (cur.found || 0) + 1;
-  cur.bestStreak = Math.max(cur.bestStreak || 0, streak || 0);
+  if (streak > (cur.bestStreak || 0)) cur.bestStreak = streak;
   persistAllTime();
+}
+
+// ── Achievements ────────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  { id: 'first_blood', name: 'First Blood', icon: '🩸', desc: 'Solve your first word' },
+  { id: 'streak_5', name: 'On Fire', icon: '🔥', desc: 'Reach a 5-word streak' },
+  { id: 'round_100', name: 'Century Round', icon: '💯', desc: 'Score 100+ points in one word' },
+  { id: 'speed_demon', name: 'Speed Demon', icon: '⚡', desc: 'Solve a word in under 5 seconds' },
+  { id: 'games_10', name: 'Century', icon: '🏅', desc: 'Play 10 games' },
+];
+function unlockAchievement(room, key, name, id) {
+  if (!key || !room) return;
+  const cur = allTime.get(key);
+  if (!cur) return;
+  if (!cur.ach) cur.ach = [];
+  if (cur.ach.includes(id)) return;
+  cur.ach.push(id);
+  persistAllTime();
+  const meta = ACHIEVEMENTS.find(a => a.id === id);
+  if (meta) io.to(room.id).emit('achieve', { id, icon: meta.icon, name: meta.name, desc: meta.desc, playerName: maskText(String(name || '')) });
+}
+// Track a solver's best time / best single-round score + unlock checks
+function noteSolveAchievements(room, player, gained, elapsed) {
+  if (!player || !player.playerKey) return;
+  const entry = allTime.get(player.playerKey);
+  if (!entry) return;
+  entry.bestTime = entry.bestTime ? Math.min(entry.bestTime, elapsed) : elapsed;
+  entry.bestRound = Math.max(entry.bestRound || 0, gained);
+  unlockAchievement(room, player.playerKey, player.name, 'first_blood'); // found>=1 via bumpAllTimeFound
+  if ((entry.bestStreak || 0) >= 5) unlockAchievement(room, player.playerKey, player.name, 'streak_5');
+  if ((entry.bestRound || 0) >= 100) unlockAchievement(room, player.playerKey, player.name, 'round_100');
+  if ((entry.bestTime || 0) <= 5000) unlockAchievement(room, player.playerKey, player.name, 'speed_demon');
+}
+app.get('/api/achievements', (req, res) => {
+  const key = String(req.query.key || '');
+  const entry = allTime.get(key);
+  const list = ACHIEVEMENTS.map(a => {
+    const unlocked = !!(entry && entry.ach && entry.ach.includes(a.id));
+    let progress = 0, max = 1;
+    if (a.id === 'first_blood') { progress = entry ? (entry.found || 0) : 0; max = 1; }
+    else if (a.id === 'streak_5') { progress = entry ? (entry.bestStreak || 0) : 0; max = 5; }
+    else if (a.id === 'round_100') { progress = entry ? (entry.bestRound || 0) : 0; max = 100; }
+    else if (a.id === 'speed_demon') { progress = entry && (entry.bestTime || 0) <= 5000 ? 1 : 0; max = 1; }
+    else if (a.id === 'games_10') { progress = entry ? (entry.games || 0) : 0; max = 10; }
+    return { ...a, unlocked: !!unlocked, progress, max };
+  });
+  res.json({ ok: true, achievements: list });
+});
+
+// ── Stream reactions (emoji-only chat messages fly over the grid) ───────
+const REACTION_EMOJIS = new Set(['❤️','🔥','👏','😂','🎉','👍','💯','😍','🤩','👀','⚡','🏆','😮','💜','🤯','🙌']);
+
+// ── Live viewer count ───────────────────────────────────────────────────
+const roomViewers = new Map(); // roomId → Set of socket ids
+function trackViewer(socket, roomId) {
+  if (!roomViewers.has(roomId)) roomViewers.set(roomId, new Set());
+  roomViewers.get(roomId).add(socket.id);
+  io.to(roomId).emit('viewers', { count: roomViewers.get(roomId).size });
+}
+function untrackViewer(socket, roomId) {
+  const s = roomViewers.get(roomId);
+  if (!s) return;
+  s.delete(socket.id);
+  if (s.size === 0) roomViewers.delete(roomId);
+  else io.to(roomId).emit('viewers', { count: s.size });
 }
 function bumpAllTimeGames(keys) {
   let changed = false;
@@ -753,9 +827,16 @@ function bumpAllTimeGames(keys) {
   }
   if (changed) persistAllTime();
 }
+// Century achievement (10 games played) — called from finishGame with the room
+function unlockCenturyForRoom(room, keys) {
+  for (const k of keys) {
+    const cur = allTime.get(k);
+    if (cur && (cur.games || 0) >= 10) unlockAchievement(room, k, cur.name, 'games_10');
+  }
+}
 function allTimeTop(n) {
   return Array.from(allTime.entries())
-    .map(([key, v]) => ({ key, name: v.name, avatar: v.avatar, score: v.score, found: v.found || 0, games: v.games || 0, bestStreak: v.bestStreak || 0, chat: key.startsWith('chat:') }))
+    .map(([key, v]) => ({ key, name: v.name, avatar: v.avatar, score: v.score, found: v.found || 0, games: v.games || 0, bestStreak: v.bestStreak || 0, ach: v.ach || [], bestTime: v.bestTime || 0, bestRound: v.bestRound || 0, chat: key.startsWith('chat:') }))
     .sort((a, b) => b.score - a.score)
     .slice(0, n || 20);
 }
@@ -1284,7 +1365,9 @@ function finishGame(room) {
     .map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score }))
     .sort((a, b) => b.score - a.score);
   room.lastGameResult = { scores: finalScores, winner: finalScores[0] || null };
-  bumpAllTimeGames(room.players.map(p => p.playerKey));
+  const gameKeys = room.players.map(p => p.playerKey);
+  bumpAllTimeGames(gameKeys);
+  unlockCenturyForRoom(room, gameKeys);
   io.to(room.id).emit('game_over', {
     room: sanitizeRoom(room),
     scores: finalScores,
@@ -1423,10 +1506,12 @@ io.on('connection', socket => {
     // even mid-game. They join the room channel but are NOT players.
     if (spectator) {
       socket.join(roomId);
+      trackViewer(socket, roomId);
       cb && cb({ ok: true, room: sanitizeRoom(room) });
       return;
     }
     const r = joinAsPlayer(socket, room, { name, avatar, playerKey });
+    trackViewer(socket, roomId);
     cb && cb({ ok: true, rejoined: r.rejoined, room: sanitizeRoom(room), lastRound: room.lastRoundResult, lastGame: room.lastGameResult });
   });
 
@@ -1441,6 +1526,7 @@ io.on('connection', socket => {
     }
     if (!active) return cb && cb({ ok: false, error: 'No active room — the host has not started yet' });
     const r = joinAsPlayer(socket, active, { name, avatar, playerKey });
+    trackViewer(socket, active.id);
     cb && cb({ ok: true, rejoined: r.rejoined, room: sanitizeRoom(active), lastRound: active.lastRoundResult, lastGame: active.lastGameResult });
   });
 
@@ -1789,10 +1875,20 @@ io.on('connection', socket => {
     io.to(roomId).emit('chat_cleared');
     cb && cb({ ok: true });
   });
-  socket.on('chat_message', ({ roomId, text }) => { const room = rooms.get(roomId); if (!room) return; if (isMuted(room, socket.id)) return; const player = room.players.find(p => p.id === socket.id); if (player) io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(String(text || '')) }); });
+  socket.on('chat_message', ({ roomId, text }) => {
+    const room = rooms.get(roomId); if (!room) return;
+    if (isMuted(room, socket.id)) return;
+    const player = room.players.find(p => p.id === socket.id); if (!player) return;
+    const t = String(text || '').trim();
+    if (REACTION_EMOJIS.has(t)) { io.to(roomId).emit('reaction', { emoji: t, name: maskText(player.name) }); return; }
+    io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(t) });
+  });
   socket.on('disconnect', () => {
     // Accidental leave (page close / reload): KEEP the player record + points
     // so they can rejoin. Only explicit "Leave" removes the player.
+    for (const [rid, vset] of roomViewers.entries()) {
+      if (vset.has(socket.id)) untrackViewer(socket, rid);
+    }
     for (const [id, room] of rooms.entries()) {
       if (room.players.find(p => p.id === socket.id)) keepPlayerOnDisconnect(socket, id);
     }
@@ -1826,6 +1922,7 @@ function removePlayerById(roomId, playerId) {
 function leaveRoom(socket, roomId) {
   const room = rooms.get(roomId);
   if (!room) return;
+  untrackViewer(socket, roomId);
   const idx = room.players.findIndex(p => p.id === socket.id);
   if (idx === -1) return;
   const p = room.players[idx]; room.players.splice(idx, 1);

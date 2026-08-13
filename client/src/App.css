@@ -6855,6 +6855,185 @@ html[data-theme='aurora'] .live-dot {
   box-shadow: 0 0 8px rgba(167, 139, 250, 0.8);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   FEATURES — viewer count, achievements, stream reactions
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Live viewer count badge */
+.viewers-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  background: rgba(17, 26, 48, 0.9);
+  border: 1px solid #2b3d6b;
+  border-radius: 0;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+.viewers-badge .live-dot {
+  width: 7px; height: 7px;
+}
+
+/* Achievements header button */
+.ach-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  background: rgba(17, 26, 48, 0.9);
+  border: 1px solid #2b3d6b;
+  border-radius: 0;
+  color: var(--gold);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ach-btn:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px rgba(53, 230, 160, 0.3);
+}
+
+/* Achievement unlock toast */
+.ach-toast {
+  position: fixed;
+  top: 74px;
+  right: 14px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #111b3a;
+  border: 1px solid var(--accent);
+  border-radius: 0;
+  padding: 10px 16px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), 0 0 24px rgba(53, 230, 160, 0.25);
+  animation: achIn 0.4s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+@keyframes achIn {
+  from { transform: translateX(60px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.ach-toast-icon {
+  font-size: 30px;
+  animation: loaderBreathe 1.2s ease-in-out infinite;
+}
+.ach-toast-title {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+.ach-toast-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Achievements cabinet */
+.ach-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 9, 20, 0.78);
+  animation: screenIn 0.25s ease both;
+}
+.ach-modal {
+  width: min(360px, 90vw);
+  max-height: 78vh;
+  overflow-y: auto;
+  background: #111b3a;
+  border: 1px solid #2b3d6b;
+  border-radius: 0;
+  padding: 22px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(53, 230, 160, 0.08);
+}
+.ach-modal-head {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.ach-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(43, 61, 107, 0.5);
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+.ach-item.unlocked {
+  opacity: 1;
+  filter: none;
+}
+.ach-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.ach-info {
+  flex: 1;
+  min-width: 0;
+}
+.ach-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+}
+.ach-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 1px 0 6px;
+}
+.ach-bar {
+  height: 5px;
+  background: #182448;
+  border-radius: 0;
+  overflow: hidden;
+}
+.ach-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #22c9e0);
+  transition: width 0.5s ease;
+}
+.ach-check {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 18px;
+}
+
+/* Stream reactions flying over the grid */
+.reaction-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 55;
+  overflow: hidden;
+}
+.reaction-emoji {
+  position: absolute;
+  bottom: 30%;
+  font-size: 30px;
+  animation: reactFly 2.4s ease-out both;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+@keyframes reactFly {
+  0% { transform: translateY(0) rotate(0deg) scale(0.4); opacity: 0; }
+  12% { transform: translateY(-34px) rotate(var(--rot)) scale(1.15); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: translateY(-220px) rotate(var(--rot)) scale(1); opacity: 0; }
+}
+
 
 
 

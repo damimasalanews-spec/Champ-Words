@@ -510,6 +510,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     try { localStorage.setItem('cw_onboarded', '1'); } catch (_) {}
   };
 
+  // Stream reactions (emoji-only chat messages fly over the grid)
+  const [reactions, setReactions] = useState([]);
+  useEffect(() => {
+    if (!socket) return;
+    const onReact = (d) => {
+      if (!d || !d.emoji) return;
+      const id = Date.now() + Math.random();
+      setReactions(rs => [...rs.slice(-14), { id, emoji: d.emoji, name: d.name, x: Math.random() * 80 + 10, rot: (Math.random() - 0.5) * 40 }]);
+      setTimeout(() => setReactions(rs => rs.filter(r => r.id !== id)), 2600);
+    };
+    socket.on('reaction', onReact);
+    return () => { socket.off('reaction', onReact); };
+  }, [socket]);
+
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
   const top5Row = useMemo(() => room.players
@@ -773,6 +787,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {wordClue && state === 'playing' && (
         <div className="hint-clue">💡 {wordClue}</div>
       )}
+
+      {/* Stream reactions flying over the grid */}
+      <div className="reaction-layer" aria-hidden="true">
+        {reactions.map(r => (
+          <span key={r.id} className="reaction-emoji" style={{ left: `${r.x}%`, '--rot': `${r.rot}deg` }}>{r.emoji}</span>
+        ))}
+      </div>
 
       {/* First-time onboarding overlay */}
       {state === 'playing' && showOnboard && (
