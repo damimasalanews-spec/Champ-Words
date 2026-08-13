@@ -747,7 +747,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           )}
 
           <div className="answer-art-side">
-          {wordLen > 0 && (state === 'playing' || state === 'round_over') && (
+          {(wordLen > 0 || (room.revealedLetters && room.revealedLetters.length > 0)) && (state === 'playing' || state === 'round_over') && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
               <div className="bracket-row">

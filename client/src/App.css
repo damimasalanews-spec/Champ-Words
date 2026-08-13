@@ -5877,3 +5877,17 @@
   min-width: 0 !important;
   overflow: hidden !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ANSWER ART + BRACKETS + BOARDS — always visible in the half-screen view.
+   The artist box, answer brackets, TOP 5 board and tickers are core game
+   sections. Force their display so no media query, mode toggle, or future
+   rule can hide them at any viewport width (mobile responsive view).
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .game-layout { flex-direction: row !important; flex-wrap: nowrap !important; }
+.tiktok-half .answer-art-box { display: flex !important; }
+.tiktok-half .art-board-inline { display: block !important; }
+.tiktok-half .brackets-section { display: flex !important; }
+.tiktok-half .top10-board { display: flex !important; flex-direction: column !important; }
+.tiktok-half .overall-board { display: flex !important; flex-direction: column !important; }
+.tiktok-half .notify-row { display: block !important; }
