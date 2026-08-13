@@ -263,6 +263,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
           setScorePop(data.score);
           setTimeout(() => setScorePop(null), 1300);
+          setSolvedFlash(true);
+          setTimeout(() => setSolvedFlash(false), 800);
         }
       }
       setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
@@ -383,7 +385,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     socket.emit('submit_word', { roomId: room.id, word, path: dragPath }, (res) => {
       setSubmitting(false);
       if (res.ok) { /* handled by word_found event */ }
-      else if (res.error && !res.error.includes('Not the word')) showToast(res.error); // no wrong-guess popup
+      else if (res.error && res.error.includes('Not the word')) {
+        setWrongFlash(true);
+        setTimeout(() => setWrongFlash(false), 450);
+      }
+      else if (res.error) showToast(res.error);
       setDragPath([]);
     });
   }, [isDragging, dragPath, submitting, grid, room.id, socket, showToast]);
@@ -397,7 +403,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     socket.emit('submit_word', { roomId: room.id, word: w, path: [] }, (res) => {
       setSubmitting(false);
       if (res.ok) { setTypedWord(''); }
-      else if (res.error && !res.error.includes('Not the word')) showToast(res.error); // no wrong-guess popup
+      else if (res.error && res.error.includes('Not the word')) {
+        setWrongFlash(true);
+        setTimeout(() => setWrongFlash(false), 450);
+      }
+      else if (res.error) showToast(res.error);
     });
   };
 
@@ -446,6 +456,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Flash a board row briefly when that player's score increases
   const [flashSet, setFlashSet] = useState(() => new Set());
   const lastScoresRef = useRef({});
+  // Crown moment: when someone takes the #1 spot
+  const [crownId, setCrownId] = useState(null);
+  const prevLeaderRef = useRef(null);
   useEffect(() => {
     const players = room?.players || [];
     const bumped = [];
@@ -464,7 +477,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         });
       }, 750);
     }
+    // new #1 leader → crown on their TOP 5 row
+    const leader = players.slice().sort((a, b) => b.score - a.score)[0];
+    const lid = leader && leader.score > 0 ? leader.id : null;
+    if (lid && prevLeaderRef.current && lid !== prevLeaderRef.current) {
+      setCrownId(lid);
+      setTimeout(() => setCrownId(null), 1500);
+    }
+    prevLeaderRef.current = lid;
   }, [room?.players]);
+
+  // Wrong-guess shake + correct-guess emerald flash on the grid
+  const [wrongFlash, setWrongFlash] = useState(false);
+  const [solvedFlash, setSolvedFlash] = useState(false);
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
@@ -626,6 +651,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </form>
           )}
           <span className="round-info">RD <span>{room.round}</span><em> / {totalRounds}</em></span>
+          <div className="game-progress" aria-hidden="true"><div className="game-progress-fill" style={{ width: `${Math.min(100, Math.max(0, (room.round / totalRounds) * 100))}%` }} /></div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}
@@ -651,7 +677,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="game-frame">
         <div className="grid-score-row">
         {/* ── Grid + TOP 5 share ONE bordered panel (TikTok half view) ── */}
-        <div className="grid-leader-panel">
+        <div className={`grid-leader-panel${state === 'playing' && timeLeft <= 10 ? ' low-time' : ''}`}>
         <div className="play-col">
           {isChamp && state === 'playing' && champWord && (
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
@@ -669,8 +695,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {/* ── 4×4 Grid (play column) — stays visible the 6s after the round ends ── */}
       {(state === 'playing' || state === 'round_over') && grid.length > 0 && (
-        <div className="grid-drag-wrapper" ref={gridRef}>
-          <div className="grid-4x4">
+        <div className={`grid-drag-wrapper${wrongFlash ? ' shake' : ''}${solvedFlash ? ' grid-solved' : ''}`} ref={gridRef}>
+          <div className="grid-4x4" key={`g-${room.round}`}>
             {grid.map((row, r) => (
               <div key={r} className="grid-row">
                 {row.map((ch, c) => {
@@ -678,7 +704,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                   const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
                   return (
                     <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}`}
-                      data-row={r} data-col={c}
+                      data-row={r} data-col={c} style={{ '--i': r * 4 + c }}
                       onMouseDown={(e) => startDrag(r, c, e)}
                       onTouchStart={(e) => startDrag(r, c, e)}>
                       {ch.toUpperCase()}
@@ -731,7 +757,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {Array.from({ length: 5 }, (_, i) => {
             const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
-              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}`}>
+              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}${p && p.id === crownId ? ' just-crowned' : ''}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>

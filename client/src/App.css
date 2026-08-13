@@ -6548,6 +6548,152 @@ input:focus, select:focus, textarea:focus {
   border-left: 1px solid #2b3d6b !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE POLISH — staggered letters, submit feedback, low-time urgency,
+   round progress, themed round intro, lead crown, hint glow
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1) Staggered letter reveal at each round start (grid remounts per round) */
+.tiktok-half .grid-4x4 .grid-cell {
+  animation: cellIn 0.35s ease both;
+  animation-delay: calc(var(--i, 0) * 0.03s);
+}
+@keyframes cellIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* 2) Submit feedback: shake on wrong, emerald glow on correct */
+.tiktok-half .grid-drag-wrapper.shake {
+  animation: gridShake 0.45s ease;
+}
+@keyframes gridShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.tiktok-half .grid-drag-wrapper.grid-solved {
+  animation: solvedGlow 0.8s ease;
+}
+@keyframes solvedGlow {
+  0% { box-shadow: 0 0 0 rgba(53, 230, 160, 0); }
+  40% { box-shadow: 0 0 26px rgba(53, 230, 160, 0.55); }
+  100% { box-shadow: 0 0 0 rgba(53, 230, 160, 0); }
+}
+
+/* 3) Low-time urgency: timer pulses red + panel border flashes */
+.tiktok-half .grid-leader-panel.low-time {
+  border-color: rgba(255, 92, 124, 0.55) !important;
+  animation: warnPulse 1s ease-in-out infinite;
+}
+@keyframes warnPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 92, 124, 0); }
+  50% { box-shadow: 0 0 20px rgba(255, 92, 124, 0.28); }
+}
+.tiktok-half .timer-display.timer-warn {
+  animation: timerWarn 1s ease-in-out infinite;
+}
+@keyframes timerWarn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* 4) Round progress bar in the game header */
+.game-progress {
+  flex: 1 1 auto;
+  height: 4px;
+  min-width: 40px;
+  background: #182448;
+  border-radius: 0;
+  overflow: hidden;
+}
+.game-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #22c9e0);
+  transition: width 0.4s ease;
+}
+
+/* 5) Themed round-intro card */
+.round-intro-card {
+  background: rgba(17, 26, 48, 0.96) !important;
+  border: 1px solid #2b3d6b !important;
+  border-radius: 0 !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  animation: introSlide 0.45s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.round-intro-label {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  letter-spacing: 6px;
+  color: var(--accent) !important;
+}
+.round-intro-num {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 62px !important;
+  font-weight: 800;
+  color: #ffffff !important;
+  text-shadow: 0 0 24px rgba(53, 230, 160, 0.4);
+}
+.round-intro-letters {
+  letter-spacing: 3px;
+  color: var(--text-dim) !important;
+}
+.round-intro-card::before {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 3px;
+  margin: 0 auto 10px;
+  background: linear-gradient(90deg, var(--accent), #22c9e0);
+}
+@keyframes introSlide {
+  from { transform: translateY(-14px) scale(0.94); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 6) Take-the-lead crown on the TOP 5 row */
+.tiktok-half .top10-row.just-crowned .top10-rank {
+  position: relative;
+}
+.tiktok-half .top10-row.just-crowned .top10-rank::after {
+  content: '👑';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  animation: crownPop 1.5s ease both;
+  pointer-events: none;
+}
+@keyframes crownPop {
+  0% { transform: translateX(-50%) scale(0) rotate(-20deg); opacity: 0; }
+  30% { transform: translateX(-50%) scale(1.25) rotate(8deg); opacity: 1; }
+  50% { transform: translateX(-50%) scale(1); opacity: 1; }
+  80% { transform: translateX(-50%) scale(1); opacity: 1; }
+  100% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+}
+
+/* 7) Hint button + clue glow */
+.hint-btn {
+  box-shadow: 0 4px 16px rgba(53, 230, 160, 0.4);
+}
+.hint-btn:disabled {
+  opacity: 0.4;
+  filter: grayscale(0.6);
+  box-shadow: none;
+}
+.hint-clue {
+  border: 1px solid rgba(53, 230, 160, 0.4);
+  background: var(--accent-soft);
+  border-radius: 0 !important;
+}
+.pick-hint-input:focus,
+.pick-custom-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(53, 230, 160, 0.2) !important;
+}
+
 
 
 
