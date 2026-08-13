@@ -2779,7 +2779,7 @@
 .tiktok-half .game-area {
   border: 1.5px solid rgba(255,255,255,0.12);
   border-radius: 22px;
-  background: #110e2c; /* same as the page/game background */
+  background: #0a1220; /* same as the page/game background */
   padding: 12px;
   gap: 10px;
 }
@@ -3650,7 +3650,7 @@
 
 /* ── Chat / toast ──────────────────────────────────────────────────── */
 .chat-panel {
-  background: linear-gradient(180deg, #24121f, #1a0c16);
+  background: linear-gradient(180deg, #16203a, #101a30);
   border: none;
   box-shadow: -18px 0 50px rgba(0, 0, 0, 0.5);
 }
@@ -3674,7 +3674,7 @@
 /* ── TikTok half-screen panels ─────────────────────────────────────── */
 .tiktok-half .game-area {
   border: none;
-  background: rgba(78, 30, 68, 0.38);
+  background: rgba(13, 21, 38, 0.55);
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
 }
 .tiktok-half .game-frame,
