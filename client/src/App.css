@@ -2517,6 +2517,18 @@
   min-width: 0;
 }
 .tiktok-half .footer-answer { min-width: 0; }
+/* Chat-info strip sits IN the header flow (above the input row) with a clear
+   top margin — it can never overlap the leaderboard above it */
+.tiktok-half .game-header {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px !important;
+}
+.tiktok-half .footer-chat {
+  position: static !important;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
 .tiktok-half .footer-chat {
   border: none; background: none; padding: 0 4px;
   max-height: none; margin-top: 0;
