@@ -5538,3 +5538,19 @@
   border: 1px solid var(--border) !important;
   color: var(--text-dim) !important;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   GET STARTED PAGE — studio banner hidden + top header hidden on this
+   page only. Everything else restored as before.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Studio mode / rejoin banner: hidden */
+.auto-status,
+.tiktok-half .auto-status {
+  display: none !important;
+}
+
+/* Top header: hidden on the Get Started page only */
+.app:has(.lobby-intro) .app-header,
+.tiktok-half .app:has(.lobby-intro) .app-header {
+  display: none !important;
+}
