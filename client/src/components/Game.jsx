@@ -712,7 +712,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
                       {!showRoundScores && i === 0 && p.score > 0 && <span className="crown-badge">👑</span>}
                       {p.id === room.champId && <span className="champ-crown">👑</span>}
-                      {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0]}
+                      {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0].slice(0, 7)}{p.name.split(' ')[0].length > 7 ? '…' : ''}
                       {p.streak >= 3 && <span className="fire-badge">🔥</span>}
                       {p.isChat && p.level > 1 && <span className="level-badge">Lv{p.level}</span>}
                       {p.isChat && <span className="chat-badge">CHAT</span>}
