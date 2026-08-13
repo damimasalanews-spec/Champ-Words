@@ -438,7 +438,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     .slice(0, 5);
   // FULL leaderboard: every player ranked by total score (scrollable below)
   const overallPlayers = room.players.slice().sort((a, b) => b.score - a.score);
-  const showRoundScores = state === 'playing' && foundList.length > 0 && !allFound;
+  // Flip to "THIS ROUND" when solvers exist this round. Derived from BOTH the
+  // local foundList AND the server room data (roundSolvers), so a rejoin or a
+  // missed event can never leave the round score hidden behind the totals.
+  const showRoundScores = state === 'playing' && !allFound && (foundList.length > 0 || roundSolvers.length > 0);
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
@@ -710,12 +713,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 {p ? (
                   <>
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
-                      {!showRoundScores && i === 0 && p.score > 0 && <span className="crown-badge">👑</span>}
-                      {p.id === room.champId && <span className="champ-crown">👑</span>}
                       {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0].slice(0, 7)}{p.name.split(' ')[0].length > 7 ? '…' : ''}
-                      {p.streak >= 3 && <span className="fire-badge">🔥</span>}
-                      {p.isChat && p.level > 1 && <span className="level-badge">Lv{p.level}</span>}
-                      {p.isChat && <span className="chat-badge">CHAT</span>}
                     </span>
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
                   </>

@@ -232,7 +232,7 @@ export default function App() {
     });
     socket.on('champ_turn', (data) => { setRoom(data.room); setScreen('playing'); setRoundResult(null); });
     socket.on('round_started', (data) => { setRoom(data.room); setScreen('playing'); });
-    socket.on('word_found', (data) => { setRoom(data.room); });
+    socket.on('word_found', (data) => { if (data && data.room) setRoom(data.room); });
     socket.on('time_up', (data) => { setRoom(data.room); });
     socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
     socket.on('duel_end', (data) => {

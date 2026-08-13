@@ -2364,12 +2364,12 @@
 .tiktok-half .top10-row + .top10-row { margin-top: 4px; }
 .tiktok-half .top10-row.top10-me { border-color: var(--green); box-shadow: 0 0 8px rgba(94,242,198,0.25); }
 .tiktok-half .top10-row.top10-empty { opacity: 0.3; }
-.tiktok-half .top10-rank { font-size: 24px; font-weight: 800; min-width: 30px; color: var(--text-dim); }
+.tiktok-half .top10-rank { font-size: 24px; font-weight: 800; min-width: 30px; color: var(--text-dim); flex-shrink: 0; }
 .tiktok-half .top10-rank.rank-1 { color: var(--gold); }
 .tiktok-half .top10-rank.rank-2 { color: #c0c0c0; }
 .tiktok-half .top10-rank.rank-3 { color: #cd7f32; }
-.tiktok-half .top10-name { flex: 1; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.tiktok-half .top10-pts { font-size: 24px; font-weight: 800; color: var(--green); min-width: 40px; text-align: right; }
+.tiktok-half .top10-name { flex: 1; font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.tiktok-half .top10-pts { font-size: 24px; font-weight: 800; color: var(--green); min-width: 40px; text-align: right; flex-shrink: 0; }
 
 
 
@@ -2572,9 +2572,9 @@
 /* ── Compact TOP 5 typography to sit inside the grid height ───────────── */
 .tiktok-half .top10-title { font-size: 12px; letter-spacing: 2px; padding-bottom: 0; margin-bottom: 5px; }
 .tiktok-half .top10-row { padding: 5px 8px; }
-.tiktok-half .top10-rank { font-size: 17px; font-weight: 800; min-width: 24px; }
-.tiktok-half .top10-name { font-size: 16px; font-weight: 800; }
-.tiktok-half .top10-pts { font-size: 17px; min-width: 34px; }
+.tiktok-half .top10-rank { font-size: 17px; font-weight: 800; min-width: 24px; flex-shrink: 0; }
+.tiktok-half .top10-name { font-size: 16px; font-weight: 800; min-width: 0; }
+.tiktok-half .top10-pts { font-size: 17px; min-width: 34px; flex-shrink: 0; }
 
 /* ═══ TOP 5 redesign: title aligned with the timer, button-style ranks ═══ */
 .tiktok-half .top10-title {

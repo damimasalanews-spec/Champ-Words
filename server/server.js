@@ -355,9 +355,14 @@ function handleChatAnswer({ user, text, nickname }) {
   if (streak >= 2) gained += STREAK_BONUS;
   if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
   if (room.speedRound) gained *= SPEED_MULT; // speed round: triple points
+  const prevTop = room.players.reduce((m, p) => Math.max(m, p.score || 0), 0);
+  const wasLeading = player.score >= prevTop;
   player.score += gained;
+  if (!wasLeading && player.score > prevTop) badgeEvent(room, '👑', `${maskText(player.name)} takes the lead!`);
+  const prevLevel = player.level || 1;
   player.xp = (player.xp || 0) + 10;
   player.level = Math.floor(player.xp / 100) + 1;
+  if (player.level > prevLevel) badgeEvent(room, '⭐', `${maskText(player.name)} leveled up to Lv${player.level}!`);
   checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
   addAllTime(player.playerKey, player.name, player.avatar, gained);
   bumpAllTimeFound(player.playerKey, streak);
@@ -375,6 +380,7 @@ function handleChatAnswer({ user, text, nickname }) {
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   notify(room, '⚡', `${maskText(player.name)} found the word! (+${gained})`);
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
+  if (streak === 3) notify(room, '🔥', `${maskText(player.name)} is on fire — 3 in a row!`);
   // Mirror the browser 'word_found' event: this is what makes the client's
   // TOP 5 board flip to "THIS ROUND" (✓ tick + round score) and plays the
   // 'found' fanfare. Chat players are NOT counted in the allFound check, so
@@ -389,6 +395,7 @@ function handleChatAnswer({ user, text, nickname }) {
     allFound: false,
     round: room.round,
     totalRounds: room.totalRounds,
+    room: sanitizeRoom(room), // same as the browser path — keeps the client's room in sync
     self: false,
     word: null,
     fromChat: true, // client shows the "found a Champ Word!" popup for chat solvers
@@ -707,6 +714,16 @@ seedLeaderboards();
 function notify(room, icon, text) {
   if (!room || !text) return;
   io.to(room.id).emit('notify', { id: Date.now() + Math.floor(Math.random() * 1000), icon, text });
+}
+
+// Badge events: badges no longer live on the TOP 5 board — when a player
+// EARNS one (champ, streak, level up, lead) it shows in the live ticker
+// (in-game notification column below the grid/artist box) AND the system
+// chat (the TikTok live chat panel) at the same time.
+function badgeEvent(room, icon, text) {
+  if (!room || !text) return;
+  notify(room, icon, text);
+  io.to(room.id).emit('chat', { system: true, green: true, text: `${icon} ${text}` });
 }
 
 // ── Milestones (1k / 5k / 10k lifetime points) ────────────────────────────
@@ -1110,6 +1127,7 @@ function beginChampTurn(room, champId) {
     beginChampTurn(room, next.id);
   }, 15000);
   const champ = champOf(room);
+  if (champ) badgeEvent(room, '👑', `${maskText(champ.name)} is the CHAMP this round!`);
   // Broadcast the turn to everyone (no word info)
   io.to(room.id).emit('champ_turn', {
     room: sanitizeRoom(room),
@@ -1584,11 +1602,15 @@ io.on('connection', socket => {
     if (streak >= 2) gained += STREAK_BONUS;
     if (timeLeft > 0 && timeLeft <= 10) gained *= 2; // sudden death: double points in the final 10s
     if (room.speedRound) gained *= SPEED_MULT; // speed round: triple points
+    const prevTop = room.players.reduce((m, p) => Math.max(m, p.score || 0), 0);
+    const wasLeading = player.score >= prevTop;
     player.score += gained;
+    if (!wasLeading && player.score > prevTop) badgeEvent(room, '👑', `${maskText(player.name)} takes the lead!`);
     checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
     addAllTime(player.playerKey, player.name, player.avatar, gained);
     bumpAllTimeFound(player.playerKey, streak);
     if (streak >= 2) io.to(roomId).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
+    if (streak === 3) notify(room, '🔥', `${maskText(player.name)} is on fire — 3 in a row!`);
     // Achievement toasts for the stream
     const toasts = [];
     if (room.roundWinnerId === socket.id) toasts.push({ icon: '🎯', text: 'First Blood!' });
