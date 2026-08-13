@@ -2512,9 +2512,11 @@
 /* ── Chat info sits right above the answer box in the bottom bar ──────── */
 .tiktok-half .game-header { flex-direction: column; align-items: stretch; gap: 6px; padding-left: 0; }
 .tiktok-half .game-header-row {
-  display: flex; align-items: center; gap: 10px;
-  padding-left: 10px;
+  flex-direction: row; align-items: center; gap: 8px;
+  flex-wrap: nowrap !important;
+  min-width: 0;
 }
+.tiktok-half .footer-answer { min-width: 0; }
 .tiktok-half .footer-chat {
   border: none; background: none; padding: 0 4px;
   max-height: none; margin-top: 0;
@@ -4004,9 +4006,15 @@
 /* ── Bottom bar: ONE row (round → answer → chat), bigger letters ─────── */
 .tiktok-half .game-header { flex-direction: row; align-items: center; position: relative; gap: 8px; padding-left: 10px; }
 .tiktok-half .footer-chat {
-  position: absolute; bottom: calc(100% + 4px); left: 14px; right: 14px;
+  position: absolute; bottom: calc(100% + 6px); left: 14px; right: 14px;
   max-height: 30px; overflow: hidden;
   flex-direction: row; justify-content: center; gap: 8px; flex-wrap: nowrap;
+  background: #0f1834;             /* solid navy — never blends into what's behind */
+  border: 1px solid #2b3d6b;
+  border-radius: 0;
+  padding: 4px 10px;
+  box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.4);
+  z-index: 3;
 }
 .tiktok-half .footer-answer { flex: 1 1 240px; max-width: 320px; }
 .tiktok-half .footer-answer input { font-size: 16px; padding: 9px 14px; }
