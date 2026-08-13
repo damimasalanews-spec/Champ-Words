@@ -46,21 +46,21 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
       c.width = 800; c.height = 1000;
       const ctx = c.getContext('2d');
       const grad = ctx.createLinearGradient(0, 0, 0, 1000);
-      grad.addColorStop(0, '#1a1440'); grad.addColorStop(1, '#2b1a52');
+      grad.addColorStop(0, '#0d1526'); grad.addColorStop(1, '#111a30');
       ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 1000);
       ctx.textAlign = 'center';
       ctx.fillStyle = '#ffd25e';
       ctx.font = '900 64px sans-serif';
       ctx.fillText('🏆 CHAMP WORDS', 400, 120);
-      ctx.fillStyle = '#ffeff6';
+      ctx.fillStyle = '#f4f7ff';
       ctx.font = '600 30px sans-serif';
       ctx.fillText('Final Results', 400, 180);
       sorted.slice(0, 5).forEach((p, i) => {
-        ctx.fillStyle = i === 0 ? '#ffd25e' : i === 1 ? '#cdd6f4' : i === 2 ? '#f0b27a' : '#e6e2ff';
+        ctx.fillStyle = i === 0 ? '#ffd25e' : i === 1 ? '#cdd6f4' : i === 2 ? '#f0b27a' : '#d9e2f5';
         ctx.font = '700 42px sans-serif';
         ctx.fillText(`${['🥇', '🥈', '🥉'][i] || `#${i + 1}`}  ${p.name}  —  ${p.score} pts`, 400, 280 + i * 95);
       });
-      ctx.fillStyle = '#9d93d1';
+      ctx.fillStyle = '#8fa0c0';
       ctx.font = '400 26px sans-serif';
       ctx.fillText('Play at champ-words.onrender.com/tiktok', 400, 930);
       const a = document.createElement('a');

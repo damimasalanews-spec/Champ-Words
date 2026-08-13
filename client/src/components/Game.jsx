@@ -84,8 +84,8 @@ function Confetti({ word, onDone, msg, silent, variant }) {
     return () => clearTimeout(t);
   }, [onDone, silent]);
   const palette = variant === 'chat'
-    ? ['#ffc53d','#ff6b6b','#ff9d4d','#ffd87a','#ff5c7c','#f9a825']
-    : ['#fe2c55','#00e676','#ffab00','#25f4ee','#7a74b8','#ff6d00'];
+    ? ['#35e6a0','#22c9e0','#f5b544','#5ec8ff','#ffffff','#1fc98a']
+    : ['#35e6a0','#22c9e0','#f5b544','#5ec8ff','#ffffff','#1fc98a'];
   const pieces = variant === 'chat' ? 16 : 36;
   return (
     <div className={`confetti-overlay${variant ? ' confetti-' + variant : ''}`}>
