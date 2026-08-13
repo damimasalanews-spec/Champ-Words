@@ -6386,6 +6386,168 @@ input:focus, select:focus, textarea:focus {
 .roundover-overlay .rank.bronze,
 .gameover-overlay .rank.bronze { background: linear-gradient(135deg, #f0b27a, #cd7f32); color: #2a1405; }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   DESIGN TIER 3 — animated background, lobby, micro-lifts, empty states,
+   branded loader, chat details
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1) Animated background depth — slow drifting emerald/sky glows */
+.tiktok-half .game-area {
+  background:
+    radial-gradient(620px 420px at 18% 10%, rgba(53, 230, 160, 0.10), transparent 60%),
+    radial-gradient(540px 380px at 84% 74%, rgba(94, 200, 255, 0.09), transparent 55%),
+    #0d1430 !important;
+  animation: bgDrift 16s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  from { background-position: 0% 0%, 0% 0%; }
+  to { background-position: 7% 5%, -6% 7%; }
+}
+
+/* 2) Lobby / waiting room — fully on-theme */
+.lobby-intro .intro-card,
+.lobby-intro .lobby-card {
+  background: rgba(17, 26, 48, 0.92) !important;
+  border: 1px solid #2b3d6b !important;
+  border-radius: 0 !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45) !important;
+}
+.lobby-intro .intro-title {
+  color: #ffffff !important;
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  letter-spacing: 3px;
+  background: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+.lobby-intro .intro-chip {
+  background: #111b3a !important;
+  border: 1px solid #2b3d6b !important;
+  border-radius: 0 !important;
+  color: var(--text) !important;
+}
+.lobby-intro .btn-get-started {
+  background: linear-gradient(135deg, var(--accent), #22c9e0) !important;
+  color: #04121a !important;
+  border-radius: 0 !important;
+  box-shadow: 0 6px 22px rgba(53, 230, 160, 0.35);
+}
+.lobby-intro .btn-wotd {
+  background: rgba(23, 34, 60, 0.92) !important;
+  border: 1px solid #2b3d6b !important;
+  color: var(--text) !important;
+  border-radius: 0 !important;
+}
+.lobby-intro .form-heading,
+.lobby-intro .form-sub {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  letter-spacing: 1.5px;
+}
+
+/* 3) Micro-lifts — tiles, rows, answer input */
+.tiktok-half .grid-4x4 .grid-cell {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.tiktok-half .grid-4x4 .grid-cell:hover {
+  transform: translateY(-1px);
+}
+.tiktok-half .grid-4x4 .grid-cell.selected,
+.tiktok-half .grid-4x4 .grid-cell.last {
+  transform: scale(1.07) translateY(-2px);
+}
+.tiktok-half .top10-row:not(.top10-empty):hover,
+.tiktok-half .overall-row:hover {
+  border: 1px solid rgba(53, 230, 160, 0.4);
+  box-shadow: inset 0 0 14px rgba(53, 230, 160, 0.08);
+}
+.footer-answer input:focus,
+.chat-input-area input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(53, 230, 160, 0.2) !important;
+}
+.footer-answer button[type="submit"],
+.footer-answer .btn-go {
+  background: linear-gradient(135deg, var(--accent), #22c9e0) !important;
+  color: #04121a !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 16px rgba(53, 230, 160, 0.4);
+}
+
+/* 4) Empty rows — intentional dimmed placeholders */
+.tiktok-half .top10-row.top10-empty .top10-name,
+.tiktok-half .top10-row.top10-empty .top10-rank {
+  opacity: 0.28;
+}
+.tiktok-half .overall-board:empty::after,
+.tiktok-half .top10-board:empty::after {
+  content: 'waiting for players…';
+  display: block;
+  padding: 12px;
+  text-align: center;
+  color: var(--text-faint);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+/* 5) Branded loading screen */
+.brand-loader {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #0d1430;
+}
+.loader-logo {
+  animation: loaderBreathe 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 22px rgba(53, 230, 160, 0.45));
+}
+@keyframes loaderBreathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.85; }
+}
+.loader-brand {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: #ffffff;
+}
+.loader-sub {
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--accent);
+  animation: loaderPulse 1.4s ease-in-out infinite;
+}
+@keyframes loaderPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* 6) Chat panel details */
+.chat-msg {
+  padding: 6px 10px !important;
+  margin: 3px 10px !important;
+  background: rgba(17, 26, 48, 0.9) !important;
+  border-left: 2px solid rgba(53, 230, 160, 0.35);
+  border-radius: 0 !important;
+}
+.chat-msg .name {
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.3px;
+}
+.chat-msg.system {
+  background: rgba(53, 230, 160, 0.08) !important;
+  border-left-color: var(--accent) !important;
+  color: var(--text-dim) !important;
+  font-style: italic;
+}
+.chat-panel {
+  background: rgba(9, 15, 33, 0.96) !important;
+  border-left: 1px solid #2b3d6b !important;
+}
+
 
 
 

@@ -370,11 +370,10 @@ export default function App() {
   if (loading) {
     return (
       <div className="app">
-        <div className="login-page">
-          <div className="login-card">
-            <div className="loading-spinner" />
-            <p style={{ marginTop: 16, color: 'var(--text-dim)', fontSize: 14 }}>Loading...</p>
-          </div>
+        <div className="brand-loader">
+          <Logo size={84} className="loader-logo" />
+          <span className="loader-brand">CHAMP WORDS</span>
+          <span className="loader-sub">connecting to the arena…</span>
         </div>
       </div>
     );
