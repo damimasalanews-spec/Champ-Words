@@ -6184,12 +6184,12 @@ input:focus, select:focus, textarea:focus {
 /* ═══════════════════════════════════════════════════════════════════════
    USER REQUEST: white page background + square corners on all sections
    ═══════════════════════════════════════════════════════════════════════ */
-/* 1) The whole background behind the sections is white */
+/* 1) The whole background behind the sections is full navy blue */
 .tiktok-half body,
 .tiktok-half #root,
 .tiktok-half .app,
 .tiktok-half .game-area {
-  background: #ffffff !important;
+  background: #0d1430 !important;
 }
 
 /* 2) Square corners — every section from top to bottom */
