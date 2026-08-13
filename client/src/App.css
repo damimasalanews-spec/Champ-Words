@@ -5554,3 +5554,17 @@
 .tiktok-half .app:has(.lobby-intro) .app-header {
   display: none !important;
 }
+
+/* CW icon: guaranteed centered on the Get Started page */
+.lobby-intro .intro-logo-wrap,
+.tiktok-half .lobby-intro .intro-logo-wrap {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.lobby-intro .intro-logo-wrap svg,
+.tiktok-half .lobby-intro .intro-logo-wrap svg {
+  display: block;
+}
