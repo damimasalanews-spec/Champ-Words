@@ -6181,5 +6181,46 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar-thumb { background: rgba(130, 205, 255, 0.25); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(53, 230, 160, 0.4); }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   USER REQUEST: white page background + square corners on all sections
+   ═══════════════════════════════════════════════════════════════════════ */
+/* 1) The whole background behind the sections is white */
+.tiktok-half body,
+.tiktok-half #root,
+.tiktok-half .app,
+.tiktok-half .game-area {
+  background: #ffffff !important;
+}
+
+/* 2) Square corners — every section from top to bottom */
+.tiktok-half .app,
+.tiktok-half .app-header,
+.tiktok-half .game-header,
+.tiktok-half .grid-leader-panel,
+.tiktok-half .top10-board,
+.tiktok-half .top10-row,
+.tiktok-half .answer-art-box,
+.tiktok-half .art-board-inline,
+.tiktok-half .art-canvas,
+.tiktok-half .bracket-box,
+.tiktok-half .notify-row,
+.tiktok-half .overall-board,
+.tiktok-half .overall-row,
+.tiktok-half .toast,
+.tiktok-half .confetti-card,
+.tiktok-half .pick-popup-card,
+.tiktok-half .roundover-card,
+.tiktok-half .game-over-card,
+.tiktok-half .btn-primary,
+.tiktok-half .btn-secondary,
+.tiktok-half .btn-share,
+.tiktok-half .hint-btn,
+.tiktok-half input,
+.tiktok-half .chat-panel,
+.tiktok-half .duel-banner,
+.tiktok-half .spot-banner {
+  border-radius: 0 !important;
+}
+
 
 
