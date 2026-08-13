@@ -5476,3 +5476,65 @@
 .tiktok-half .lobby-intro .intro-card {
   border: 1.5px solid var(--border-strong) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   UNDO — avatar back beside the logo (row layout), as it was before.
+   ═══════════════════════════════════════════════════════════════════════ */
+.login-page .login-brand-row,
+.tiktok-half .login-page .login-brand-row {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 6px;
+}
+.login-page .login-brand-row .login-avatar,
+.tiktok-half .login-page .login-brand-row .login-avatar {
+  width: 82px;
+  height: 82px;
+}
+.login-page .login-brand-row svg,
+.tiktok-half .login-page .login-brand-row svg {
+  width: 104px;
+  height: 104px;
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   MENU FIX — slate glass card at the right size, tagline + header colors
+   matched to the page (slate navy + emerald). Legacy purple overrides
+   were beating the professional styles — forced now.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Menu card: slate glass fill + same width as the login card */
+.lobby-intro .intro-card,
+.tiktok-half .lobby-intro .intro-card {
+  background: rgba(24, 33, 54, 0.72) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  width: min(92vw, 420px) !important;
+  max-width: 100% !important;
+  border: 1.5px solid var(--border-strong) !important;
+  padding: 30px 26px 24px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Tagline: slate dim (not lavender) */
+.lobby-intro .intro-tagline,
+.tiktok-half .lobby-intro .intro-tagline {
+  color: var(--text-dim) !important;
+}
+
+/* Header: slate navy (kills the maroon purple) */
+.app-header,
+.tiktok-half .app-header {
+  background: rgba(12, 17, 29, 0.85) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40) !important;
+}
+
+/* Intro chips: slate glass */
+.lobby-intro .intro-chip,
+.tiktok-half .lobby-intro .intro-chip {
+  background: var(--key-bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-dim) !important;
+}
