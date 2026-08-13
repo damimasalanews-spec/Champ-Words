@@ -2,25 +2,26 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import './arcade.css' // arcade-neon responsive game screen (web mode only, after App.css)
 
-// TikTok half-screen layout: the whole game compacts to fit the top half of
-// the screen (540×960 canvas). Active on the /tiktok link (the permanent
-// game URL) and via `?half=1` anywhere or `?auto=1` (studio mode). The
-// login/splash page shows first on /tiktok — it renders inside the same
-// canvas, so the design matches the full-page look, just scaled.
-// The main root, /tiktok and /compact ALL render the identical half-screen
-// experience — champ-words.onrender.com IS the game (no redirect).
+// Two render modes, decided once here:
+//  1) tiktok-half — the fixed 540×960 stream canvas. Used ONLY by TikTok
+//     studio browser sources (?half=1 / ?auto=1), the permanent stream links
+//     (/tiktok, /compact) and TikTok's in-app browser (UA sniff + half-screen
+//     viewport). The canvas CSS is untouched.
+//  2) cw-web — the normal responsive web app (desktop host + mobile players).
+//     Every other visit lands here and gets the arcade-neon responsive layout.
+// The main root (champ-words.onrender.com) is now the responsive web app.
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;
   const params = new URLSearchParams(window.location.search);
   const path = window.location.pathname;
-  const isRoot = path === '/' || path === '';
   const isTiktokPath = path.startsWith('/tiktok');
   const isCompactPath = path.startsWith('/compact');
-  const forced = params.has('half') || isRoot || isTiktokPath || isCompactPath;
-  const studioMode = params.has('auto');
-  document.documentElement.classList.toggle('tiktok-half', forced || studioMode || (isTikTok && isHalfScreen));
+  const overlayMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
+  document.documentElement.classList.toggle('tiktok-half', overlayMode);
+  document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
 
 // The half-size layout is a FIXED 540×960 design canvas. It scales down to

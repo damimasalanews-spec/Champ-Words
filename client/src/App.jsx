@@ -36,14 +36,9 @@ export default function App() {
   const [room, setRoom] = useState(null);
   const [toast, setToast] = useState(null);
 
-  // Half-screen canvas applies ONLY while a game/room is active — the login
-  // and lobby fill the browser viewport edge-to-edge (mobile responsive),
-  // while the game keeps the fixed 540×960 canvas exactly as-is.
-  // Studio mode (?auto) and explicit ?half=1 stay locked to the canvas.
-  const forcedCanvas = new URLSearchParams(window.location.search).has('half') || new URLSearchParams(window.location.search).has('auto');
-  useEffect(() => {
-    if (!forcedCanvas) document.documentElement.classList.toggle('tiktok-half', !!room);
-  }, [room, forcedCanvas]);
+  // Render mode (tiktok-half studio canvas vs cw-web responsive app) is
+  // decided once in main.jsx — do NOT toggle tiktok-half here based on the
+  // room, or web sessions would snap back to the fixed 540×960 canvas.
   const [chatOpen, setChatOpen] = useState(false);
   const [modOpen, setModOpen] = useState(false);
   const [messages, setMessages] = useState([]);
