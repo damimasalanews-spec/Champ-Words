@@ -5225,7 +5225,7 @@
 
 /* Menu (intro) card: glass + emerald hairline */
 .lobby-intro .intro-card {
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--border-strong);
@@ -5252,7 +5252,7 @@
 
 /* Form cards: glass surfaces */
 .lobby-card {
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-strong);
@@ -5339,7 +5339,7 @@
 
 /* Word of the Day page: glass card like the rest */
 .wotd-card {
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-strong);
@@ -5369,7 +5369,7 @@
 
 /* Waiting room: glass player pills + refined plaque */
 .waiting-host .player-badge {
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   border: 1px solid var(--border-strong);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -5387,7 +5387,7 @@
 
 /* Studio/auto-status banner: glass */
 .auto-status {
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   border: 1px solid var(--border-strong);
   border-radius: 14px;
   backdrop-filter: blur(12px);
@@ -5400,7 +5400,7 @@
    ═══════════════════════════════════════════════════════════════════════ */
 .login-page .login-card,
 .tiktok-half .login-page .login-card {
-  background: rgba(24, 33, 54, 0.72) !important;
+  background: rgba(19, 28, 56, 0.78) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1.5px solid var(--border-strong) !important;
@@ -5508,7 +5508,7 @@
 /* Menu card: slate glass fill + same width as the login card */
 .lobby-intro .intro-card,
 .tiktok-half .lobby-intro .intro-card {
-  background: rgba(24, 33, 54, 0.72) !important;
+  background: rgba(19, 28, 56, 0.78) !important;
   backdrop-filter: blur(18px) !important;
   -webkit-backdrop-filter: blur(18px) !important;
   width: min(92vw, 420px) !important;
@@ -5589,7 +5589,7 @@
   font-size: 12px;
   font-weight: 700;
   color: var(--text-dim);
-  background: rgba(24, 33, 54, 0.72);
+  background: rgba(19, 28, 56, 0.78);
   border: 1px solid var(--border-strong);
   border-radius: 14px;
   backdrop-filter: blur(12px);
@@ -5911,14 +5911,14 @@
 .tiktok-half .answer-art-box,
 .tiktok-half .notify-row,
 .tiktok-half .overall-board {
-  background: rgba(24, 33, 54, 0.72) !important;
+  background: rgba(19, 28, 56, 0.78) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1.5px solid var(--border-strong) !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 .tiktok-half .art-board-inline {
-  background: rgba(24, 33, 54, 0.72) !important;
+  background: rgba(19, 28, 56, 0.78) !important;
   border: 1.5px solid var(--border-strong) !important;
 }
 /* login-card emerald → sky hairline across the top of the main panel */
@@ -5945,13 +5945,13 @@
    artist + brackets always visible, login-glass panels.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── Palette ── */
+/* ── Palette (cool blue navy — no warm/purple cast on any display) ── */
 :root, .game-area {
-  --bg: #070b16;
-  --bg-2: #0d1526;
-  --surface: #111a30;
-  --surface-2: #17223c;
-  --surface-3: #1e2b4a;
+  --bg: #0a1026;
+  --bg-2: #0f1630;
+  --surface: #131c38;
+  --surface-2: #192648;
+  --surface-3: #223155;
   --text: #f4f7ff;
   --text-dim: #a5b4d0;
   --text-faint: #7180a3;
@@ -5980,25 +5980,24 @@
   font-family: 'Outfit', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* ── Page background: deep navy + soft neon glows ── */
+/* ── Page background: cool blue navy + emerald/sky glows (no warm gold) ── */
 html, body, #root {
   background:
-    radial-gradient(1100px 750px at 12% -12%, rgba(53, 230, 160, 0.08), transparent 60%),
-    radial-gradient(950px 700px at 108% 18%, rgba(94, 200, 255, 0.07), transparent 55%),
-    radial-gradient(800px 600px at 50% 115%, rgba(245, 181, 68, 0.05), transparent 55%),
-    linear-gradient(180deg, #0b1326 0%, #070b16 100%);
+    radial-gradient(1100px 750px at 12% -12%, rgba(53, 230, 160, 0.07), transparent 60%),
+    radial-gradient(950px 700px at 108% 18%, rgba(94, 200, 255, 0.08), transparent 55%),
+    linear-gradient(180deg, #0d1430 0%, #0a1026 100%);
   background-attachment: fixed;
 }
-/* Cool, clean navy — no warm tint anywhere around the game panels */
+/* Cool, clean blue navy — no warm tint anywhere around the game panels */
 .tiktok-half body,
 .tiktok-half #root {
-  background: #070b16 !important;
+  background: #0a1026 !important;
 }
 .tiktok-half .app {
-  background: #070b16 !important;
+  background: #0a1026 !important;
 }
 .tiktok-half .game-area {
-  background: #0a1120 !important;
+  background: #0c1328 !important;
 }
 
 /* ── Display type: Oxanium for brand, headings, timer, scores ── */
@@ -6066,7 +6065,7 @@ html, body, #root {
 .tiktok-half .notify-row,
 .tiktok-half .overall-board,
 .tiktok-half .art-board-inline {
-  background: rgba(17, 26, 48, 0.78) !important;
+  background: rgba(19, 28, 56, 0.78) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1.5px solid rgba(130, 205, 255, 0.22) !important;
@@ -6199,6 +6198,7 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { background: rgba(130, 205, 255, 0.25); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(53, 230, 160, 0.4); }
+
 
 
 
