@@ -4,14 +4,14 @@ import './index.css'
 import App from './App.jsx'
 import './arcade.css' // arcade-neon responsive game screen (web mode only, after App.css)
 
-// Two render modes, decided once here:
-//  1) tiktok-half — the fixed 540×960 stream canvas. Used ONLY by TikTok
+// Two render modes, decided once here (+ on resize):
+//  1) tiktok-half — the ORIGINAL fixed 540×960 design canvas. Used by TikTok
 //     studio browser sources (?half=1 / ?auto=1), the permanent stream links
-//     (/tiktok, /compact) and TikTok's in-app browser (UA sniff + half-screen
-//     viewport). The canvas CSS is untouched.
-//  2) cw-web — the normal responsive web app (desktop host + mobile players).
-//     Every other visit lands here and gets the arcade-neon responsive layout.
-// The main root (champ-words.onrender.com) is now the responsive web app.
+//     (/tiktok, /compact), TikTok's in-app browser (UA sniff + half-screen
+//     viewport), AND desktop-width web sessions (>=768px) — the desktop web
+//     view keeps exactly the same design/format it always had.
+//  2) cw-web — the responsive layout, used on phone-width screens (<768px),
+//     where the mobile view was reworked.
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;
@@ -19,7 +19,9 @@ function applyTiktokHalfMode() {
   const path = window.location.pathname;
   const isTiktokPath = path.startsWith('/tiktok');
   const isCompactPath = path.startsWith('/compact');
-  const overlayMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
+  const studioMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
+  const desktopCanvas = !studioMode && window.innerWidth >= 768;
+  const overlayMode = studioMode || desktopCanvas;
   document.documentElement.classList.toggle('tiktok-half', overlayMode);
   document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
