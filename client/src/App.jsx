@@ -230,11 +230,11 @@ export default function App() {
       // Host restarted the game → everyone returns to the waiting room
       if (data.state === 'waiting') { setScreen('waiting'); setGameResult(null); setRoundResult(null); }
     });
-    socket.on('champ_turn', (data) => { setRoom(data.room); setScreen('playing'); setRoundResult(null); });
-    socket.on('round_started', (data) => { setRoom(data.room); setScreen('playing'); });
+    socket.on('champ_turn', (data) => { if (data && data.room) setRoom(data.room); setScreen('playing'); setRoundResult(null); });
+    socket.on('round_started', (data) => { if (data && data.room) setRoom(data.room); setScreen('playing'); });
     socket.on('word_found', (data) => { if (data && data.room) setRoom(data.room); });
-    socket.on('time_up', (data) => { setRoom(data.room); });
-    socket.on('round_over', (data) => { setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
+    socket.on('time_up', (data) => { if (data && data.room) setRoom(data.room); });
+    socket.on('round_over', (data) => { if (data && data.room) setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
     socket.on('duel_end', (data) => {
       setDuelWord('');
       if (duelMsgTimer.current) clearTimeout(duelMsgTimer.current);
@@ -254,7 +254,7 @@ export default function App() {
     socket.on('notify', (n) => {
       if (n && n.text) setNotifications(prev => [...prev.slice(-7), n]);
     });
-    socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
+    socket.on('game_over', (data) => { if (data && data.room) setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
     socket.on('chat_cleared', () => setMessages([]));
     socket.on('kicked', () => {
