@@ -5422,3 +5422,57 @@
   opacity: 0.85;
   pointer-events: none;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   LOGIN PAGE POLISH — Guest button emerald like Get Started, logo centered
+   in the middle, menu card matched to the latest card style.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Play as Guest = emerald, same as Get Started */
+.login-page .guest-login-btn,
+.tiktok-half .login-page .guest-login-btn {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong)) !important;
+  color: #06130e !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 18px rgba(31, 191, 128, 0.28) !important;
+  padding: 14px !important;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.login-page .guest-login-btn:hover,
+.tiktok-half .login-page .guest-login-btn:hover {
+  background: linear-gradient(180deg, var(--accent), var(--accent-strong)) !important;
+  color: #06130e !important;
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.login-page .guest-login-btn:active {
+  transform: scale(0.98);
+}
+
+/* Login logo: centered in the middle */
+.login-page .login-brand-row,
+.tiktok-half .login-page .login-brand-row {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.login-page .login-brand-row .login-avatar,
+.tiktok-half .login-page .login-brand-row .login-avatar {
+  width: 64px;
+  height: 64px;
+}
+.login-page .login-brand-row svg,
+.tiktok-half .login-page .login-brand-row svg {
+  width: 92px;
+  height: 92px;
+}
+
+/* Menu (Get Started) card: same border weight as login card */
+.lobby-intro .intro-card,
+.tiktok-half .lobby-intro .intro-card {
+  border: 1.5px solid var(--border-strong) !important;
+}
