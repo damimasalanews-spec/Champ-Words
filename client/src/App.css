@@ -6227,6 +6227,27 @@ input:focus, select:focus, textarea:focus {
   background: #111b3a !important;
 }
 
+/* ── Layout: letter grid + timer 40% LEFT · TOP 5 60% RIGHT ─────────────
+   Divider line between the two; sections stay inside the panel borders. */
+.tiktok-half .grid-leader-panel {
+  gap: 12px;
+}
+.tiktok-half .play-col {
+  width: calc(40% - 6px) !important;
+  --cell: 36px; --gap: 10px; --pad: 12px;
+  flex: none;
+}
+.tiktok-half .grid-4x4 .grid-cell {
+  font-size: 15px !important;
+}
+.tiktok-half .leader-col {
+  flex: none !important;
+  width: calc(60% - 6px) !important;
+  --cell: 36px; --gap: 10px; --pad: 12px;
+  border-left: 1px solid #2b3d6b;
+  overflow: hidden !important;
+}
+
 
 
 
