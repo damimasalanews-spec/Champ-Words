@@ -5827,3 +5827,32 @@
 .notify-icon {
   font-size: 13px;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP-5 OVERFLOW FIX — long names (badges + score) must never push
+   outside the leaderboard border. Row clips, name shrinks with ellipsis.
+   Applies in-game and on the TikTok live view (same screen).
+   ═══════════════════════════════════════════════════════════════════════ */
+.top10-row,
+.tiktok-half .top10-row {
+  min-width: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+.top10-name,
+.tiktok-half .top10-name {
+  min-width: 0 !important;
+  flex: 1 1 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.top10-pts,
+.tiktok-half .top10-pts {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+  white-space: nowrap !important;
+}
+.top10-rank,
+.tiktok-half .top10-rank {
+  flex: 0 0 auto !important;
+}
