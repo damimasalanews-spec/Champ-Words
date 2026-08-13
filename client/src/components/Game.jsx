@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
 import { playSound } from '../sounds';
 
@@ -551,47 +551,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
   const top5Row = useMemo(() => room.players
-    .filter(p => p && p.name)
+    .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5), [room.players]);
-  // Speed/UX features below are mobile-only (the desktop canvas keeps its
-  // exact original behavior — never touched). Declared HERE (before any use)
-  // to avoid a temporal-dead-zone crash when Game.jsx mounts.
-  const isWeb = typeof document !== 'undefined' && document.documentElement.classList.contains('cw-web');
-  // ── TOP 5 slide (mobile only): FLIP animation so rows glide to their new
-  //    position when a correct answer changes the order. Desktop canvas is
-  //    untouched — this effect is gated to cw-web mode.
-  const top10BoardRef = useRef(null);
-  const prevTop10Rects = useRef(new Map());
-  useLayoutEffect(() => {
-    if (!isWeb) return;
-    const board = top10BoardRef.current;
-    if (!board) return;
-    const rows = board.querySelectorAll('.top10-row[data-pid]');
-    const next = new Map();
-    const first = prevTop10Rects.current;
-    rows.forEach(row => {
-      const pid = row.dataset.pid;
-      if (!pid) return;
-      const top = row.getBoundingClientRect().top;
-      next.set(pid, top);
-      if (first.has(pid) && Math.abs(first.get(pid) - top) > 1) {
-        const dy = first.get(pid) - top;
-        row.style.transition = 'none';
-        row.style.transform = `translateY(${dy}px)`;
-        void row.offsetHeight; // force reflow
-        row.style.transition = 'transform 0.5s cubic-bezier(0.22, 0.9, 0.32, 1)';
-        row.style.transform = 'translateY(0)';
-        row.addEventListener('transitionend', () => { row.style.transition = ''; row.style.transform = ''; }, { once: true });
-      }
-    });
-    prevTop10Rects.current = next;
-  }, [isWeb, top5Row, showRoundScores, solvedBy, roundSolvers]);
   const top5Ref = useRef(null);
   const [top5Scroll, setTop5Scroll] = useState(false);
 
   // Round-intro animation: shows "ROUND N" when a new round starts
   const [roundIntro, setRoundIntro] = useState(null);
+  // Speed/UX features below are mobile-only (the desktop canvas keeps its
+  // exact original behavior — never touched).
+  const isWeb = typeof document !== 'undefined' && document.documentElement.classList.contains('cw-web');
   const [fastestSec, setFastestSec] = useState(null); // fastest find this round
   useEffect(() => { setFastestSec(null); }, [room && room.round]);
   useEffect(() => {
@@ -902,12 +872,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         {/* ── TOP 5 (half-size right side) ── */}
         <div className="leader-col">
-        <div className="top10-board" ref={top10BoardRef}>
+        <div className="top10-board">
           <div className="top10-title">TOP 5{showRoundScores ? ' · THIS ROUND' : ''}</div>
           {Array.from({ length: 5 }, (_, i) => {
             const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
-              <div key={i} data-pid={p ? p.id : ''} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}${p && p.id === crownId ? ' just-crowned' : ''}${isWeb && p && showRoundScores && p.id === solvedBy ? ' top10-solver' : ''}`}>
+              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}${p && p.id === crownId ? ' just-crowned' : ''}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
