@@ -397,12 +397,14 @@ export default function App() {
             {room && socket.id === room.host && (
               <button className="mod-toggle" title="Moderation"
                 onClick={() => setModOpen(o => !o)}>
-                🛡️
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               </button>
             )}
             <button className="sound-toggle" title={muted ? 'Unmute sounds' : 'Mute sounds'}
               onClick={() => setMuted(toggleMute())}>
-              {muted ? '🔇' : '🔊'}
+              {muted
+                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>}
             </button>
             {room && ['waiting', 'playing', 'round_over', 'game_over'].includes(screen) && (
               <VoiceChat

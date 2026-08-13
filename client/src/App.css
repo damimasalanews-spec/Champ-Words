@@ -6275,6 +6275,117 @@ input:focus, select:focus, textarea:focus {
   border-bottom: 1px solid #2b3d6b !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   PROFESSIONAL POLISH — rank medals, micro-animations, LIVE badge,
+   tidy spacing, round-end typography
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Top-3 rank chips: gold / silver / bronze */
+.tiktok-half .top10-rank.rank-1,
+.tiktok-half .overall-rank.rank-1 {
+  background: linear-gradient(135deg, #ffd25e, #f5a623) !important;
+  color: #241300 !important;
+  box-shadow: 0 0 14px rgba(245, 181, 68, 0.45);
+}
+.tiktok-half .top10-rank.rank-2,
+.tiktok-half .overall-rank.rank-2 {
+  background: linear-gradient(135deg, #e8edf6, #b9c2d4) !important;
+  color: #1a2233 !important;
+  box-shadow: 0 0 10px rgba(200, 210, 230, 0.35);
+}
+.tiktok-half .top10-rank.rank-3,
+.tiktok-half .overall-rank.rank-3 {
+  background: linear-gradient(135deg, #f0b27a, #cd7f32) !important;
+  color: #2a1405 !important;
+  box-shadow: 0 0 10px rgba(205, 127, 50, 0.4);
+}
+
+/* Bracket letter pop on reveal */
+.tiktok-half .bracket-box.hint-revealed .bracket-letter,
+.tiktok-half .bracket-box.found-me .bracket-letter,
+.tiktok-half .bracket-box.found-other .bracket-letter {
+  animation: letterPop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes letterPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Score-change flash on board rows */
+.tiktok-half .top10-row.just-updated .top10-pts,
+.tiktok-half .overall-row.just-updated .overall-pts {
+  animation: scoreFlash 0.75s ease;
+}
+@keyframes scoreFlash {
+  0% { color: var(--accent); text-shadow: 0 0 14px rgba(53, 230, 160, 0.9); transform: scale(1.3); }
+  100% { color: inherit; transform: scale(1); }
+}
+
+/* LIVE badge on the notification ticker */
+.notify-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  flex-shrink: 0;
+  padding-right: 10px;
+  margin-right: 10px;
+  border-right: 1px solid #2b3d6b;
+}
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(53, 230, 160, 0.8);
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.78); }
+}
+
+/* Tidy spacing between the sections */
+.tiktok-half .grid-score-row { gap: 8px; }
+.tiktok-half .answer-art-box { margin-top: 8px; }
+.tiktok-half .notify-row { margin-top: 8px; }
+.tiktok-half .overall-board { margin-top: 8px; }
+
+/* Round-end / winner typography */
+.round-word {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 34px !important;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+.roundover-top5 .player-score,
+.gameover-overlay .player-score {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 22px !important;
+  font-weight: 800;
+}
+.gameover-overlay .winner-name {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 30px !important;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+.gameover-final-title {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  letter-spacing: 2px;
+}
+/* medal ranks on the round-over / game-over score lists */
+.roundover-overlay .rank.gold,
+.gameover-overlay .rank.gold { background: linear-gradient(135deg, #ffd25e, #f5a623); color: #241300; }
+.roundover-overlay .rank.silver,
+.gameover-overlay .rank.silver { background: linear-gradient(135deg, #e8edf6, #b9c2d4); color: #1a2233; }
+.roundover-overlay .rank.bronze,
+.gameover-overlay .rank.bronze { background: linear-gradient(135deg, #f0b27a, #cd7f32); color: #2a1405; }
+
 
 
 

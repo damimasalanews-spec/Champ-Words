@@ -443,6 +443,29 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // missed event can never leave the round score hidden behind the totals.
   const showRoundScores = state === 'playing' && !allFound && (foundList.length > 0 || roundSolvers.length > 0);
 
+  // Flash a board row briefly when that player's score increases
+  const [flashSet, setFlashSet] = useState(() => new Set());
+  const lastScoresRef = useRef({});
+  useEffect(() => {
+    const players = room?.players || [];
+    const bumped = [];
+    players.forEach(p => {
+      const prev = lastScoresRef.current[p.id];
+      if (prev !== undefined && p.score > prev) bumped.push(p.id);
+      lastScoresRef.current[p.id] = p.score;
+    });
+    if (bumped.length) {
+      setFlashSet(prev => new Set([...prev, ...bumped]));
+      setTimeout(() => {
+        setFlashSet(prev => {
+          const next = new Set(prev);
+          bumped.forEach(id => next.delete(id));
+          return next;
+        });
+      }, 750);
+    }
+  }, [room?.players]);
+
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
   const top5Row = useMemo(() => room.players
@@ -708,7 +731,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {Array.from({ length: 5 }, (_, i) => {
             const p = (showRoundScores ? roundSolvers : leaderTop)[i];
             return (
-              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}`}>
+              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
@@ -787,6 +810,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           return (state === 'playing' || state === 'round_over') && last ? (
             <div className="notify-row">
               <div className="notify-track">
+                <span className="notify-live"><span className="live-dot" />LIVE</span>
                 <span key={last.id} className="notify-item">
                   {last.icon && <span className="notify-icon">{last.icon}</span>}
                   <span className="notify-text">{last.text}</span>
@@ -802,7 +826,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="overall-title">ALL PLAYERS</div>
             <div className="overall-scroll">
               {overallPlayers.map((p, i) => (
-                <div key={p.id} className={`overall-row${p.id === socket.id ? ' overall-me' : ''}`}>
+                <div key={p.id} className={`overall-row${p.id === socket.id ? ' overall-me' : ''}${flashSet.has(p.id) ? ' just-updated' : ''}`}>
                   <span className={`overall-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                   <span className="overall-name">
                     {p.id === room.champId && <span className="champ-crown">👑</span>}
