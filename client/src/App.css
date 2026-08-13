@@ -2826,7 +2826,7 @@
 /* ── Top bar — bigger, cleaner, readable brand ──────────────────────── */
 .app-header {
   padding: 12px 20px;
-  background: rgba(96, 36, 80, 0.82);
+  background: rgba(9, 15, 33, 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: none;
@@ -3686,8 +3686,8 @@
 }
 .tiktok-half .game-header { border: none; background: rgba(12, 17, 29, 0.92); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
 .tiktok-half .top10-board { border: none; background: rgba(255, 255, 255, 0.04); }
-.tiktok-half .top10-row { border: none; background: linear-gradient(170deg, rgba(112, 48, 96, 0.85), rgba(66, 28, 60, 0.9)); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25); }
-.tiktok-half .top10-title { border-bottom: 1px solid rgba(255, 224, 138, 0.12); }
+.tiktok-half .top10-row { border: none; background: linear-gradient(170deg, rgba(31, 42, 66, 0.85), rgba(24, 33, 54, 0.92)); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25); }
+.tiktok-half .top10-title { border-bottom: 1px solid rgba(53, 212, 149, 0.18); }
 .tiktok-half .inline-chat { border: none; background: rgba(255, 255, 255, 0.05); }
 .tiktok-half .congrats-line { border: none; background: rgba(255, 197, 61, 0.12); color: var(--gold); }
 .tiktok-half .top5-row { border: none; background: rgba(255, 255, 255, 0.05); }
@@ -3920,11 +3920,11 @@
   display: flex; align-items: center; gap: 8px;
   padding: 4px 8px;
   border-radius: 8px;
-  background: linear-gradient(170deg, rgba(112, 48, 96, 0.85), rgba(66, 28, 60, 0.9));
+  background: linear-gradient(170deg, rgba(31, 42, 66, 0.85), rgba(24, 33, 54, 0.92));
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 .tiktok-half .overall-row.overall-me {
-  background: rgba(255, 197, 61, 0.12);
+  background: var(--accent-soft);
   box-shadow: 0 0 10px rgba(255, 197, 61, 0.2);
 }
 .tiktok-half .overall-rank {
@@ -3977,7 +3977,7 @@
   display: flex; align-items: center; gap: 8px;
   padding: 4px 10px;
   border-radius: 9px;
-  background: linear-gradient(170deg, rgba(112, 48, 96, 0.95), rgba(66, 28, 60, 0.98));
+  background: linear-gradient(170deg, rgba(31, 42, 66, 0.9), rgba(24, 33, 54, 0.95));
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   opacity: 0; transform: translateY(14px) scale(0.92);
   animation: celebPop 0.35s ease forwards;
@@ -5901,4 +5901,37 @@
 .tiktok-half .top10-board { display: flex !important; flex-direction: column !important; }
 .tiktok-half .overall-board { display: flex !important; flex-direction: column !important; }
 .tiktok-half .notify-row { display: block !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE — login page glass card treatment. The game panels get the
+   same slate glass + emerald/sky hairline as the login card. Format and
+   layout of the game page are unchanged — only the surface styling.
+   ═══════════════════════════════════════════════════════════════════════ */
+.tiktok-half .grid-leader-panel,
+.tiktok-half .answer-art-box,
+.tiktok-half .notify-row,
+.tiktok-half .overall-board {
+  background: rgba(24, 33, 54, 0.72) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1.5px solid var(--border-strong) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+.tiktok-half .art-board-inline {
+  background: rgba(24, 33, 54, 0.72) !important;
+  border: 1.5px solid var(--border-strong) !important;
+}
+/* login-card emerald → sky hairline across the top of the main panel */
+.tiktok-half .grid-leader-panel { position: relative; }
+.tiktok-half .grid-leader-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 18%; right: 18%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(53, 212, 149, 0.9) 40%, rgba(94, 162, 255, 0.9) 60%, transparent);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 5;
+}
 
