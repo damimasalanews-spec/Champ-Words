@@ -8,6 +8,14 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   const [step, setStep] = useState('intro');
   const [name, setName] = useState(() => localStorage.getItem('champWordsName') || userName || '');
   const [rounds, setRounds] = useState(30);
+  // Color theme preset (Midnight = emerald/cyan, Aurora = violet/cyan)
+  const [colorTheme, setColorTheme] = useState(() => {
+    try { return localStorage.getItem('cw_theme') || 'midnight'; } catch (_) { return 'midnight'; }
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = colorTheme;
+    try { localStorage.setItem('cw_theme', colorTheme); } catch (_) {}
+  }, [colorTheme]);
   const [roundTime, setRoundTime] = useState(60);
   const [difficulty, setDifficulty] = useState('medium');
   const [category, setCategory] = useState('all'); // All Categories merged by default
@@ -211,7 +219,19 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
               <p className="round-selector-hint">Easy 3–5 letters · Medium 3–8 · Hard 6–8</p>
             </div>
             <div className="form-group">
-              <label>Theme</label>
+              <label>Color Theme</label>
+              <div className="round-selector theme-selector">
+                {['midnight', 'aurora'].map(t => (
+                  <button key={t} type="button"
+                    className={`round-option ${colorTheme === t ? 'selected' : ''}`}
+                    onClick={() => setColorTheme(t)}>
+                    {t === 'midnight' ? 'Midnight' : 'Aurora'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Category</label>
               <div className="round-selector theme-selector">
                 <button key="all" type="button"
                   className={`round-option ${category === 'all' ? 'selected' : ''}`}

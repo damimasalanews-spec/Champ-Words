@@ -222,7 +222,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Countdown (freezes while the host pauses the game)
   useEffect(() => {
     if (state !== 'playing' || !room.endsAt || room.paused) return;
-    const tick = () => { const rem = Math.max(0, Math.ceil((room.endsAt - Date.now()) / 1000)); setTimeLeft(rem); if (rem <= 0) clearInterval(iv); };
+    const tick = () => {
+      const rem = Math.max(0, Math.ceil((room.endsAt - Date.now()) / 1000));
+      setTimeLeft(prev => {
+        if (rem !== prev && rem > 0 && rem <= 5) playSound('tick'); // last-5s urgency tick
+        return rem;
+      });
+      if (rem <= 0) clearInterval(iv);
+    };
     const iv = setInterval(tick, 250); tick();
     return () => clearInterval(iv);
   }, [state, room.endsAt, room.round, room.paused]);
@@ -386,6 +393,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       setSubmitting(false);
       if (res.ok) { /* handled by word_found event */ }
       else if (res.error && res.error.includes('Not the word')) {
+        playSound('wrong');
         setWrongFlash(true);
         setTimeout(() => setWrongFlash(false), 450);
       }
@@ -404,6 +412,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       setSubmitting(false);
       if (res.ok) { setTypedWord(''); }
       else if (res.error && res.error.includes('Not the word')) {
+        playSound('wrong');
         setWrongFlash(true);
         setTimeout(() => setWrongFlash(false), 450);
       }
@@ -490,6 +499,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // Wrong-guess shake + correct-guess emerald flash on the grid
   const [wrongFlash, setWrongFlash] = useState(false);
   const [solvedFlash, setSolvedFlash] = useState(false);
+
+  // First-time onboarding (shown once)
+  const [showOnboard, setShowOnboard] = useState(() => {
+    try { return localStorage.getItem('cw_onboarded') !== '1'; } catch (_) { return false; }
+  });
+  const [onboardStep, setOnboardStep] = useState(0);
+  const dismissOnboard = () => {
+    setShowOnboard(false);
+    try { localStorage.setItem('cw_onboarded', '1'); } catch (_) {}
+  };
 
   // Top 5 OVERALL players by total score — shown as one row below the grid.
   // If the names don't fit, the row becomes a left→right scrolling timeline.
@@ -696,6 +715,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {/* ── 4×4 Grid (play column) — stays visible the 6s after the round ends ── */}
       {(state === 'playing' || state === 'round_over') && grid.length > 0 && (
         <div className={`grid-drag-wrapper${wrongFlash ? ' shake' : ''}${solvedFlash ? ' grid-solved' : ''}`} ref={gridRef}>
+          {solvedFlash && (
+            <div className="spark-burst" aria-hidden="true">
+              {Array.from({ length: 12 }, (_, i) => (
+                <span key={i} style={{ '--dx': `${Math.cos((i / 12) * Math.PI * 2) * 36}px`, '--dy': `${Math.sin((i / 12) * Math.PI * 2) * 36}px` }} />
+              ))}
+            </div>
+          )}
           <div className="grid-4x4" key={`g-${room.round}`}>
             {grid.map((row, r) => (
               <div key={r} className="grid-row">
@@ -748,6 +774,31 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         <div className="hint-clue">💡 {wordClue}</div>
       )}
 
+      {/* First-time onboarding overlay */}
+      {state === 'playing' && showOnboard && (
+        <div className="onboard-overlay" onClick={dismissOnboard}>
+          <div className="onboard-card" onClick={e => e.stopPropagation()}>
+            {onboardStep === 0 && (
+              <><div className="onboard-icon">🖐️</div><p>Drag across the letters to spell the word</p></>
+            )}
+            {onboardStep === 1 && (
+              <><div className="onboard-icon">⏱️</div><p>Guess before the timer runs out</p></>
+            )}
+            {onboardStep === 2 && (
+              <><div className="onboard-icon">🏆</div><p>Earn points and climb the TOP 5</p></>
+            )}
+            <div className="onboard-dots">
+              {[0, 1, 2].map(i => (
+                <span key={i} className={`onboard-dot${i === onboardStep ? ' active' : ''}`} onClick={() => setOnboardStep(i)} />
+              ))}
+            </div>
+            <button className="btn btn-primary" onClick={() => (onboardStep < 2 ? setOnboardStep(s => s + 1) : dismissOnboard())}>
+              {onboardStep < 2 ? 'Next' : 'Got it!'}
+            </button>
+          </div>
+        </div>
+      )}
+
         </div>
 
         {/* ── TOP 5 (half-size right side) ── */}
@@ -764,6 +815,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
                       {showRoundScores ? '✓ ' : ''}{p.name.split(' ')[0].slice(0, 7)}{p.name.split(' ')[0].length > 7 ? '…' : ''}
                     </span>
+                    {p.streak >= 2 && <span className="stat-chip chip-fire">🔥{p.streak}</span>}
+                    {p.bestTime > 0 && <span className="stat-chip chip-fast">⚡{p.bestTime}s</span>}
                     <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
                   </>
                 ) : (
@@ -858,6 +911,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     {p.id === room.champId && <span className="champ-crown">👑</span>}
                     {p.name.split(' ')[0]}
                   </span>
+                  {p.streak >= 2 && <span className="stat-chip chip-fire">🔥{p.streak}</span>}
+                  {p.bestTime > 0 && <span className="stat-chip chip-fast">⚡{p.bestTime}s</span>}
                   <span className="overall-pts">{p.score}</span>
                 </div>
               ))}

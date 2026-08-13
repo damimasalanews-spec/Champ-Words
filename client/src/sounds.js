@@ -38,6 +38,8 @@ const SOUNDS = {
   hint: () => { tone(660, 0, 0.12, 'sine', 0.17); tone(880, 0.1, 0.15, 'sine', 0.15); },
   alert: () => { tone(740, 0, 0.1, 'triangle', 0.2); tone(740, 0.14, 0.1, 'triangle', 0.18); },
   penalty: () => { tone(220, 0, 0.18, 'sawtooth', 0.13); tone(140, 0.16, 0.28, 'sawtooth', 0.11); },
+  wrong: () => { tone(190, 0, 0.14, 'sawtooth', 0.12); tone(130, 0.12, 0.2, 'sawtooth', 0.1); },
+  tick: () => { tone(1150, 0, 0.045, 'square', 0.07); },
   found: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.09, 0.13, 'sine', 0.17)); },
   timeup: () => { tone(330, 0, 0.14, 'sine', 0.14); tone(262, 0.12, 0.26, 'sine', 0.14); },
   roundover: () => { [440, 554, 659].forEach((f, i) => tone(f, i * 0.1, 0.16, 'triangle', 0.15)); },

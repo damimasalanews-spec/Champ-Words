@@ -33,6 +33,9 @@ applyTiktokHalfMode();
 applyHalfScale();
 window.addEventListener('resize', () => { applyTiktokHalfMode(); applyHalfScale(); });
 
+// Color theme preset (Midnight / Aurora) — applied before first paint
+try { document.documentElement.dataset.theme = localStorage.getItem('cw_theme') || 'midnight'; } catch (_) {}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

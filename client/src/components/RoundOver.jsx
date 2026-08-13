@@ -1,5 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { playSound } from '../sounds';
+import useCountUp from '../useCountUp';
+
+// Score that counts up from 0 to the final value
+function CountUpScore({ value }) {
+  const v = useCountUp(value);
+  return <>{v}</>;
+}
 
 export default function RoundOver({ result, room }) {
   useEffect(() => { playSound('roundover'); }, []);
@@ -71,7 +78,7 @@ export default function RoundOver({ result, room }) {
                       </div>
                     </div>
                     <span className="player-score" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
-                      {r.score} pts
+                      <CountUpScore value={r.score} /> pts
                     </span>
                   </div>
                 );

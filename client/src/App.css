@@ -6694,6 +6694,167 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 0 3px rgba(53, 230, 160, 0.2) !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   PREMIUM TIER — screen transitions, sparks, stat chips, onboarding,
+   confetti + trophy, Aurora theme preset
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1) Screen transitions — fade + rise on every screen change */
+.screen-anim {
+  animation: screenIn 0.28s ease both;
+}
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 2) Emerald spark burst on a correct answer */
+.tiktok-half .grid-drag-wrapper { position: relative; }
+.spark-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.spark-burst span {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(53, 230, 160, 0.9);
+  animation: sparkFly 0.6s cubic-bezier(0.2, 0.8, 0.4, 1) both;
+}
+@keyframes sparkFly {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+
+/* 3) Stat chips on leaderboard rows */
+.stat-chip {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 0;
+  letter-spacing: 0.4px;
+  margin-left: 4px;
+}
+.chip-fire { color: #ffb02e; background: rgba(255, 176, 46, 0.14); border: 1px solid rgba(255, 176, 46, 0.4); }
+.chip-fast { color: var(--sky); background: rgba(94, 200, 255, 0.12); border: 1px solid rgba(94, 200, 255, 0.35); }
+
+/* 4) First-time onboarding overlay */
+.onboard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 9, 20, 0.75);
+  animation: screenIn 0.25s ease both;
+}
+.onboard-card {
+  width: min(320px, 86vw);
+  background: #111b3a;
+  border: 1px solid #2b3d6b;
+  border-radius: 0;
+  padding: 28px 22px 20px;
+  text-align: center;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 30px rgba(53, 230, 160, 0.1);
+}
+.onboard-icon {
+  font-size: 44px;
+  margin-bottom: 10px;
+  animation: loaderBreathe 1.4s ease-in-out infinite;
+}
+.onboard-card p {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.onboard-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.onboard-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2b3d6b;
+  cursor: pointer;
+}
+.onboard-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(53, 230, 160, 0.8);
+}
+
+/* 5) Game-over: confetti rain + trophy bounce + gradient winner */
+.confetti-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: 8px; height: 12px;
+  background: var(--accent);
+  animation: confettiFall 3.2s linear infinite;
+  animation-delay: var(--delay);
+}
+.confetti-piece:nth-child(3n+1) { background: #5ec8ff; }
+.confetti-piece:nth-child(3n+2) { background: #f5b544; }
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0.7; }
+}
+.winner-banner .trophy {
+  animation: trophyBounce 1.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes trophyBounce {
+  0% { transform: scale(0) rotate(-25deg); opacity: 0; }
+  55% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  75% { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.winner-banner .winner-name {
+  background: linear-gradient(90deg, var(--amber), var(--accent), var(--sky));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(53, 230, 160, 0.2);
+}
+
+/* 6) Aurora theme preset (violet + cyan accents) */
+html[data-theme='aurora'] {
+  --accent: #a78bfa;
+  --accent-strong: #8b5cf6;
+  --accent-soft: rgba(167, 139, 250, 0.14);
+  --sky: #22d3ee;
+  --sky-soft: rgba(34, 211, 238, 0.14);
+  --bracket-border: rgba(167, 139, 250, 0.45);
+  --bracket-bg: rgba(167, 139, 250, 0.12);
+}
+html[data-theme='aurora'] .tiktok-half .game-area {
+  background:
+    radial-gradient(620px 420px at 18% 10%, rgba(167, 139, 250, 0.12), transparent 60%),
+    radial-gradient(540px 380px at 84% 74%, rgba(34, 211, 238, 0.10), transparent 55%),
+    #0d1430 !important;
+}
+html[data-theme='aurora'] .live-dot,
+html[data-theme='aurora'] .notify-live {
+  color: #a78bfa;
+}
+html[data-theme='aurora'] .live-dot {
+  background: #a78bfa;
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.8);
+}
+
 
 
 

@@ -1,8 +1,23 @@
 import { useEffect, useState } from 'react';
 import Logo from './Logo';
 import { playSound } from '../sounds';
+import useCountUp from '../useCountUp';
 
 const AUTO_RESTART_SECONDS = 20;
+
+// Score that counts up from 0 to the final value
+function CountUpScore({ value }) {
+  const v = useCountUp(value, 1200);
+  return <>{v}</>;
+}
+
+// Confetti rain pieces
+function ConfettiRain() {
+  const pieces = Array.from({ length: 26 }, (_, i) => (
+    <span key={i} className="confetti-piece" style={{ '--i': i, '--x': `${(i * 37) % 100}%`, '--delay': `${(i % 8) * 0.22}s`, '--hue': i % 4 }} />
+  ));
+  return <div className="confetti-rain" aria-hidden="true">{pieces}</div>;
+}
 
 export default function GameOver({ result, room, isHost, onPlayAgain, onLeave }) {
   useEffect(() => { playSound('gameover'); }, []);
@@ -85,6 +100,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
       ))}
       <div className="overlay-card">
         <div className="winner-banner">
+          <ConfettiRain />
           <Logo size={64} />
           <div className="trophy">👑</div>
           <div className="winner-name">{winner?.name || 'Nobody'} Wins!</div>
@@ -100,7 +116,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
               <div className="player-info">
                 <div className="player-name">{p.name}{p.isChat && <span className="chat-badge">CHAT</span>}</div>
               </div>
-              <span className="player-score">{p.score}</span>
+              <span className="player-score"><CountUpScore value={p.score} /></span>
             </div>
           ))}
         </div>

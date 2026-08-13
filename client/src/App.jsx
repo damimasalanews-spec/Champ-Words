@@ -426,6 +426,7 @@ export default function App() {
         </div>
       </div>
 
+      <div key={screen} className="screen-anim">
       {screen === 'lobby' && (
         <>
           {rejoinIn !== null && (
@@ -485,6 +486,7 @@ export default function App() {
       {screen === 'round_over' && roundResult && (
         <RoundOver result={roundResult} room={room} />
       )}
+      </div>
 
       {/* ⏸️ Paused overlay — Resume button lives INSIDE so it can't be blocked */}
       {room && room.paused && (
