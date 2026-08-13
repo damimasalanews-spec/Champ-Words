@@ -6222,6 +6222,11 @@ input:focus, select:focus, textarea:focus {
   border-radius: 0 !important;
 }
 
+/* TOP 5 board: deeper inset navy so the title + rows pop against the panel */
+.tiktok-half .top10-board {
+  background: #0a1126 !important;
+}
+
 
 
 
