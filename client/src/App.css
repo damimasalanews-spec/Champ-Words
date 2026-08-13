@@ -5748,3 +5748,45 @@
   padding: 11px !important;
   border-radius: 11px !important;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   JOIN ROOM PAGE POLISH — no top-left back, back links centered below
+   the buttons, CW icon centered above the heading.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Top-left back button: removed from this page */
+.lobby-form .btn-back,
+.tiktok-half .lobby-form .btn-back {
+  display: none !important;
+}
+
+/* Back links (host/admin forms): centered below the buttons */
+.lobby-form .btn-link,
+.tiktok-half .lobby-form .btn-link {
+  align-self: center !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  margin: 12px auto 0 !important;
+  padding: 8px 16px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: var(--text-dim) !important;
+  background: var(--key-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 999px !important;
+  transition: all 0.15s !important;
+}
+.lobby-form .btn-link:hover,
+.tiktok-half .lobby-form .btn-link:hover {
+  color: var(--accent) !important;
+  border-color: rgba(53, 212, 149, 0.5) !important;
+  background: var(--accent-soft) !important;
+}
+
+/* CW icon: centered above the heading */
+.form-logo {
+  display: block;
+  margin: 0 auto 10px;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 18px rgba(53, 212, 149, 0.18));
+}

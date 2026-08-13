@@ -233,6 +233,7 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
         </>
       ) : (
         <>
+          <Logo size={76} className="form-logo" />
           <h2 className="form-heading">How do you want to play?</h2>
           <p className="form-sub">Players join with one tap · Hosts log in to create</p>
           <div className="lobby-options">
