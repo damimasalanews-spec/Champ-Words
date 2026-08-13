@@ -5538,3 +5538,58 @@
   border: 1px solid var(--border) !important;
   color: var(--text-dim) !important;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   GET STARTED PAGE — clean: no menu card, no chips/foot, no studio
+   "Join now" banner. CW icon centered in the middle.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Studio / rejoin banner: hidden */
+.auto-status,
+.tiktok-half .auto-status {
+  display: none !important;
+}
+
+/* Menu card box: removed (content floats on the page) */
+.lobby-intro .intro-card,
+.tiktok-half .lobby-intro .intro-card {
+  background: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  animation: none !important;
+}
+.lobby-intro .intro-card::before,
+.tiktok-half .lobby-intro .intro-card::before {
+  content: none !important;
+}
+
+/* Chips + foot text: hidden (menu clutter) */
+.lobby-intro .intro-features,
+.lobby-intro .intro-foot,
+.tiktok-half .lobby-intro .intro-features,
+.tiktok-half .lobby-intro .intro-foot {
+  display: none !important;
+}
+
+/* CW icon: centered, bigger, hero of the page */
+.lobby-intro .intro-logo-wrap {
+  margin: 0 auto 8px;
+}
+.lobby-intro .intro-logo-wrap svg,
+.tiktok-half .lobby-intro .intro-logo-wrap svg {
+  width: 132px !important;
+  height: 132px !important;
+}
+.lobby-intro .intro-title,
+.tiktok-half .lobby-intro .intro-title {
+  font-size: 30px !important;
+  margin: 0 0 18px !important;
+}
+.lobby-intro .intro-tagline,
+.tiktok-half .lobby-intro .intro-tagline {
+  display: none !important;
+}
