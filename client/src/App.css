@@ -7034,6 +7034,21 @@ html[data-theme='aurora'] .live-dot {
   font-size: 18px;
 }
 
+/* TikTok badge next to chat players' names in the TOP 5 */
+.tt-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px; height: 15px;
+  background: #0d0d13;
+  border: 1px solid rgba(37, 244, 238, 0.45);
+  border-radius: 0;
+  color: #25f4ee;
+  margin: 0 2px 0 1px;
+  vertical-align: -2px;
+  flex-shrink: 0;
+}
+
 /* Stream reactions flying over the grid */
 .reaction-layer {
   position: fixed;
