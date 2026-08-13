@@ -5989,6 +5989,17 @@ html, body, #root {
     linear-gradient(180deg, #0b1326 0%, #070b16 100%);
   background-attachment: fixed;
 }
+/* Cool, clean navy — no warm tint anywhere around the game panels */
+.tiktok-half body,
+.tiktok-half #root {
+  background: #070b16 !important;
+}
+.tiktok-half .app {
+  background: #070b16 !important;
+}
+.tiktok-half .game-area {
+  background: #0a1120 !important;
+}
 
 /* ── Display type: Oxanium for brand, headings, timer, scores ── */
 .app-header .brand-name,
@@ -6131,6 +6142,14 @@ html, body, #root {
 /* ── Notification ticker: bright, clear (kept one-sentence layout) ── */
 .notify-item { color: #ffffff; }
 .notify-icon { filter: drop-shadow(0 0 6px rgba(53, 230, 160, 0.6)); }
+
+/* ── Art emoji sits on a dark chip so it never blends with the box ── */
+.tiktok-half .answer-art-box .art-canvas {
+  background: rgba(7, 11, 22, 0.85) !important;
+  border: 1px solid rgba(130, 205, 255, 0.18) !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.4);
+}
 
 /* ── Chat: glass bubbles, neon system lines ── */
 .chat-panel {
