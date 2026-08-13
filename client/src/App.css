@@ -5935,3 +5935,244 @@
   z-index: 5;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CHAMP WORDS — GAMING PRO THEME (full-site redesign)
+   Deep navy base · emerald→cyan neon accents · Oxanium display type ·
+   Outfit UI type · Fredoka kept for the word tiles.
+   Layout/format untouched. Prior fixes preserved: TOP 5 scores always
+   visible, badges live in the notification ticker, one-sentence ticker,
+   artist + brackets always visible, login-glass panels.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Palette ── */
+:root, .game-area {
+  --bg: #070b16;
+  --bg-2: #0d1526;
+  --surface: #111a30;
+  --surface-2: #17223c;
+  --surface-3: #1e2b4a;
+  --text: #f4f7ff;
+  --text-dim: #a5b4d0;
+  --text-faint: #7180a3;
+  --accent: #35e6a0;
+  --accent-strong: #1fc98a;
+  --accent-soft: rgba(53, 230, 160, 0.13);
+  --sky: #5ec8ff;
+  --sky-soft: rgba(94, 200, 255, 0.13);
+  --amber: #f5b544;
+  --amber-soft: rgba(245, 181, 68, 0.13);
+  --danger: #ff5c7c;
+  --danger-soft: rgba(255, 92, 124, 0.13);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(130, 205, 255, 0.24);
+  --bg-light: var(--surface);
+  --key-bg: rgba(255, 255, 255, 0.055);
+  --green: var(--accent);
+  --gold: var(--amber);
+  --yellow: var(--amber);
+  --gray: var(--surface-3);
+  --bracket-bg: var(--accent-soft);
+  --bracket-border: rgba(53, 230, 160, 0.4);
+  --border-empty: var(--border-strong);
+  --tile: #ffffff;
+  --tile-text: #131c30;
+  font-family: 'Outfit', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Page background: deep navy + soft neon glows ── */
+html, body, #root {
+  background:
+    radial-gradient(1100px 750px at 12% -12%, rgba(53, 230, 160, 0.08), transparent 60%),
+    radial-gradient(950px 700px at 108% 18%, rgba(94, 200, 255, 0.07), transparent 55%),
+    radial-gradient(800px 600px at 50% 115%, rgba(245, 181, 68, 0.05), transparent 55%),
+    linear-gradient(180deg, #0b1326 0%, #070b16 100%);
+  background-attachment: fixed;
+}
+
+/* ── Display type: Oxanium for brand, headings, timer, scores ── */
+.app-header .brand-name,
+.login-page .login-logo h1,
+.lobby-intro .intro-title,
+.game-header .round-info,
+.timer-display,
+.top10-title,
+.overall-title,
+.round-result-title,
+.game-over-title,
+.top10-rank,
+.overall-rank,
+.winner-name,
+.milestone-card .ms-title {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Brand — white with a soft emerald→cyan gradient wordmark */
+.app-header .brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, #ffffff 20%, var(--accent) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.tiktok-half .app-header .brand-name { font-size: 18px; letter-spacing: 2.5px; }
+
+/* Header — glassy navy with neon hairline under it */
+.app-header {
+  border-bottom: 1px solid rgba(130, 205, 255, 0.14);
+}
+.tiktok-half .app-header {
+  background: rgba(9, 15, 33, 0.88);
+  border-bottom: 1px solid rgba(130, 205, 255, 0.14);
+}
+
+/* ── Buttons: emerald→cyan gradient + glow (keeps pill shapes) ── */
+.btn-primary, .btn-share, .guest-login-btn, .hall-tab.active, .mode-tab.active {
+  background: linear-gradient(135deg, var(--accent) 0%, #22c9e0 100%) !important;
+  color: #04121a !important;
+  border: none !important;
+  box-shadow: 0 6px 22px rgba(53, 230, 160, 0.35), 0 2px 8px rgba(34, 201, 224, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+  text-shadow: none !important;
+}
+.btn-primary:hover, .btn-share:hover, .guest-login-btn:hover {
+  box-shadow: 0 8px 30px rgba(53, 230, 160, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  transform: translateY(-1px);
+}
+.btn-secondary {
+  background: rgba(23, 34, 60, 0.9) !important;
+  border: 1px solid rgba(130, 205, 255, 0.28) !important;
+  color: var(--text) !important;
+}
+.btn-secondary:hover { border-color: var(--accent) !important; box-shadow: 0 0 16px rgba(53, 230, 160, 0.25); }
+
+/* ── Cards & panels: deep glass + neon border + soft glow ── */
+.login-page .login-card,
+.lobby-intro .intro-card,
+.tiktok-half .grid-leader-panel,
+.tiktok-half .answer-art-box,
+.tiktok-half .notify-row,
+.tiktok-half .overall-board,
+.tiktok-half .art-board-inline {
+  background: rgba(17, 26, 48, 0.78) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(130, 205, 255, 0.22) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 40px rgba(53, 230, 160, 0.06) !important;
+  border-radius: 18px !important;
+}
+
+/* ── Section titles: emerald→cyan gradient text ── */
+.top10-title, .overall-title, .round-result-title, .game-over-title, .lobby-intro .intro-title {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--sky));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.top10-title { font-size: 13px; }
+.overall-title { font-size: 13px; }
+
+/* ── Timer: bright gradient + glow ── */
+.timer-display {
+  font-weight: 800;
+  background: linear-gradient(180deg, #ffffff, var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 18px rgba(53, 230, 160, 0.35);
+}
+.timer-bar-fill {
+  background: linear-gradient(90deg, var(--accent), #22c9e0) !important;
+  box-shadow: 0 0 12px rgba(53, 230, 160, 0.5);
+}
+
+/* ── Word tiles: crisp white letters on deep tiles, neon selected ── */
+.grid-cell {
+  background: linear-gradient(170deg, rgba(30, 43, 74, 0.95), rgba(17, 26, 48, 0.95)) !important;
+  border: 1px solid rgba(130, 205, 255, 0.18) !important;
+  color: #ffffff !important;
+  font-family: 'Fredoka', 'Outfit', sans-serif;
+}
+.grid-cell.selected, .grid-4x4 .grid-cell.selected {
+  background: linear-gradient(135deg, var(--accent), #22c9e0) !important;
+  color: #04121a !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 0 18px rgba(53, 230, 160, 0.55) !important;
+}
+
+/* ── TOP 5 board: neon rank accents (sizes untouched → scores stay inside) ── */
+.tiktok-half .top10-rank.rank-1 {
+  background: linear-gradient(135deg, var(--amber), #ff9d3c);
+  color: #241300;
+  box-shadow: 0 0 14px rgba(245, 181, 68, 0.45);
+}
+.tiktok-half .top10-row.top10-me {
+  border: 1px solid rgba(53, 230, 160, 0.35);
+  box-shadow: inset 0 0 18px rgba(53, 230, 160, 0.10);
+}
+.tiktok-half .top10-name { color: var(--text); }
+.tiktok-half .top10-name.solver { color: var(--accent); }
+
+/* ── Answer brackets: emerald glow ── */
+.bracket-box {
+  background: var(--accent-soft) !important;
+  border: 2px solid rgba(53, 230, 160, 0.45) !important;
+  border-radius: 10px !important;
+}
+.bracket-box.hint-revealed { border-color: var(--accent) !important; box-shadow: 0 0 12px rgba(53, 230, 160, 0.4); }
+.bracket-box.found-other { border-color: var(--amber) !important; }
+
+/* ── Notification ticker: bright, clear (kept one-sentence layout) ── */
+.notify-item { color: #ffffff; }
+.notify-icon { filter: drop-shadow(0 0 6px rgba(53, 230, 160, 0.6)); }
+
+/* ── Chat: glass bubbles, neon system lines ── */
+.chat-panel {
+  background: rgba(9, 15, 33, 0.94) !important;
+  border-left: 1px solid rgba(130, 205, 255, 0.18) !important;
+}
+.inline-chat-msg.success { color: var(--accent); }
+.inline-chat-msg.system { color: var(--text-dim); }
+
+/* ── Winner / celebration: emerald→cyan energy ── */
+.confetti-card .confetti-word {
+  background: linear-gradient(90deg, var(--amber), var(--accent), var(--sky));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.round-result-title, .game-over-title {
+  text-shadow: 0 0 30px rgba(53, 230, 160, 0.25);
+}
+
+/* ── Login page extras ── */
+.login-page .login-logo h1 {
+  font-weight: 800;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #ffffff, var(--accent));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.login-page .login-live-badge {
+  border: 1px solid rgba(53, 230, 160, 0.45) !important;
+  background: rgba(53, 230, 160, 0.08) !important;
+  box-shadow: 0 0 18px rgba(53, 230, 160, 0.25) !important;
+}
+
+/* ── Inputs & focus: neon ring ── */
+input, select, textarea {
+  background: rgba(23, 34, 60, 0.9) !important;
+  border: 1px solid rgba(130, 205, 255, 0.25) !important;
+  color: var(--text) !important;
+  border-radius: 12px !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(53, 230, 160, 0.2) !important;
+}
+
+/* ── Scrollbars: slim neon ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(130, 205, 255, 0.25); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(53, 230, 160, 0.4); }
