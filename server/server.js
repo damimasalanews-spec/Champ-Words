@@ -373,6 +373,7 @@ function handleChatAnswer({ user, text, nickname }) {
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
+  notify(room, '⚡', `${maskText(player.name)} found the word! (+${gained})`);
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
   // Mirror the browser 'word_found' event: this is what makes the client's
   // TOP 5 board flip to "THIS ROUND" (✓ tick + round score) and plays the
@@ -438,6 +439,7 @@ function handleChatGift({ user, diamonds }) {
     const r = revealAllLetters(room);
     if (!r) return { ok: false, error: 'all letters revealed' };
     io.to(room.id).emit('chat', { system: true, green: true, text: `🎁 ${username} sent a BIG gift and revealed the whole word — round over!` });
+    notify(room, '🎁', `${username} sent a BIG gift and revealed the whole word!`);
     endRound(room, true); // big gift = instant round end (no stump points)
     return { ok: true, full: true, name: username };
   }
@@ -445,6 +447,7 @@ function handleChatGift({ user, diamonds }) {
   const r = revealLetters(room, want);
   if (!r) return { ok: false, error: 'all letters revealed' };
   io.to(room.id).emit('chat', { system: true, green: true, text: `🎁 ${username} sent a gift and revealed ${r} letter${r > 1 ? 's' : ''}!` });
+  notify(room, '🎁', `${username} sent a gift and revealed ${r} letter${r > 1 ? 's' : ''}!`);
   return { ok: true, revealed: r, name: username };
 }
 
@@ -700,6 +703,12 @@ function seedLeaderboards() {
 }
 seedLeaderboards();
 
+// ── Notifications ticker ────────────────────────────────────────────────
+function notify(room, icon, text) {
+  if (!room || !text) return;
+  io.to(room.id).emit('notify', { id: Date.now() + Math.floor(Math.random() * 1000), icon, text });
+}
+
 // ── Milestones (1k / 5k / 10k lifetime points) ────────────────────────────
 const milestoneShown = new Set(); // playerKey:amount — announced this session
 const MILESTONES = [1000, 5000, 10000];
@@ -708,6 +717,7 @@ function checkMilestone(room, player, gained) {
     if (player.score >= t && (player.score - gained) < t && !milestoneShown.has(player.playerKey + ':' + t)) {
       milestoneShown.add(player.playerKey + ':' + t);
       io.to(room.id).emit('milestone', { name: player.name, points: t });
+      notify(room, '🏆', `${player.name} crossed ${t} points!`);
     }
   }
 }
@@ -1614,6 +1624,7 @@ io.on('connection', socket => {
     io.to(socket.id).emit('word_found', { ...base, self: true, word: room.word });
     socket.to(roomId).emit('word_found', { ...base, self: false, word: null });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
+    notify(room, '⚡', `${player.name} found the word! (+${gained})`);
     cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
 
     if (allFound) {

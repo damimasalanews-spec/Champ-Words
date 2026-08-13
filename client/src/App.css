@@ -5790,3 +5790,40 @@
   margin: 0 auto 10px;
   filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 18px rgba(53, 212, 149, 0.18));
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NOTIFICATIONS TICKER — replaces the TOP-5 strip below the answer/art
+   box. Live messages slide from LEFT to RIGHT (milestones, finds, gifts).
+   ═══════════════════════════════════════════════════════════════════════ */
+.notify-row {
+  overflow: hidden;
+  margin: 4px 0 0;
+  padding: 7px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+.notify-track {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  width: max-content;
+  white-space: nowrap;
+  animation: notifySlide 30s linear infinite;
+}
+@keyframes notifySlide {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.notify-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.2px;
+}
+.notify-icon {
+  font-size: 13px;
+}

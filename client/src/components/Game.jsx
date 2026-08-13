@@ -130,7 +130,7 @@ function Top5Celebration({ players }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [] }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], notifications = [] }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -781,20 +781,20 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           </div>
         </div>
 
-        {/* ── Top 5 overall players in one row (below the answer + artist box; scrolls if too long) ── */}
-        {(state === 'playing' || state === 'round_over') && top5Row.length > 0 && (
-          <div className={`top5-row ${top5Scroll ? 'top5-scroll' : ''}`} ref={top5Ref}>
-            <div className="top5-track">
-              {top5Row.map((p, i) => (
-                <span key={p.id} className="top5-item">
-                  {i > 0 && <span className="top5-sep">·</span>}
-                  <span className="top5-name">{p.name}</span>
+        {/* ── Live notifications ticker (below the answer + artist box) ── */}
+        {(state === 'playing' || state === 'round_over') && notifications.length > 0 && (
+          <div className="notify-row">
+            <div className="notify-track">
+              {notifications.map(n => (
+                <span key={n.id} className="notify-item">
+                  {n.icon && <span className="notify-icon">{n.icon}</span>}
+                  {n.text}
                 </span>
               ))}
-              {top5Scroll && top5Row.map((p, i) => (
-                <span key={`dup-${p.id}`} className="top5-item" aria-hidden="true">
-                  {i > 0 && <span className="top5-sep">·</span>}
-                  <span className="top5-name">{p.name}</span>
+              {notifications.map(n => (
+                <span key={`dup-${n.id}`} className="notify-item" aria-hidden="true">
+                  {n.icon && <span className="notify-icon">{n.icon}</span>}
+                  {n.text}
                 </span>
               ))}
             </div>

@@ -55,6 +55,7 @@ export default function App() {
   const [duelWord, setDuelWord] = useState(''); // defender's duel answer input
   const duelMsgTimer = useRef(null);
   const [milestoneMsg, setMilestoneMsg] = useState(''); // 1k/5k/10k celebration
+  const [notifications, setNotifications] = useState([]); // live ticker messages
   const milestoneMsgTimer = useRef(null);
   const [blacklistWord, setBlacklistWord] = useState(''); // host blacklist input
 
@@ -249,6 +250,9 @@ export default function App() {
       setMilestoneMsg(`${data.name} crossed ${data.points} points!`);
       if (milestoneMsgTimer.current) clearTimeout(milestoneMsgTimer.current);
       milestoneMsgTimer.current = setTimeout(() => setMilestoneMsg(''), 4000);
+    });
+    socket.on('notify', (n) => {
+      if (n && n.text) setNotifications(prev => [...prev.slice(-7), n]);
     });
     socket.on('game_over', (data) => { setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
@@ -473,6 +477,7 @@ export default function App() {
           chatOpen={chatOpen}
           onChooseWord={handleChooseWord}
           messages={messages}
+          notifications={notifications}
         />
       )}
 
