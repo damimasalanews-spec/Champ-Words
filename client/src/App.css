@@ -5695,3 +5695,56 @@
 .lobby-options .btn-host-create {
   margin-top: 2px;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   JOIN THE ROOM PAGE — header hidden (like Get Started), sizes tightened,
+   font sizes lowered.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Top header: hidden on this page too */
+.app:has(.lobby-form) .app-header,
+.tiktok-half .app:has(.lobby-form) .app-header {
+  display: none !important;
+}
+
+/* Tighter spacing */
+.lobby-form {
+  gap: 6px !important;
+  padding: 14px 0 20px !important;
+}
+.lobby-options {
+  gap: 14px !important;
+  width: min(94vw, 440px) !important;
+}
+
+/* Lower font sizes + compact cards */
+.lobby-form .form-heading {
+  font-size: 22px !important;
+  letter-spacing: 0.5px !important;
+}
+.lobby-form .form-sub {
+  font-size: 13px !important;
+  margin-bottom: 14px !important;
+}
+.lobby-options .lobby-card {
+  padding: 20px 16px 18px !important;
+}
+.lobby-options .lobby-card h2 {
+  font-size: 16px !important;
+  letter-spacing: 1px !important;
+  margin: 8px 0 2px !important;
+}
+.lobby-options .lobby-card .subtitle {
+  font-size: 11.5px !important;
+  margin-bottom: 12px !important;
+}
+.lobby-options .form-group input {
+  font-size: 14px !important;
+  padding: 10px 12px !important;
+  border-radius: 11px !important;
+}
+.lobby-options .btn-primary,
+.lobby-options .btn-host-create {
+  font-size: 13px !important;
+  padding: 11px !important;
+  border-radius: 11px !important;
+}
