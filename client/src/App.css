@@ -5856,3 +5856,24 @@
 .tiktok-half .top10-rank {
   flex: 0 0 auto !important;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   TOP-5 OVERFLOW — bulletproof clipping at board + column level too.
+   Nothing can render outside the leaderboard border on any viewport.
+   ═══════════════════════════════════════════════════════════════════════ */
+.top10-board,
+.tiktok-half .top10-board {
+  overflow: hidden !important;
+}
+.leader-col,
+.tiktok-half .leader-col {
+  overflow: hidden !important;
+  max-width: 100% !important;
+}
+.top10-row,
+.tiktok-half .top10-row {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
