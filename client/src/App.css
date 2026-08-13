@@ -5806,26 +5806,35 @@
 .notify-track {
   display: flex;
   align-items: center;
-  gap: 32px;
-  width: max-content;
-  white-space: nowrap;
-  animation: notifySlide 30s linear infinite;
-}
-@keyframes notifySlide {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  width: 100%;
+  padding: 0 10px;
 }
 .notify-item {
-  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12.5px;
-  font-weight: 700;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--text);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  animation: notifyIn 0.45s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+}
+@keyframes notifyIn {
+  from { transform: translateX(-28px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.notify-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .notify-icon {
-  font-size: 13px;
+  font-size: 17px;
+  flex-shrink: 0;
 }
 /* ═══════════════════════════════════════════════════════════════════════
    TOP-5 OVERFLOW FIX — long names (badges + score) must never push

@@ -780,24 +780,21 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
 
         {/* ── Live notifications ticker (below the answer + artist box) ── */}
-        {(state === 'playing' || state === 'round_over') && notifications.length > 0 && (
-          <div className="notify-row">
-            <div className="notify-track">
-              {notifications.map(n => (
-                <span key={n.id} className="notify-item">
-                  {n.icon && <span className="notify-icon">{n.icon}</span>}
-                  {n.text}
+        {/* One sentence at a time: the latest notification slides in, replaces
+            the previous one, and stays until the next arrives. */}
+        {(() => {
+          const last = notifications.length ? notifications[notifications.length - 1] : null;
+          return (state === 'playing' || state === 'round_over') && last ? (
+            <div className="notify-row">
+              <div className="notify-track">
+                <span key={last.id} className="notify-item">
+                  {last.icon && <span className="notify-icon">{last.icon}</span>}
+                  <span className="notify-text">{last.text}</span>
                 </span>
-              ))}
-              {notifications.map(n => (
-                <span key={`dup-${n.id}`} className="notify-item" aria-hidden="true">
-                  {n.icon && <span className="notify-icon">{n.icon}</span>}
-                  {n.text}
-                </span>
-              ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : null;
+        })()}
 
         {/* ── FULL overall leaderboard — every player by total score, scrollable (50+ players) ── */}
         {(state === 'playing' || state === 'round_over') && room.players.length > 0 && (
