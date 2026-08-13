@@ -6237,8 +6237,21 @@ input:focus, select:focus, textarea:focus {
   --cell: 36px; --gap: 10px; --pad: 12px;
   flex: none;
 }
+/* Letter tiles: white square tiles with dark navy letters — high contrast */
 .tiktok-half .grid-4x4 .grid-cell {
-  font-size: 15px !important;
+  background: #ffffff !important;
+  color: #0d1430 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+.tiktok-half .grid-4x4 .grid-cell.selected,
+.tiktok-half .grid-4x4 .grid-cell.last {
+  background: linear-gradient(135deg, var(--accent), #22c9e0) !important;
+  color: #04121a !important;
+  box-shadow: 0 0 14px rgba(53, 230, 160, 0.5);
 }
 .tiktok-half .leader-col {
   flex: none !important;
