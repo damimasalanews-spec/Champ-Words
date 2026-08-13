@@ -357,6 +357,59 @@ html.cw-web .drag-word-display {
   margin: 6px 0 2px;
 }
 
+/* ── 3-2-1 GO pre-scan chip (mobile) — grid stays visible beneath it ── */
+html.cw-web .cw-go-chip {
+  position: fixed;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 25;
+  pointer-events: none;
+  min-width: 96px;
+  text-align: center;
+  font-family: var(--cw-display);
+  font-size: 56px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 24px rgba(61, 255, 184, 0.9), 0 0 60px rgba(46, 230, 255, 0.5);
+  background: rgba(6, 8, 20, 0.78);
+  border: 1px solid rgba(122, 170, 255, 0.25);
+  border-radius: 20px;
+  padding: 10px 26px;
+  animation: cw-go-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cw-go-pop {
+  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* ── Live "fastest this round" target chip (mobile) ── */
+html.cw-web .cw-fastest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--cw-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--cw-amber);
+  text-shadow: 0 0 10px rgba(255, 197, 61, 0.6);
+  background: rgba(255, 197, 61, 0.08);
+  border: 1px solid rgba(255, 197, 61, 0.4);
+  border-radius: 999px;
+  padding: 5px 12px;
+  margin: 2px 0;
+  animation: cw-fastest-in 0.35s ease;
+}
+html.cw-web .cw-fastest b { font-size: 14px; }
+@keyframes cw-fastest-in { from { opacity: 0; transform: translateY(-4px); } }
+
+/* ── Reachable-cell hint while dragging (mobile, subtle cyan ring) ── */
+html.cw-web .grid-4x4 .grid-cell.ghost {
+  box-shadow: inset 0 0 0 2px rgba(46, 230, 255, 0.55), 0 0 12px rgba(46, 230, 255, 0.3), 0 5px 12px rgba(0, 0, 0, 0.4) !important;
+  transform: scale(1.04);
+}
+
 /* ── Found chips · hint clue · champ word ───────────────────────────── */
 html.cw-web .found-now { margin: 2px 0 4px; }
 html.cw-web .found-chip {
@@ -1119,4 +1172,101 @@ html.cw-web .waiting-player {
   html.cw-web .pick-popup-word { padding: 10px 8px; }
   html.cw-web .pick-popup-text { font-size: 18px; }
   html.cw-web .pick-hint-box, html.cw-web .pick-custom-box { margin-top: 12px; padding-top: 10px; }
+
+  /* ── Notch-safe header + no pull-to-refresh/bounce while dragging ── */
+  html.cw-web body { overscroll-behavior-y: none; }
+  html.cw-web button { touch-action: manipulation; }
+  html.cw-web .app-header { padding: calc(8px + env(safe-area-inset-top, 0px)) 4px 8px; }
+
+  /* ── Chat slides up as a bottom sheet (native app feel) ── */
+  html.cw-web .chat-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: min(68vh, 560px);
+    border-left: none;
+    border-top: 1px solid rgba(122, 170, 255, 0.22);
+    border-radius: 22px 22px 0 0;
+    background: rgba(9, 12, 28, 0.97);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+    animation: cw-sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* Drag handle */
+  html.cw-web .chat-panel::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 38px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+  /* Dim + soften the page above the sheet */
+  html.cw-web .chat-panel::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: rgba(4, 5, 14, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  /* ── Round over / Game over become bottom sheets too ── */
+  html.cw-web .overlay {
+    align-items: flex-end;
+    background: rgba(4, 5, 14, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  html.cw-web .overlay-card {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-radius: 24px 24px 0 0;
+    border-bottom: none;
+    max-height: 88vh;
+    padding: 22px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+    animation: cw-sheet-up 0.32s cubic-bezier(0.2, 0.9, 0.3, 1);
+  }
+  html.cw-web .roundover-stat-value { margin-left: 6px; }
+  @keyframes cw-sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* ── Subtle staggered panel entrances ── */
+  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
+  html.cw-web .game-col-left > .answer-art-box,
+  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
+  html.cw-web .game-col-left > .notify-row,
+  html.cw-web .game-col-left > .overall-board {
+    animation: cw-rise 0.4s ease both;
+  }
+  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col { animation-delay: 0s; }
+  html.cw-web .game-col-left > .answer-art-box { animation-delay: 0.06s; }
+  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col { animation-delay: 0.12s; }
+  html.cw-web .game-col-left > .notify-row { animation-delay: 0.18s; }
+  html.cw-web .game-col-left > .overall-board { animation-delay: 0.24s; }
+  @keyframes cw-rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
+    html.cw-web .game-col-left > .answer-art-box,
+    html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
+    html.cw-web .game-col-left > .notify-row,
+    html.cw-web .game-col-left > .overall-board,
+    html.cw-web .chat-panel,
+    html.cw-web .overlay-card { animation: none; }
+  }
 }

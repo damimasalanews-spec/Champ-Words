@@ -7,6 +7,23 @@ function isAdjacent(r1, c1, r2, c2) {
   return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
 }
 
+// Light haptic feedback (Android vibrate API; iOS Safari has no vibrate —
+// the existing sound cues cover it there). No-op when unsupported.
+function buzz(pattern) {
+  try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(pattern); } catch (_) {}
+}
+
+// Mobile 3-2-1 GO countdown — the grid stays visible beneath it so players
+// can pre-scan while the countdown runs. Purely visual; never blocks input.
+function GoCountdown() {
+  const [n, setN] = useState(3);
+  useEffect(() => {
+    const iv = setInterval(() => setN(p => (p > 0 ? p - 1 : 0)), 700);
+    return () => clearInterval(iv);
+  }, []);
+  return <div className="cw-go-chip" aria-hidden="true">{n > 0 ? n : 'GO!'}</div>;
+}
+
 // ── Word Pick Popup (6 choices + optional champ clue + custom word) ─────
 function WordPickPopup({ choices, onPick, disabled, timeLeft, guesserName }) {
   const [hint, setHint] = useState('');
@@ -261,12 +278,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       if (data.winnerName && data.elapsed) {
         setTicker(prev => [...prev.slice(-4), { id: tickerId.current++, name: data.winnerName, sec: data.elapsed }]);
       }
+      // Live "fastest this round" target (mobile): everyone sees the time to beat
+      if (data.elapsed) setFastestSec(prev => (prev === null ? data.elapsed : Math.min(prev, data.elapsed)));
       // …but only the finder sees the word fall into the brackets
       if (data.word) {
         setSolvedWord(data.word);
         setFalling(true);
         setTimeout(() => setFalling(false), 1800);
         if (data.winnerId === socket.id) {
+          buzz([30, 40, 70]);
           setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
           setScorePop(data.score);
           setTimeout(() => setScorePop(null), 1300);
@@ -341,12 +361,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   };
 
   // ── Drag: cell under a pointer ───────────────────────────────────
+  // Wider hit zone on mobile (thumbs are imprecise); desktop canvas unchanged.
   const cellUnderPoint = (clientX, clientY) => {
     if (!gridRef.current) return null;
     const cells = gridRef.current.querySelectorAll('.grid-cell');
+    const tol = isWeb ? 9 : 4;
     for (const cell of cells) {
       const rect = cell.getBoundingClientRect();
-      if (clientX >= rect.left + 4 && clientX <= rect.right - 4 && clientY >= rect.top + 4 && clientY <= rect.bottom - 4) {
+      if (clientX >= rect.left + tol && clientX <= rect.right - tol && clientY >= rect.top + tol && clientY <= rect.bottom - tol) {
         return { r: parseInt(cell.dataset.row), c: parseInt(cell.dataset.col) };
       }
     }
@@ -394,6 +416,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       if (res.ok) { /* handled by word_found event */ }
       else if (res.error && res.error.includes('Not the word')) {
         playSound('wrong');
+        buzz(70);
         setWrongFlash(true);
         setTimeout(() => setWrongFlash(false), 450);
       }
@@ -413,6 +436,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       if (res.ok) { setTypedWord(''); }
       else if (res.error && res.error.includes('Not the word')) {
         playSound('wrong');
+        buzz(70);
         setWrongFlash(true);
         setTimeout(() => setWrongFlash(false), 450);
       }
@@ -535,9 +559,21 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   // Round-intro animation: shows "ROUND N" when a new round starts
   const [roundIntro, setRoundIntro] = useState(null);
+  // Speed/UX features below are mobile-only (the desktop canvas keeps its
+  // exact original behavior — never touched).
+  const isWeb = typeof document !== 'undefined' && document.documentElement.classList.contains('cw-web');
+  const [fastestSec, setFastestSec] = useState(null); // fastest find this round
+  useEffect(() => { setFastestSec(null); }, [room && room.round]);
   useEffect(() => {
     if (room && room.state === 'playing') setRoundIntro(room.round);
   }, [room && room.round, room && room.state]);
+  // Mobile: the intro is a compact 3-2-1 GO chip (grid stays visible to
+  // pre-scan). Desktop keeps the full "ROUND N" card.
+  useEffect(() => {
+    if (roundIntro === null || !isWeb) return;
+    const t = setTimeout(() => setRoundIntro(null), 3100);
+    return () => clearTimeout(t);
+  }, [roundIntro, isWeb]);
   useEffect(() => {
     const el = top5Ref.current;
     if (!el) return;
@@ -559,15 +595,21 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
   return (
     <div className="game-area">
-      {/* ── Round intro animation (non-blocking) ── */}
+      {/* ── Round intro: mobile gets a 3-2-1 GO chip (grid visible to
+             pre-scan, drag works immediately); desktop keeps the original
+             "ROUND N" card exactly as before ── */}
       {roundIntro !== null && (
-        <div className="round-intro" key={roundIntro} onAnimationEnd={() => setRoundIntro(null)}>
-          <div className="round-intro-card">
-            <div className="round-intro-label">ROUND</div>
-            <div className="round-intro-num">{roundIntro}</div>
-            <div className="round-intro-letters">{room.wordLength} LETTERS</div>
+        isWeb ? (
+          <GoCountdown key={roundIntro} />
+        ) : (
+          <div className="round-intro" key={roundIntro} onAnimationEnd={() => setRoundIntro(null)}>
+            <div className="round-intro-card">
+              <div className="round-intro-label">ROUND</div>
+              <div className="round-intro-num">{roundIntro}</div>
+              <div className="round-intro-letters">{room.wordLength} LETTERS</div>
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* ── Word pick popup (champ only) ── */}
@@ -723,6 +765,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
               style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />
           </div>
+          {isWeb && state === 'playing' && fastestSec !== null && (
+            <div className="cw-fastest">⚡ Fastest this round: <b>{fastestSec}s</b> — beat it!</div>
+          )}
         </>
       )}
 
@@ -742,8 +787,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 {row.map((ch, c) => {
                   const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
                   const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
+                  // Mobile only: subtly pulse the reachable cells while dragging
+                  const isGhost = isWeb && isDragging && dragPath.length > 0 && !sel &&
+                    isAdjacent(dragPath[dragPath.length - 1][0], dragPath[dragPath.length - 1][1], r, c);
                   return (
-                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}`}
+                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}${isGhost ? ' ghost' : ''}`}
                       data-row={r} data-col={c} style={{ '--i': r * 4 + c }}
                       onMouseDown={(e) => startDrag(r, c, e)}
                       onTouchStart={(e) => startDrag(r, c, e)}>
