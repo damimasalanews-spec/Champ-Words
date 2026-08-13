@@ -1236,8 +1236,22 @@ function revealRandomHint(room) {
   if (hidden.length === 0) return;
   // Pick a random one and reveal it
   const pos = hidden[Math.floor(Math.random() * hidden.length)];
+  if (!room.revealedMask) room.revealedMask = {};
   room.revealedMask[pos] = true;
   io.to(room.id).emit('room_update', sanitizeRoom(room));
+  return;
+}
+
+// Reveal every remaining hidden letter at once (full hint at 15s remaining)
+function revealAllHints(room) {
+  if (!room.word || room.state !== 'playing') return;
+  if (!room.revealedMask) room.revealedMask = {};
+  let changed = false;
+  for (let i = 0; i < room.word.length; i++) {
+    if (room.word[i] === ' ') continue;
+    if (!room.revealedMask[i]) { room.revealedMask[i] = true; changed = true; }
+  }
+  if (changed) io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
 // Reveal up to n random hidden letters (returns how many were revealed)
@@ -1274,21 +1288,40 @@ function startRound(room) {
   room.freezeCount = 0;
   room.duel = null; room.duelEndsAt = null;
   if (room.duelTimer) { clearTimeout(room.duelTimer); room.duelTimer = null; }
-  room.speedRound = room.round % SPEED_EVERY === 0; // every 5th round: 15s + triple points
-  room.roundMs = room.speedRound ? SPEED_MS : (room.roundTimeMs || ROUND_TIME_MS);
+  room.speedRound = room.round % SPEED_EVERY === 0; // every 5th round: triple points
+  // Round time per difficulty — easy 15s · medium/hard 30s (speed rounds too)
+  const DIFF_ROUND_MS = { easy: 15000, medium: 30000, hard: 30000 };
+  room.roundMs = DIFF_ROUND_MS[room.difficulty] || (room.roundTimeMs || ROUND_TIME_MS);
   room.grid = generateWordGrid(room.word); // 4×4 grid with the word embedded
   room.roundStartedAt = Date.now();
   clearTimer(room);
   room.timer = setTimeout(() => onTimeUp(room), room.roundMs);
-  // Auto hint: 2 letters revealed with ~40s remaining (scaled to round length;
-  // short rounds get the reveal early instead of never)
-  const hintAt = Math.max(8000, room.roundMs - 40000);
-  room.hintTimer1 = setTimeout(() => {
-    if (room.state !== 'playing') return;
-    revealRandomHint(room);
-    revealRandomHint(room);
-  }, hintAt);
-  if (room.speedRound) io.to(room.id).emit('chat', { system: true, gold: true, text: `⚡ SPEED ROUND! 15 seconds · TRIPLE points!` });
+  // Hints + artist drawing reveal per difficulty:
+  //   easy (15s)        → hints revealed immediately at round start
+  //   medium/hard (30s) → hints reveal progressively, FULL once 15s remain
+  if (room.difficulty === 'easy') {
+    room.hintTimer1 = setTimeout(() => {
+      if (room.state !== 'playing') return;
+      revealRandomHint(room);
+      revealRandomHint(room);
+    }, 250);
+  } else {
+    room.hintTimer1 = setTimeout(() => {
+      if (room.state !== 'playing') return;
+      revealRandomHint(room);
+      revealRandomHint(room);
+    }, 5000);
+    room.hintTimer2 = setTimeout(() => {
+      if (room.state !== 'playing') return;
+      revealRandomHint(room);
+      revealRandomHint(room);
+    }, 10000);
+    room.hintTimer3 = setTimeout(() => {
+      if (room.state !== 'playing') return;
+      revealAllHints(room);
+    }, 15000);
+  }
+  if (room.speedRound) io.to(room.id).emit('chat', { system: true, gold: true, text: `⚡ SPEED ROUND! ${Math.round(room.roundMs / 1000)} seconds · TRIPLE points!` });
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
