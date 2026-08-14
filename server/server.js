@@ -643,6 +643,37 @@ function addAllTime(key, name, avatar, gained) {
   persistAllTime();
 }
 
+// ── Session-wide no-repeat (all games, all rooms) ────────────────────────
+// Tracks every word the system or the champ picks across the WHOLE live
+// session, so an all-day stream never repeats a word until the pools are
+// exhausted. Best-effort persisted to server/data/session-used.json
+// (same pattern as alltime.json — survives restarts of the same instance,
+// resets when the service redeploys).
+const SESSION_USED_FILE = path.join(__dirname, 'data', 'session-used.json');
+const sessionUsedWords = new Set();
+let sessionUsedSaveTimer = null;
+try {
+  if (fs.existsSync(SESSION_USED_FILE)) {
+    const arr = JSON.parse(fs.readFileSync(SESSION_USED_FILE, 'utf-8'));
+    (Array.isArray(arr) ? arr : []).forEach(w => sessionUsedWords.add(String(w)));
+  }
+} catch (_) { /* fresh start if the file is corrupt */ }
+function persistSessionUsed() {
+  if (sessionUsedSaveTimer) return;
+  sessionUsedSaveTimer = setTimeout(() => {
+    sessionUsedSaveTimer = null;
+    try {
+      fs.mkdirSync(path.dirname(SESSION_USED_FILE), { recursive: true });
+      fs.writeFileSync(SESSION_USED_FILE, JSON.stringify(Array.from(sessionUsedWords)));
+    } catch (_) { /* best effort */ }
+  }, 2000);
+}
+function markWordUsed(word) {
+  if (!word) return;
+  sessionUsedWords.add(String(word));
+  persistSessionUsed();
+}
+
 // ── Today's scores (daily reset) ──────────────────────────────────────────
 const todayScores = new Map(); // playerKey → { name, score, date }
 function todayKey(d) { return new Date(d).toISOString().slice(0, 10); }
@@ -1009,7 +1040,7 @@ function pickRandomWord(difficulty, category, usedWords) {
     const catPool = pool.filter(w => catSet.has(w));
     if (catPool.length > 0) pool = catPool;
   }
-  const used = new Set(usedWords || []);
+  const used = new Set([...(usedWords || []), ...sessionUsedWords]);
   const unused = pool.filter(w => !used.has(w));
   const pickFrom = (src) => src[Math.floor(Math.random() * src.length)];
 
@@ -1018,17 +1049,20 @@ function pickRandomWord(difficulty, category, usedWords) {
     const len = w.replace(/[^a-z]/g, '').length;
     return len >= min && len <= max;
   });
-  if (strict.length) return pickFrom(strict);
-
+  let chosen;
+  if (strict.length) chosen = pickFrom(strict);
   // 2) Unused, any length (small category pool — prefer theme over length)
-  if (unused.length) return pickFrom(unused);
-
+  else if (unused.length) chosen = pickFrom(unused);
   // 3) Pool exhausted — restart the cycle (repeats allowed only now)
-  const any = pool.filter(w => {
-    const len = w.replace(/[^a-z]/g, '').length;
-    return len >= min && len <= max;
-  });
-  return pickFrom(any.length ? any : pool);
+  else {
+    const any = pool.filter(w => {
+      const len = w.replace(/[^a-z]/g, '').length;
+      return len >= min && len <= max;
+    });
+    chosen = pickFrom(any.length ? any : pool);
+  }
+  markWordUsed(chosen); // no repeats across the whole live session
+  return chosen;
 }
 
 function startSystemRound(room) {
@@ -1055,8 +1089,8 @@ function generateChoices(difficulty, category, usedWords) {
     ? CATEGORIES.words[category]
     : CATEGORIES.words.mixed;
   const drawablePool = wordPool.filter(w => getWordArt(w));
-  // No repeats this game: drop words already used (champ can't re-pick them)
-  const used = new Set(usedWords || []);
+  // No repeats: drop words already used this game AND across the live session
+  const used = new Set([...(usedWords || []), ...sessionUsedWords]);
   const fresh = (drawablePool.length >= 6 ? drawablePool : wordPool).filter(w => !used.has(w));
   const usable = fresh.length >= 3 ? fresh : (drawablePool.length >= 6 ? drawablePool : wordPool);
   const [min, max] = difficultyRange(difficulty);
@@ -1068,7 +1102,11 @@ function generateChoices(difficulty, category, usedWords) {
     byLen[letters.length].push(w);
   }
   const lengths = Object.keys(byLen).map(Number).sort((a, b) => a - b);
-  if (lengths.length === 0) return ['cat', 'dog', 'hat', 'sun', 'egg', 'fox']; // fallback
+  if (lengths.length === 0) {
+    const fb = ['cat', 'dog', 'hat', 'sun', 'egg', 'fox']; // fallback
+    fb.forEach(markWordUsed);
+    return fb;
+  }
 
   const choices = [];
   // Pick 6 words, trying to spread across lengths (prefer 4-8 incl. long words)
@@ -1090,6 +1128,7 @@ function generateChoices(difficulty, category, usedWords) {
     const j = Math.floor(Math.random() * (i + 1));
     [choices[i], choices[j]] = [choices[j], choices[i]];
   }
+  choices.forEach(markWordUsed); // champ picks also count against session repeats
   return choices;
 }
 

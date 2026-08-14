@@ -28,9 +28,21 @@ function applyTiktokHalfMode() {
 
 // The half-size layout is a FIXED 540×960 design canvas. It scales down to
 // fit smaller screens/studios (never up), so the design always looks identical.
+// ?fill=1 (studio): the canvas COVERS the window instead — re-rendered via
+// CSS zoom, so it stays razor sharp at ANY source size. Pair with a studio
+// Link/browser source sized to your scene (e.g. 1080×1920) for a full-screen,
+// 1:1, blur-free game source.
 function applyHalfScale() {
-  const s = Math.min(1, window.innerWidth / 540, window.innerHeight / 960);
-  document.documentElement.style.setProperty('--half-scale', s.toFixed(4));
+  const fill = new URLSearchParams(window.location.search).has('fill');
+  if (fill) {
+    const s = Math.max(window.innerWidth / 540, window.innerHeight / 960);
+    document.documentElement.style.zoom = String(Math.max(s, 1));
+    document.documentElement.style.setProperty('--half-scale', '1');
+  } else {
+    document.documentElement.style.zoom = '';
+    const s = Math.min(1, window.innerWidth / 540, window.innerHeight / 960);
+    document.documentElement.style.setProperty('--half-scale', s.toFixed(4));
+  }
 }
 applyTiktokHalfMode();
 applyHalfScale();
