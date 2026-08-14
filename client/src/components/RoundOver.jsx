@@ -17,11 +17,27 @@ export default function RoundOver({ result, room }) {
     ? `${winner.name} was the fastest! A new word comes in a moment…`
     : `No one found it — a new word comes in a moment…`;
 
-  // ── Top 10 by TOTAL points, revealed with a typewriter animation ──
-  const topRows = useMemo(
-    () => sorted.slice(0, 10).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length })),
-    [result]
-  );
+  // ── Top 10 board, revealed with a typewriter animation ──
+  // Studio streams (?auto=1) join as SPECTATORS, so room scores can be
+  // empty — in that case show the all-time leaderboard so the board is
+  // never missing after a round.
+  const [allTimeTop, setAllTimeTop] = useState([]);
+  useEffect(() => {
+    fetch('/api/alltime')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok && Array.isArray(d.top)) setAllTimeTop(d.top.slice(0, 10)); })
+      .catch(() => {});
+  }, []);
+  const topRows = useMemo(() => {
+    const cur = sorted.slice(0, 10).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length }));
+    if (cur.length) return cur;
+    return allTimeTop.map(p => ({
+      id: 'all-' + (p.name || p.username || '?'),
+      name: p.name || p.username || '?',
+      score: p.score || 0,
+      nameLen: String(p.name || p.username || '?').length
+    }));
+  }, [result, allTimeTop, sorted]);
   const [typed, setTyped] = useState({ row: 0, chars: 0 });
   useEffect(() => {
     if (!topRows.length) return;
@@ -61,7 +77,7 @@ export default function RoundOver({ result, room }) {
 
         {topRows.length > 0 && (
           <div className="roundover-top5">
-            <p className="gameover-final-title">Top 10 — total points</p>
+            <p className="gameover-final-title">{sorted.length ? 'Top 10 — total points' : 'Top 10 — all time'}</p>
             <div className="score-list">
               {topRows.map((r, i) => {
                 const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;
