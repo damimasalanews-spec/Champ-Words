@@ -1092,16 +1092,20 @@ html.cw-web .waiting-player {
   html.cw-web .game-layout { flex-direction: column; gap: 12px; align-items: stretch; }
   html.cw-web .game-col-left { gap: 10px; }
 
-  /* Flatten frames so sections reorder in one flex column */
-  html.cw-web .game-col-left > .game-frame,
-  html.cw-web .game-col-left > .game-frame > .grid-score-row,
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel { display: contents; }
+  /* Flatten ALL wrappers so every section is a flex item of .game-layout in
+     ONE column — giving the exact play order: grid → ANSWER+art → TOP 5 →
+     LIVE → ALL PLAYERS. (answer-art-box / notify / overall are siblings of
+     game-col-left in the real DOM, so the whole chain flattens.) */
+  html.cw-web .game-layout > .game-col-left { display: contents; }
+  html.cw-web .game-layout > .game-col-left > .game-frame,
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row,
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel { display: contents; }
 
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col { order: 1; }
-  html.cw-web .game-col-left > .answer-art-box { order: 2; }
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col { order: 3; }
-  html.cw-web .game-col-left > .notify-row { order: 4; }
-  html.cw-web .game-col-left > .overall-board { order: 5; }
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col { order: 1; }
+  html.cw-web .game-layout > .answer-art-box { order: 2; }
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col { order: 3; }
+  html.cw-web .game-layout > .notify-row { order: 4; }
+  html.cw-web .game-layout > .overall-board { order: 5; }
   html.cw-web .play-col, html.cw-web .leader-col, html.cw-web .answer-art-box { max-width: 100%; }
   /* Drop the 300px row-layout basis so TOP 5 hugs its content (no void above LIVE) */
   html.cw-web .leader-col { flex: 0 0 auto !important; height: auto !important; min-height: 0 !important; }
@@ -1284,28 +1288,28 @@ html.cw-web .waiting-player {
   }
 
   /* ── Subtle staggered panel entrances ── */
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
-  html.cw-web .game-col-left > .answer-art-box,
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
-  html.cw-web .game-col-left > .notify-row,
-  html.cw-web .game-col-left > .overall-board {
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
+  html.cw-web .game-layout > .answer-art-box,
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
+  html.cw-web .game-layout > .notify-row,
+  html.cw-web .game-layout > .overall-board {
     animation: cw-rise 0.4s ease both;
   }
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col { animation-delay: 0s; }
-  html.cw-web .game-col-left > .answer-art-box { animation-delay: 0.06s; }
-  html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col { animation-delay: 0.12s; }
-  html.cw-web .game-col-left > .notify-row { animation-delay: 0.18s; }
-  html.cw-web .game-col-left > .overall-board { animation-delay: 0.24s; }
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col { animation-delay: 0s; }
+  html.cw-web .game-layout > .answer-art-box { animation-delay: 0.06s; }
+  html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col { animation-delay: 0.12s; }
+  html.cw-web .game-layout > .notify-row { animation-delay: 0.18s; }
+  html.cw-web .game-layout > .overall-board { animation-delay: 0.24s; }
   @keyframes cw-rise {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
   @media (prefers-reduced-motion: reduce) {
-    html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
-    html.cw-web .game-col-left > .answer-art-box,
-    html.cw-web .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
-    html.cw-web .game-col-left > .notify-row,
-    html.cw-web .game-col-left > .overall-board,
+    html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
+    html.cw-web .game-layout > .answer-art-box,
+    html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
+    html.cw-web .game-layout > .notify-row,
+    html.cw-web .game-layout > .overall-board,
     html.cw-web .chat-panel,
     html.cw-web .overlay-card { animation: none; }
   }
