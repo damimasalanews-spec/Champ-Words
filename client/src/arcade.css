@@ -50,6 +50,12 @@ html.cw-web body::before {
 
 /* ── App shell ──────────────────────────────────────────────────────── */
 html.cw-web .app { max-width: 1320px; padding: 0 22px 24px; }
+/* The legacy html/body height:100% + hidden-overflow rules lock the document
+   to the viewport height, which breaks scrolling on tall pages (forms, daily
+   word). Web mode uses a natural document flow (the game screen is unaffected
+   — it scrolls normally too). */
+html.cw-web, html.cw-web body { height: auto !important; min-height: 100%; overflow: visible !important; }
+html.cw-web #root { height: auto !important; min-height: 100dvh; }
 
 html.cw-web .app-header {
   background: rgba(5, 6, 15, 0.72);
@@ -1617,4 +1623,404 @@ html.cw-web .login-legal a:hover { color: var(--cw-green); }
   html.cw-web .login-bottom { grid-column: 1; grid-row: auto; padding: 8px 22px 24px; }
   html.cw-web .hall-list { max-height: 190px; }
   html.cw-web .tiktok-login-btn, html.cw-web .guest-login-btn { padding-top: 15px; padding-bottom: 15px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOBBY (Get Started) + DAILY WORD — professional, animated (web mode)
+   Scoped to html.cw-web; the studio canvas (tiktok-half) is untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Shared keyframes ── */
+@keyframes cw-floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes cw-glow-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.12); }
+}
+@keyframes cw-card-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cw-shimmer-bg {
+  to { background-position: 200% 0; }
+}
+
+/* ── Get Started landing ── */
+html.cw-web .lobby-intro {
+  min-height: calc(100dvh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  position: relative;
+  overflow: hidden;
+}
+html.cw-web .lobby-intro .login-bg-tiles span {
+  color: rgba(61, 255, 184, 0.14) !important;
+  text-shadow: 0 0 18px rgba(61, 255, 184, 0.35), 0 0 40px rgba(46, 230, 255, 0.2);
+}
+html.cw-web .intro-card {
+  width: min(540px, 100%);
+  border-radius: 28px !important;
+  padding: 44px 40px 36px;
+  background: rgba(10, 13, 30, 0.78) !important;
+  border: 1px solid rgba(122, 170, 255, 0.16) !important;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55), 0 0 90px rgba(61, 255, 184, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  text-align: center;
+  position: relative;
+  animation: cw-card-in 0.5s cubic-bezier(0.22, 0.9, 0.32, 1);
+}
+html.cw-web .intro-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(61, 255, 184, 0.8), rgba(46, 230, 255, 0.8), transparent);
+  opacity: 0.7;
+}
+html.cw-web .intro-card > * { animation: cw-rise 0.45s ease both; }
+html.cw-web .intro-card > :nth-child(1) { animation-delay: 0.05s; }
+html.cw-web .intro-card > :nth-child(2) { animation-delay: 0.1s; }
+html.cw-web .intro-card > :nth-child(3) { animation-delay: 0.15s; }
+html.cw-web .intro-card > :nth-child(4) { animation-delay: 0.2s; }
+html.cw-web .intro-card > :nth-child(5) { animation-delay: 0.25s; }
+html.cw-web .intro-card > :nth-child(6) { animation-delay: 0.3s; }
+html.cw-web .intro-card > :nth-child(7) { animation-delay: 0.35s; }
+html.cw-web .intro-logo-wrap { position: relative; display: inline-flex; margin: 0 auto 14px; }
+html.cw-web .intro-glow {
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(46, 230, 255, 0.28), rgba(61, 255, 184, 0.12) 45%, transparent 70%);
+  filter: blur(6px);
+  animation: cw-glow-pulse 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+html.cw-web .intro-title {
+  font-family: var(--cw-display);
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0 0 8px;
+  background: linear-gradient(90deg, #ffffff 5%, var(--cw-green) 55%, var(--cw-cyan) 100%) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 18px rgba(61, 255, 184, 0.35));
+}
+html.cw-web .intro-tagline { color: var(--cw-dim); font-size: 15px; margin: 0 0 20px; }
+html.cw-web .intro-features {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+html.cw-web .intro-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cw-cyan) !important;
+  background: rgba(46, 230, 255, 0.07) !important;
+  border: 1px solid rgba(46, 230, 255, 0.3) !important;
+  border-radius: 999px !important;
+  padding: 6px 13px;
+}
+html.cw-web .btn-get-started {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, var(--cw-green), var(--cw-cyan)) !important;
+  background-size: 200% 100% !important;
+  animation: cw-shimmer-bg 3s linear infinite;
+  color: #04121a !important;
+  box-shadow: 0 10px 30px rgba(61, 255, 184, 0.3), 0 0 24px rgba(46, 230, 255, 0.2);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+html.cw-web .btn-get-started:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(61, 255, 184, 0.4), 0 0 34px rgba(46, 230, 255, 0.3); }
+html.cw-web .btn-wotd {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cw-amber) !important;
+  background: rgba(255, 197, 61, 0.06) !important;
+  border: 1.5px solid rgba(255, 197, 61, 0.45) !important;
+  border-radius: 14px !important;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+}
+html.cw-web .btn-wotd:hover { background: rgba(255, 197, 61, 0.12) !important; box-shadow: 0 0 22px rgba(255, 197, 61, 0.3); transform: translateY(-1px); }
+html.cw-web .intro-foot { color: var(--cw-faint); font-size: 12px; margin: 18px 0 0; }
+
+/* ── Form pages (join / create / admin) ── */
+html.cw-web .lobby-form {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+  animation: cw-card-in 0.4s cubic-bezier(0.22, 0.9, 0.32, 1);
+}
+html.cw-web .btn-back {
+  font-family: var(--cw-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--cw-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(122, 170, 255, 0.18);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+html.cw-web .btn-back:hover { color: var(--cw-text); border-color: var(--cw-cyan); box-shadow: 0 0 14px rgba(46, 230, 255, 0.2); }
+html.cw-web .form-heading {
+  font-family: var(--cw-display);
+  font-size: clamp(24px, 3.4vw, 32px);
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin: 4px 0 6px;
+  background: linear-gradient(90deg, #ffffff, var(--cw-green) 60%, var(--cw-cyan)) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+html.cw-web .form-sub { color: var(--cw-dim); font-size: 14px; margin: 0 0 22px; }
+html.cw-web .lobby-form .lobby-card {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 30px 28px;
+  background: rgba(10, 13, 30, 0.78);
+  border: 1px solid rgba(122, 170, 255, 0.16);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), 0 0 60px rgba(61, 255, 184, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.25s, border-color 0.25s;
+}
+html.cw-web .lobby-form .lobby-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(61, 255, 184, 0.7), rgba(46, 230, 255, 0.7), transparent);
+  opacity: 0.6;
+}
+html.cw-web .lobby-form .lobby-card h2 { font-size: 19px; font-weight: 800; margin: 0 0 4px; color: var(--cw-text); }
+html.cw-web .lobby-form .lobby-card .subtitle { color: var(--cw-dim); font-size: 13px; margin: 0 0 18px; }
+html.cw-web .lobby-form .form-group { margin-bottom: 16px; }
+html.cw-web .lobby-form .form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cw-dim);
+  margin-bottom: 8px;
+}
+html.cw-web .lobby-form .form-group input {
+  width: 100%;
+  padding: 13px 16px;
+  background: rgba(8, 11, 26, 0.9) !important;
+  border: 1.5px solid rgba(122, 170, 255, 0.22) !important;
+  border-radius: 13px !important;
+  color: var(--cw-text) !important;
+  font-size: 15px;
+}
+html.cw-web .lobby-form .form-group input:focus {
+  border-color: var(--cw-green) !important;
+  box-shadow: 0 0 0 3px rgba(61, 255, 184, 0.16), 0 0 18px rgba(61, 255, 184, 0.2) !important;
+}
+html.cw-web .lobby-form .btn-primary {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--cw-green), var(--cw-cyan)) !important;
+  color: #04121a !important;
+  box-shadow: 0 8px 26px rgba(61, 255, 184, 0.25);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+html.cw-web .lobby-form .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(61, 255, 184, 0.35); }
+html.cw-web .round-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+html.cw-web .round-option {
+  flex: 1 1 auto;
+  min-width: 52px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cw-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(122, 170, 255, 0.18);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+html.cw-web .round-option:hover { color: var(--cw-text); transform: translateY(-1px); }
+html.cw-web .round-option.selected {
+  color: #04121a;
+  background: linear-gradient(135deg, var(--cw-green), var(--cw-cyan)) !important;
+  border-color: transparent;
+  box-shadow: 0 0 16px rgba(61, 255, 184, 0.35);
+}
+html.cw-web .round-selector-hint { font-size: 11px; color: var(--cw-faint); margin: 8px 0 0; line-height: 1.5; }
+html.cw-web .form-error {
+  color: var(--cw-red);
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 92, 124, 0.08);
+  border: 1px solid rgba(255, 92, 124, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+html.cw-web .btn-link { background: none; border: none; color: var(--cw-dim); font-size: 13px; cursor: pointer; margin-top: 16px; }
+html.cw-web .btn-link:hover { color: var(--cw-green); }
+
+/* Join vs Create — two cards side by side on desktop.
+   Unscoped legacy rules cap .lobby-options at 440px and compact the cards
+   with !important — re-assert the wide professional layout in web mode. */
+html.cw-web .lobby-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px !important;
+  align-items: stretch;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 auto;
+}
+html.cw-web .lobby-form { gap: 10px !important; padding: 32px 20px 60px !important; width: 100% !important; }
+html.cw-web .lobby-options .lobby-card { padding: 26px 24px !important; }
+html.cw-web .lobby-options .lobby-card h2 { font-size: 18px !important; letter-spacing: 0.5px !important; }
+html.cw-web .lobby-options .lobby-card .subtitle { font-size: 12.5px !important; }
+html.cw-web .lobby-options .form-group input { font-size: 15px !important; padding: 12px 15px !important; }
+html.cw-web .lobby-options .btn-primary,
+html.cw-web .lobby-options .btn-host-create { font-size: 14.5px !important; padding: 13px 18px !important; border-radius: 13px !important; }
+/* Show the app header on the form pages in web mode (legacy hides it) */
+html.cw-web .app:has(.lobby-form) .app-header { display: flex !important; }
+html.cw-web .lobby-options .lobby-card { max-width: none; }
+html.cw-web .lobby-options .lobby-card:hover { transform: translateY(-3px); box-shadow: 0 34px 90px rgba(0, 0, 0, 0.55), 0 0 70px rgba(61, 255, 184, 0.1); }
+html.cw-web .host-card { border-color: rgba(255, 197, 61, 0.3) !important; }
+html.cw-web .host-card::before { background: linear-gradient(90deg, transparent, rgba(255, 197, 61, 0.8), transparent) !important; }
+html.cw-web .btn-host-create {
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cw-amber);
+  background: rgba(255, 197, 61, 0.06);
+  border: 1.5px solid rgba(255, 197, 61, 0.45);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+}
+html.cw-web .btn-host-create:hover { background: rgba(255, 197, 61, 0.12); box-shadow: 0 0 20px rgba(255, 197, 61, 0.3); transform: translateY(-1px); }
+
+/* ── Daily Word — floating card + drifting art ── */
+html.cw-web .wotd-wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+  animation: cw-card-in 0.4s cubic-bezier(0.22, 0.9, 0.32, 1);
+}
+html.cw-web .wotd-card {
+  border-radius: 26px;
+  padding: 36px 28px 32px;
+  text-align: center;
+  animation: cw-floaty 6.5s ease-in-out infinite;
+}
+html.cw-web .wotd-title {
+  font-family: var(--cw-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  color: var(--cw-green);
+  text-shadow: 0 0 14px rgba(61, 255, 184, 0.5);
+  margin-bottom: 6px;
+}
+html.cw-web .wotd-date { color: var(--cw-faint); font-size: 12px; margin-bottom: 22px; }
+html.cw-web .wotd-art { font-size: 84px; line-height: 1.1; margin-bottom: 22px; filter: drop-shadow(0 0 26px rgba(255, 197, 61, 0.5)); animation: cw-floaty 4s ease-in-out infinite; }
+html.cw-web .wotd-art .art-flag {
+  width: 120px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid rgba(122, 170, 255, 0.3);
+  box-shadow: 0 0 26px rgba(46, 230, 255, 0.25);
+}
+html.cw-web .wotd-brackets {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+html.cw-web .wotd-brackets .bracket-box {
+  width: clamp(38px, 9vw, 46px);
+  height: clamp(46px, 11vw, 56px);
+  background: rgba(61, 255, 184, 0.07) !important;
+  border: 2px solid rgba(61, 255, 184, 0.45) !important;
+  border-radius: 12px !important;
+}
+html.cw-web .wotd-brackets .bracket-box.found-me {
+  border-color: var(--cw-green) !important;
+  background: rgba(61, 255, 184, 0.16) !important;
+  box-shadow: 0 0 22px rgba(61, 255, 184, 0.7) !important;
+}
+html.cw-web .wotd-form { display: flex; gap: 10px; margin-bottom: 14px; }
+html.cw-web .wotd-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 16px;
+  background: rgba(8, 11, 26, 0.9) !important;
+  border: 1.5px solid rgba(122, 170, 255, 0.22) !important;
+  border-radius: 13px !important;
+  color: var(--cw-text) !important;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+html.cw-web .wotd-form input:focus {
+  border-color: var(--cw-green) !important;
+  box-shadow: 0 0 0 3px rgba(61, 255, 184, 0.16), 0 0 18px rgba(61, 255, 184, 0.2) !important;
+}
+html.cw-web .wotd-form .btn { padding: 0 22px; font-weight: 800; border-radius: 13px; }
+html.cw-web .wotd-sub { color: var(--cw-dim); font-size: 13px; margin: 0; }
+html.cw-web .wotd-done { color: var(--cw-green); font-size: 17px; font-weight: 800; margin: 6px 0 4px; text-shadow: 0 0 16px rgba(61, 255, 184, 0.5); }
+html.cw-web .wotd-streak { color: var(--cw-amber); font-size: 15px; font-weight: 800; margin: 0 0 6px; text-shadow: 0 0 14px rgba(255, 197, 61, 0.5); }
+html.cw-web .wotd-card.wotd-wrong { animation: cw-shake 0.45s ease; }
+
+/* ── Mobile lobby + daily word ── */
+@media (max-width: 767px) {
+  html.cw-web .lobby-intro { padding: 24px 12px 48px; min-height: calc(100dvh - 52px); }
+  html.cw-web .intro-card { padding: 32px 20px 28px; border-radius: 22px; }
+  html.cw-web .intro-title { font-size: clamp(28px, 8.5vw, 36px); }
+  html.cw-web .lobby-form { padding: 20px 12px 48px; }
+  html.cw-web .lobby-form .lobby-card { padding: 24px 18px; border-radius: 20px; }
+  html.cw-web .lobby-options { grid-template-columns: 1fr; }
+  html.cw-web .round-option { min-width: 46px; padding: 9px 12px; font-size: 12.5px; }
+  html.cw-web .wotd-wrap { padding: 20px 12px 48px; }
+  html.cw-web .wotd-card { padding: 28px 18px 26px; border-radius: 22px; }
+  html.cw-web .wotd-art { font-size: 68px; }
+  html.cw-web .wotd-form { flex-direction: column; }
+  html.cw-web .wotd-form .btn { padding: 13px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.cw-web .wotd-card,
+  html.cw-web .wotd-art,
+  html.cw-web .intro-glow,
+  html.cw-web .intro-card > *,
+  html.cw-web .lobby-form,
+  html.cw-web .wotd-wrap { animation: none !important; }
 }
