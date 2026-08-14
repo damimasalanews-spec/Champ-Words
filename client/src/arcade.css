@@ -2504,3 +2504,65 @@ html.cw-web .logout-btn:hover {
 @media (min-width: 480px) and (max-width: 767px) {
   html.cw-web .viewers-badge { display: inline-flex; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   GAME PAGE (desktop canvas, tiktok-half) — website COLORS ONLY.
+   Strictly colors: palette variables + the few hardcoded hues. No borders,
+   no radii, no sizes, no fonts, no layout — the format is untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+html.tiktok-half {
+  --bg: #07081a;
+  --bg-2: #0b0f22;
+  --surface: #0d1330;
+  --surface-2: #111838;
+  --surface-3: #151d42;
+  --text: #f2f6ff;
+  --text-dim: #9aa8cf;
+  --text-faint: #5f6c99;
+  --accent: #3dffb8;
+  --accent-strong: #28e8a4;
+  --accent-soft: rgba(61, 255, 184, 0.14);
+  --sky: #2ee6ff;
+  --sky-soft: rgba(46, 230, 255, 0.14);
+  --amber: #ffc53d;
+  --amber-soft: rgba(255, 197, 61, 0.14);
+  --danger: #ff5c7c;
+  --danger-soft: rgba(255, 92, 124, 0.14);
+  --border: rgba(122, 170, 255, 0.16);
+  --border-strong: rgba(122, 170, 255, 0.28);
+  --bracket-border: rgba(61, 255, 184, 0.4);
+  --tile-text: #0a1130;
+}
+/* Hardcoded canvas hues → website navy (colors only) */
+html.tiktok-half body,
+html.tiktok-half #root,
+html.tiktok-half .app,
+html.tiktok-half .game-area {
+  background: #07081a !important;
+}
+html.tiktok-half .game-area {
+  /* the legacy game-area var block overrides the root palette for
+     descendants — re-assert the website hues here (colors only) */
+  --accent: #3dffb8;
+  --green: #3dffb8;
+  --accent-strong: #28e8a4;
+  --accent-soft: rgba(61, 255, 184, 0.14);
+  --bracket-border: rgba(61, 255, 184, 0.4);
+  background:
+    radial-gradient(620px 420px at 18% 10%, rgba(61, 255, 184, 0.10), transparent 60%),
+    radial-gradient(540px 380px at 84% 74%, rgba(46, 230, 255, 0.09), transparent 55%),
+    #07081a !important;
+}
+html.tiktok-half .lobby-intro {
+  background: #07081a !important;
+}
+html.tiktok-half .grid-4x4 .grid-cell {
+  color: #0a1130 !important;
+}
+/* Remaining hardcoded emerald hues → website green (colors only) */
+html.tiktok-half .hint-clue {
+  border-color: rgba(61, 255, 184, 0.4) !important;
+}
+html.tiktok-half .top10-row.top10-me {
+  border-color: rgba(61, 255, 184, 0.35) !important;
+}
