@@ -92,23 +92,24 @@ export default function App() {
 
   // Check auth on mount (or auto-guest via ?auto=1 / ?guest=Name —
   // used by studio browser sources that cannot be clicked, e.g. TikTok Live Studio)
-  // Render mode for web sessions: home/lobby are responsive (cw-web) on both
-  // mobile and desktop; once a room is active on a DESKTOP viewport, the game
-  // screen switches to the original fixed canvas (tiktok-half) exactly as it
-  // always was. Studio sources (?half / ?auto) are locked to the canvas by
-  // main.jsx and are never touched here.
+  // Render mode for web sessions: home/lobby/waiting are responsive (cw-web)
+  // on both mobile and desktop; only the actual game screens (playing, round
+  // over, game over) switch to the original fixed canvas (tiktok-half) on a
+  // DESKTOP viewport, exactly as they always were. Studio sources (?half /
+  // ?auto) are locked to the canvas by main.jsx and are never touched here.
   const isStudio = new URLSearchParams(window.location.search).has('half') || new URLSearchParams(window.location.search).has('auto');
   useEffect(() => {
     if (isStudio) return;
     const applyMode = () => {
-      const canvas = !!room && window.innerWidth >= 768;
+      const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
+      const canvas = inGame && window.innerWidth >= 768;
       document.documentElement.classList.toggle('tiktok-half', canvas);
       document.documentElement.classList.toggle('cw-web', !canvas);
     };
     applyMode();
     window.addEventListener('resize', applyMode);
     return () => window.removeEventListener('resize', applyMode);
-  }, [room, isStudio]);
+  }, [screen, isStudio]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
