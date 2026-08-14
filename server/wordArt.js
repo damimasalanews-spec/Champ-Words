@@ -525,6 +525,7 @@ const REMOVED_WORDS = [
   'stork', 'platypus', 'tapir', 'manatee', 'walrus', 'wombat', 'gopher',
   'lemur', 'gibbon', 'ferret', 'weasel', 'hyena', 'coyote', 'yak', 'mule',
   'mare', 'pony', 'fawn', 'stag', 'hog', 'beast', 'cod', 'clam', 'plum',
+  'bunny', 'pup', 'hen',
   'prune', 'squash', 'tofu', 'mustard', 'clove', 'fennel', 'parsley', 'quinoa',
   'granola', 'salsa', 'tamale', 'guava', 'lychee', 'papaya', 'apricot',
   'cranberry', 'hazelnut', 'almond', 'walnut', 'nutmeg', 'raisin', 'sesame',
