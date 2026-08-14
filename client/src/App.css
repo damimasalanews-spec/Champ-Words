@@ -2322,15 +2322,6 @@
 .tiktok-half .pick-hint-box { margin-top: 6px; }
 .tiktok-half .pick-hint-input { padding: 6px 8px; font-size: 12px; }
 .tiktok-half .overlay-card { padding: 14px; max-height: 62%; }
-/* Game-over popup: pin below the app header (100px margin from the top) so
-   the ALL-TIME TOP 10 card is never hidden behind/above the header */
-.tiktok-half .gameover-overlay {
-  position: fixed;
-  inset: 0;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 100px;
-}
 .tiktok-half .chat-panel { top: 0; bottom: auto; height: 45%; }
 .tiktok-half .chat-msg { font-size: 11px; }
 .tiktok-half .score-item { padding: 4px 8px; }
@@ -2547,8 +2538,8 @@
 /* Bigger fonts in the chat info box */
 .tiktok-half .inline-chat-msg { font-size: 13px; }
 .tiktok-half .inline-chat-msg.system { font-size: 13px; }
-/* ── Round-over / game-over pop-out sits at the TOP of the game area ──── */
-.tiktok-half .overlay { align-items: flex-start; padding-top: 40px; }
+/* ── Round-over / game-over pop-out sits below the header (100px) ─────── */
+.tiktok-half .overlay { align-items: flex-start; padding-top: 100px; }
 /* Pop-up name + score fonts (+5px) */
 .tiktok-half .player-name { font-size: 19px; }
 .tiktok-half .player-score { font-size: 23px; }
