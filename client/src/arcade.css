@@ -1314,3 +1314,307 @@ html.cw-web .waiting-player {
     html.cw-web .overlay-card { animation: none; }
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HOME / LOGIN PAGE — professional arcade-neon (web mode: mobile + desktop)
+   Scoped to html.cw-web; the studio canvas (tiktok-half) login is untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+html.cw-web .login-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 48px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+html.cw-web .login-card {
+  width: min(980px, 100%);
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  background: rgba(10, 13, 30, 0.78);
+  border: 1px solid rgba(122, 170, 255, 0.16);
+  border-radius: 28px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55), 0 0 90px rgba(61, 255, 184, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  position: relative;
+}
+html.cw-web .login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(61, 255, 184, 0.8), rgba(46, 230, 255, 0.8), transparent);
+  opacity: 0.7;
+}
+
+/* ── Left: brand block ── */
+html.cw-web .login-top {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 56px 48px;
+  border-right: 1px solid rgba(122, 170, 255, 0.12);
+  background: radial-gradient(120% 90% at 0% 0%, rgba(46, 230, 255, 0.07), transparent 55%), radial-gradient(120% 90% at 100% 100%, rgba(61, 255, 184, 0.08), transparent 55%);
+}
+html.cw-web .login-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--cw-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cw-green);
+  background: rgba(61, 255, 184, 0.08);
+  border: 1px solid rgba(61, 255, 184, 0.35);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin-bottom: 26px;
+  text-transform: uppercase;
+}
+html.cw-web .login-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+}
+html.cw-web .login-brand-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+html.cw-web .login-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 1px solid rgba(122, 170, 255, 0.3);
+  box-shadow: 0 0 22px rgba(46, 230, 255, 0.25);
+}
+html.cw-web .login-logo h1 {
+  font-family: var(--cw-display);
+  font-size: clamp(34px, 4.4vw, 48px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.05;
+  margin: 0;
+  background: linear-gradient(90deg, #ffffff 5%, var(--cw-green) 55%, var(--cw-cyan) 100%) !important;
+  -webkit-background-clip: text !important; background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 0 18px rgba(61, 255, 184, 0.35));
+}
+html.cw-web .login-logo p {
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cw-dim);
+  margin: 0;
+}
+
+/* ── Right: actions ── */
+html.cw-web .login-mid {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 44px 44px 10px;
+}
+html.cw-web .login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--cw-faint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin: 6px 0;
+}
+html.cw-web .login-divider::before,
+html.cw-web .login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(122, 170, 255, 0.14);
+}
+html.cw-web .login-error {
+  color: var(--cw-red);
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 92, 124, 0.08);
+  border: 1px solid rgba(255, 92, 124, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+html.cw-web .tiktok-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(180deg, #1c1f2e, #0a0c16);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+}
+html.cw-web .tiktok-login-btn .tiktok-icon { width: 20px; height: 20px; }
+html.cw-web .tiktok-login-btn:hover {
+  border-color: var(--cw-cyan);
+  box-shadow: 0 0 22px rgba(46, 230, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+html.cw-web .guest-login-btn {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--cw-green);
+  background: rgba(61, 255, 184, 0.05);
+  border: 1.5px solid rgba(61, 255, 184, 0.45);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+}
+html.cw-web .guest-login-btn:hover {
+  background: rgba(61, 255, 184, 0.12);
+  box-shadow: 0 0 22px rgba(61, 255, 184, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ── Right bottom: hall of fame + footer ── */
+html.cw-web .login-bottom {
+  grid-column: 2;
+  grid-row: 2;
+  padding: 10px 44px 34px;
+}
+html.cw-web .hall-of-fame {
+  border-top: 1px solid rgba(122, 170, 255, 0.12);
+  padding-top: 16px;
+}
+html.cw-web .hall-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+html.cw-web .hall-tab {
+  flex: 1;
+  font-family: var(--cw-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--cw-dim);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 7px 0;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+html.cw-web .hall-tab:hover { color: var(--cw-text); }
+html.cw-web .hall-tab.active {
+  color: var(--cw-green);
+  background: rgba(61, 255, 184, 0.08);
+  border-color: rgba(61, 255, 184, 0.4);
+  box-shadow: 0 0 12px rgba(61, 255, 184, 0.15);
+}
+html.cw-web .hall-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 236px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+}
+html.cw-web .hall-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+}
+html.cw-web .hall-rank {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-family: var(--cw-display);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--cw-dim);
+  background: rgba(255, 255, 255, 0.06);
+}
+html.cw-web .hall-row:nth-child(1) .hall-rank { background: linear-gradient(135deg, #ffe27a, #ff9d3c); color: #2a1500; box-shadow: 0 0 10px rgba(255, 197, 61, 0.5); }
+html.cw-web .hall-row:nth-child(2) .hall-rank { background: linear-gradient(135deg, #d8e6ff, #8fa6cc); color: #131c33; }
+html.cw-web .hall-row:nth-child(3) .hall-rank { background: linear-gradient(135deg, #ffb98a, #c97b46); color: #2a1200; }
+html.cw-web .hall-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cw-text);
+}
+html.cw-web .hall-chat {
+  flex: none;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--cw-red);
+  background: rgba(255, 92, 124, 0.12);
+  border: 1px solid rgba(255, 92, 124, 0.4);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+html.cw-web .hall-score {
+  flex: none;
+  font-family: var(--cw-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--cw-cyan);
+  text-shadow: 0 0 10px rgba(46, 230, 255, 0.4);
+}
+html.cw-web .hall-empty { font-size: 12.5px; color: var(--cw-faint); padding: 8px 2px; }
+html.cw-web .login-note { font-size: 11.5px; color: var(--cw-faint); margin: 14px 0 4px; line-height: 1.5; }
+html.cw-web .login-legal { font-size: 11.5px; }
+html.cw-web .login-legal a { color: var(--cw-dim); text-decoration: none; }
+html.cw-web .login-legal a:hover { color: var(--cw-green); }
+
+/* ── Mobile home (single column, compact) ── */
+@media (max-width: 767px) {
+  html.cw-web .login-page { padding: 20px 12px 36px; align-items: flex-start; }
+  html.cw-web .login-card { grid-template-columns: 1fr; border-radius: 22px; }
+  html.cw-web .login-top {
+    grid-column: 1; grid-row: auto;
+    align-items: center;
+    text-align: center;
+    padding: 34px 22px 6px;
+    border-right: none;
+    border-bottom: 1px solid rgba(122, 170, 255, 0.1);
+  }
+  html.cw-web .login-live-badge { margin-bottom: 18px; }
+  html.cw-web .login-logo { align-items: center; }
+  html.cw-web .login-logo h1 { font-size: clamp(28px, 8.5vw, 36px); }
+  html.cw-web .login-mid { grid-column: 1; grid-row: auto; padding: 22px 22px 4px; gap: 12px; }
+  html.cw-web .login-bottom { grid-column: 1; grid-row: auto; padding: 8px 22px 24px; }
+  html.cw-web .hall-list { max-height: 190px; }
+  html.cw-web .tiktok-login-btn, html.cw-web .guest-login-btn { padding-top: 15px; padding-bottom: 15px; }
+}

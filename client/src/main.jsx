@@ -4,14 +4,16 @@ import './index.css'
 import App from './App.jsx'
 import './arcade.css' // arcade-neon responsive game screen (web mode only, after App.css)
 
-// Two render modes, decided once here (+ on resize):
+// Two render modes, decided here (+ on resize) and refined by App.jsx:
 //  1) tiktok-half — the ORIGINAL fixed 540×960 design canvas. Used by TikTok
 //     studio browser sources (?half=1 / ?auto=1), the permanent stream links
-//     (/tiktok, /compact), TikTok's in-app browser (UA sniff + half-screen
-//     viewport), AND desktop-width web sessions (>=768px) — the desktop web
-//     view keeps exactly the same design/format it always had.
-//  2) cw-web — the responsive layout, used on phone-width screens (<768px),
-//     where the mobile view was reworked.
+//     (/tiktok, /compact) and TikTok's in-app browser (UA sniff + half-screen
+//     viewport). App.jsx ALSO switches a desktop web session to the canvas
+//     while a game/room is active, so the in-game desktop view stays exactly
+//     as it always was.
+//  2) cw-web — the responsive layout. Every normal web visit starts here
+//     (home/lobby are responsive on BOTH mobile and desktop); phones stay
+//     here for the whole session.
 function applyTiktokHalfMode() {
   const isTikTok = /tiktok|musical_ly|bytedance/i.test(navigator.userAgent);
   const isHalfScreen = window.innerHeight < window.screen.height * 0.78;
@@ -19,9 +21,7 @@ function applyTiktokHalfMode() {
   const path = window.location.pathname;
   const isTiktokPath = path.startsWith('/tiktok');
   const isCompactPath = path.startsWith('/compact');
-  const studioMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
-  const desktopCanvas = !studioMode && window.innerWidth >= 768;
-  const overlayMode = studioMode || desktopCanvas;
+  const overlayMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
   document.documentElement.classList.toggle('tiktok-half', overlayMode);
   document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
