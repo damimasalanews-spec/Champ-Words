@@ -1517,7 +1517,9 @@ io.on('connection', socket => {
 
   // Players tap "JOIN THE ROOM" — no code needed: they join the newest
   // active room (created by the host). Only works while a room is live.
-  socket.on('join_active_room', ({ name, avatar, playerKey }, cb) => {
+  // Spectators (e.g. a TikTok studio browser source using the fixed
+  // ?auto=1 stream link) pass spectator:true to watch it without playing.
+  socket.on('join_active_room', ({ name, avatar, playerKey, spectator }, cb) => {
     let active = null;
     for (const [, r] of rooms) {
       if (r.state === 'game_over') continue;            // finished games are closed
@@ -1525,6 +1527,12 @@ io.on('connection', socket => {
       if (!active || r.createdAt > active.createdAt) active = r;
     }
     if (!active) return cb && cb({ ok: false, error: 'No active room — the host has not started yet' });
+    if (spectator) {
+      socket.join(active.id);
+      trackViewer(socket, active.id);
+      cb && cb({ ok: true, room: sanitizeRoom(active) });
+      return;
+    }
     const r = joinAsPlayer(socket, active, { name, avatar, playerKey });
     trackViewer(socket, active.id);
     cb && cb({ ok: true, rejoined: r.rejoined, room: sanitizeRoom(active), lastRound: active.lastRoundResult, lastGame: active.lastGameResult });

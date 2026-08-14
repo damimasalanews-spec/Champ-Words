@@ -138,42 +138,73 @@ export default function App() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Auto-join a room as spectator (?room=CODE) — no clicks needed, works even
-  // when the game is already in progress.
+  // Auto-join a room as spectator — no clicks needed, works even when the
+  // game is already in progress. Two modes:
+  //  ?auto=1&room=CODE  → watch a specific room (code changes per game)
+  //  ?auto=1             → the FIXED stream link: follow the host's current
+  //                        active room automatically (and re-follow when a
+  //                        game ends and the host starts the next one).
   useEffect(() => {
     if (!user || !user.isGuest) return;
     const params = new URLSearchParams(window.location.search);
     const roomCode = String(params.get('room') || '').toUpperCase().trim();
-    if (!roomCode) {
-      setAutoStatus('Studio mode: add &room=CODE to auto-watch a room');
-      return;
-    }
     let stopped = false;
     let retryTimer = null;
+    let watchTimer = null;
+    const applySpectatorRoom = (res) => {
+      if (stopped || !res || !res.ok || !res.room) return false;
+      setAutoStatus('');
+      setRoom(res.room);
+      setScreen(res.room.state === 'playing' || res.room.state === 'champ_pick' ? 'playing' : 'waiting');
+      setGameResult(null);
+      setMessages([]);
+      return true;
+    };
     const tryJoin = () => {
       socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: true }, (res) => {
         if (stopped) return;
-        if (res && res.ok) {
-          setAutoStatus('');
-          setRoom(res.room);
-          setScreen(res.room.state === 'playing' || res.room.state === 'champ_pick' ? 'playing' : 'waiting');
-          setGameResult(null);
-          setMessages([]);
+        if (applySpectatorRoom(res)) return;
+        const err = (res && res.error) || 'Cannot join room';
+        setAutoStatus(err === 'Room not found'
+          ? `Room ${roomCode} not found — create it on your phone, connecting automatically…`
+          : err);
+        retryTimer = setTimeout(tryJoin, 4000); // keep retrying until the room exists
+      });
+    };
+    // Fixed stream link — follow whichever room the host is running.
+    let followedRoomId = null;
+    const tryFollow = () => {
+      socket.emit('join_active_room', { name: user.name, avatar: '', spectator: true }, (res) => {
+        if (stopped) return;
+        if (res && res.ok && res.room) {
+          followedRoomId = res.room.id;
+          applySpectatorRoom(res);
+          // Keep watching across games: re-follow once the current one ends.
+          if (!watchTimer) {
+            watchTimer = setInterval(() => {
+              if (stopped) return;
+              socket.emit('join_active_room', { name: user.name, avatar: '', spectator: true }, (res2) => {
+                if (stopped) return;
+                if (res2 && res2.ok && res2.room && res2.room.id !== followedRoomId) {
+                  followedRoomId = res2.room.id;
+                  applySpectatorRoom(res2);
+                }
+              });
+            }, 8000);
+          }
         } else {
-          const err = (res && res.error) || 'Cannot join room';
-          setAutoStatus(err === 'Room not found'
-            ? `Room ${roomCode} not found — create it on your phone, connecting automatically…`
-            : err);
-          retryTimer = setTimeout(tryJoin, 4000); // keep retrying until the room exists
+          setAutoStatus('Stream mode: waiting for the host to start a room…');
+          retryTimer = setTimeout(tryFollow, 4000);
         }
       });
     };
-    const start = () => { if (!stopped) tryJoin(); };
+    const start = roomCode ? tryJoin : tryFollow;
     if (socket.connected) start();
     else socket.on('connect', start);
     return () => {
       stopped = true;
       if (retryTimer) clearTimeout(retryTimer);
+      if (watchTimer) clearInterval(watchTimer);
       socket.off('connect', start);
     };
   }, [user, socket]);
