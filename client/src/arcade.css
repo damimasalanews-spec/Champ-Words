@@ -1,13 +1,13 @@
-/* ═══════════════════════════════════════════════════════════════════════
-   CHAMP WORDS — ARCADE NEON (responsive web game screen)
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CHAMP WORDS â€” ARCADE NEON (responsive web game screen)
    Applied ONLY to normal web sessions (`html.cw-web`, set by main.jsx):
    host on desktop, players on mobile. The TikTok studio overlay
-   (`html.tiktok-half`, fixed 540×960 canvas) is intentionally UNTOUCHED —
+   (`html.tiktok-half`, fixed 540Ã—960 canvas) is intentionally UNTOUCHED â€”
    every rule below is scoped to `html.cw-web` so the stream canvas keeps
    its exact look.
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Neon arcade design tokens ─────────────────────────────────────── */
+/* â”€â”€ Neon arcade design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web {
   --cw-bg: #05060f;
   --cw-panel: rgba(13, 17, 40, 0.9);
@@ -26,7 +26,7 @@ html.cw-web {
   --cw-display: 'Oxanium', 'Outfit', sans-serif;
 }
 
-/* ── Ambient space background (web mode only) ───────────────────────── */
+/* â”€â”€ Ambient space background (web mode only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web body {
   background:
     radial-gradient(1100px 620px at 82% -8%, rgba(139, 92, 255, 0.18), transparent 62%),
@@ -48,12 +48,12 @@ html.cw-web body::before {
   mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 78%);
 }
 
-/* ── App shell ──────────────────────────────────────────────────────── */
+/* â”€â”€ App shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .app { max-width: 1320px; padding: 0 22px 24px; }
 /* The legacy html/body height:100% + hidden-overflow rules lock the document
    to the viewport height, which breaks scrolling on tall pages (forms, daily
    word). Web mode uses a natural document flow (the game screen is unaffected
-   — it scrolls normally too). */
+   â€” it scrolls normally too). */
 html.cw-web, html.cw-web body { height: auto !important; min-height: 100%; overflow: visible !important; }
 html.cw-web #root { height: auto !important; min-height: 100dvh; }
 
@@ -96,10 +96,10 @@ html.cw-web .live-dot {
 }
 @keyframes cw-blink { 50% { opacity: 0.35; } }
 
-/* ── Game header: RD chip · neon progress · chat toggle ─────────────── */
+/* â”€â”€ Game header: RD chip Â· neon progress Â· chat toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .game-area { padding-bottom: 28px; }
 /* The screenIn entrance animation retains a transform on .screen-anim, which
-   becomes the containing block for position:fixed descendants — that would
+   becomes the containing block for position:fixed descendants â€” that would
    break the mobile sticky guess bar. Drop it so fixed elements pin to the
    viewport (the round-intro/popups have their own entrances). */
 html.cw-web .screen-anim { animation: none; transform: none; }
@@ -164,7 +164,7 @@ html.cw-web .chat-toggle:hover {
   box-shadow: 0 0 12px rgba(46, 230, 255, 0.25);
 }
 
-/* ── Type-the-answer input ──────────────────────────────────────────── */
+/* â”€â”€ Type-the-answer input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .type-answer { gap: 8px; max-width: 100%; margin: 0; }
 html.cw-web .type-answer input {
   flex: 1; min-width: 0;
@@ -183,7 +183,7 @@ html.cw-web .type-answer input:focus {
   box-shadow: 0 0 0 3px rgba(61, 255, 184, 0.18), 0 0 18px rgba(61, 255, 184, 0.25) !important;
 }
 
-/* ── Player chips ───────────────────────────────────────────────────── */
+/* â”€â”€ Player chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .player-list { gap: 6px; padding: 2px 0 12px; }
 html.cw-web .player-badge {
   background: rgba(255, 255, 255, 0.04);
@@ -196,7 +196,7 @@ html.cw-web .player-badge {
 }
 html.cw-web .player-badge .host-star { color: var(--cw-amber); text-shadow: 0 0 8px rgba(255, 197, 61, 0.8); }
 
-/* ── "GUESS THE WORD!" jiggle banner ────────────────────────────────── */
+/* â”€â”€ "GUESS THE WORD!" jiggle banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .spot-banner {
   font-family: var(--cw-display);
   font-size: clamp(15px, 2.2vw, 24px);
@@ -214,12 +214,12 @@ html.cw-web .spot-banner span {
   text-shadow: 0 0 14px rgba(46, 230, 255, 0.85), 0 0 40px rgba(139, 92, 255, 0.5);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   GAME LAYOUT — desktop command center (host)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GAME LAYOUT â€” desktop command center (host)
    Grid + TOP 5 side by side in neon panels, art + status in the right
    rail, brackets + notifications below. Falls back to a single column
    under 1024px; a full mobile stack under 768px (see media queries).
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .game-layout { display: flex; flex-direction: row; gap: 20px; align-items: flex-start; }
 html.cw-web .game-col-left { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 html.cw-web .game-col-right { width: 300px; flex: none; display: flex; flex-direction: column; gap: 14px; }
@@ -247,7 +247,7 @@ html.cw-web .play-col {
 }
 html.cw-web .leader-col { flex: 1 1 300px; min-width: 0; }
 
-/* ── Timer ──────────────────────────────────────────────────────────── */
+/* â”€â”€ Timer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .timer-display {
   font-family: var(--cw-display);
   font-weight: 700;
@@ -286,7 +286,7 @@ html.cw-web .timer-bar-fill.timer-bar-warn {
   box-shadow: 0 0 16px rgba(255, 92, 124, 0.7);
 }
 
-/* ── Letter grid: white 3D tiles, neon selection trail ──────────────── */
+/* â”€â”€ Letter grid: white 3D tiles, neon selection trail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .grid-drag-wrapper {
   position: relative;
   display: flex;
@@ -363,7 +363,7 @@ html.cw-web .drag-word-display {
   margin: 6px 0 2px;
 }
 
-/* ── 3-2-1 GO pre-scan chip (mobile) — grid stays visible beneath it ── */
+/* â”€â”€ 3-2-1 GO pre-scan chip (mobile) â€” grid stays visible beneath it â”€â”€ */
 html.cw-web .cw-go-chip {
   position: fixed;
   top: 46%;
@@ -389,7 +389,7 @@ html.cw-web .cw-go-chip {
   to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
-/* ── Live "fastest this round" target chip (mobile) ── */
+/* â”€â”€ Live "fastest this round" target chip (mobile) â”€â”€ */
 html.cw-web .cw-fastest {
   display: inline-flex;
   align-items: center;
@@ -410,13 +410,13 @@ html.cw-web .cw-fastest {
 html.cw-web .cw-fastest b { font-size: 14px; }
 @keyframes cw-fastest-in { from { opacity: 0; transform: translateY(-4px); } }
 
-/* ── Reachable-cell hint while dragging (mobile, subtle cyan ring) ── */
+/* â”€â”€ Reachable-cell hint while dragging (mobile, subtle cyan ring) â”€â”€ */
 html.cw-web .grid-4x4 .grid-cell.ghost {
   box-shadow: inset 0 0 0 2px rgba(46, 230, 255, 0.55), 0 0 12px rgba(46, 230, 255, 0.3), 0 5px 12px rgba(0, 0, 0, 0.4) !important;
   transform: scale(1.04);
 }
 
-/* ── Found chips · hint clue · champ word ───────────────────────────── */
+/* â”€â”€ Found chips Â· hint clue Â· champ word â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .found-now { margin: 2px 0 4px; }
 html.cw-web .found-chip {
   background: rgba(61, 255, 184, 0.1);
@@ -457,9 +457,9 @@ html.cw-web .falling-word {
   font-size: 30px;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ANSWER BRACKETS + ART (one neon panel)
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .answer-art-box {
   display: flex;
   align-items: center;
@@ -536,9 +536,9 @@ html.cw-web .bracket-box.found-me .bracket-letter { color: var(--cw-green); text
 html.cw-web .bracket-box.found-other .bracket-letter { color: var(--cw-cyan); text-shadow: 0 0 14px rgba(46, 230, 255, 0.9); }
 html.cw-web .solved-text { font-size: 13px; color: var(--cw-dim); font-weight: 600; margin: 6px 0 0; }
 
-/* ═══════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    TOP 5 BOARD
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .top10-board {
   display: flex !important;
   flex-direction: column;
@@ -631,9 +631,9 @@ html.cw-web .top10-row.just-crowned .top10-rank { animation: cw-crown 0.9s ease;
 @keyframes cw-crown { 40% { transform: scale(1.5) rotate(-8deg); } }
 html.cw-web .stat-chip { border-radius: 999px; }
 
-/* ═══════════════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ALL PLAYERS BOARD (scrollable)
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .overall-board {
   display: flex !important;
   flex-direction: column;
@@ -718,9 +718,9 @@ html.cw-web .overall-pts {
   text-shadow: 0 0 10px rgba(46, 230, 255, 0.45);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   RIGHT RAIL — live art board + side status
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   RIGHT RAIL â€” live art board + side status
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .art-board {
   background: var(--cw-panel);
   border: 1px solid var(--cw-line);
@@ -756,7 +756,7 @@ html.cw-web .side-status-win {
 }
 html.cw-web .champ-watching { color: var(--cw-dim); font-size: 12px; text-align: center; font-style: italic; }
 
-/* ── Live notifications ticker ──────────────────────────────────────── */
+/* â”€â”€ Live notifications ticker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .notify-row {
   margin: 0;
   padding: 12px 16px;
@@ -784,7 +784,7 @@ html.cw-web .notify-item {
 }
 html.cw-web .notify-icon { filter: drop-shadow(0 0 8px rgba(255, 197, 61, 0.7)); }
 
-/* ── Winner ticker ──────────────────────────────────────────────────── */
+/* â”€â”€ Winner ticker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .ticker-bar { display: flex; justify-content: center; padding: 0; }
 html.cw-web .ticker-item {
   color: var(--cw-cyan);
@@ -794,7 +794,7 @@ html.cw-web .ticker-item {
   text-shadow: 0 0 10px rgba(46, 230, 255, 0.5);
 }
 
-/* ── Speed round banner ─────────────────────────────────────────────── */
+/* â”€â”€ Speed round banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .speed-banner {
   font-family: var(--cw-display);
   font-size: 13px;
@@ -812,7 +812,7 @@ html.cw-web .speed-banner {
 }
 @keyframes cw-speed-pulse { 50% { box-shadow: 0 0 26px rgba(255, 197, 61, 0.35); transform: scale(1.03); } }
 
-/* ── Floating +N and reaction emojis ────────────────────────────────── */
+/* â”€â”€ Floating +N and reaction emojis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .score-pop {
   font-family: var(--cw-display);
   font-weight: 800;
@@ -821,7 +821,7 @@ html.cw-web .score-pop {
 }
 html.cw-web .reaction-emoji { filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5)); }
 
-/* ── Achievement toasts ─────────────────────────────────────────────── */
+/* â”€â”€ Achievement toasts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .toast-pill {
   background: rgba(13, 17, 40, 0.95);
   border: 1px solid rgba(122, 170, 255, 0.3);
@@ -831,9 +831,9 @@ html.cw-web .toast-pill {
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45), 0 0 16px rgba(61, 255, 184, 0.12);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   POPUPS — word pick · champ choosing · hint action
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   POPUPS â€” word pick Â· champ choosing Â· hint action
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .pick-popup-overlay {
   background: rgba(4, 5, 14, 0.8);
   backdrop-filter: blur(10px);
@@ -961,9 +961,9 @@ html.cw-web .hint-clue-option:hover:not(:disabled) {
   box-shadow: 0 0 18px rgba(255, 197, 61, 0.3);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   CELEBRATION — round intro · confetti · onboarding
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CELEBRATION â€” round intro Â· confetti Â· onboarding
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .round-intro-card {
   background: linear-gradient(170deg, #131a3c, #090d22);
   border: 1px solid var(--cw-line-strong);
@@ -1015,7 +1015,7 @@ html.cw-web .onboard-dot.active {
   box-shadow: 0 0 10px rgba(61, 255, 184, 0.7);
 }
 
-/* ── Waiting room (gateway to the game — light polish) ──────────────── */
+/* â”€â”€ Waiting room (gateway to the game â€” light polish) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.cw-web .waiting-host { padding: 40px 0; }
 html.cw-web .room-code {
   font-family: var(--cw-display);
@@ -1038,9 +1038,9 @@ html.cw-web .waiting-player {
   font-weight: 700;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   TABLET — 768–1023px: single column, grid + TOP 5 stay side by side
-   ═══════════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   TABLET â€” 768â€“1023px: single column, grid + TOP 5 stay side by side
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media (min-width: 768px) and (max-width: 1023px) {
   html.cw-web .game-layout { flex-direction: column; align-items: stretch; }
   html.cw-web .game-col-right { width: 100%; flex-direction: row; flex-wrap: wrap; }
@@ -1051,18 +1051,18 @@ html.cw-web .waiting-player {
   html.cw-web .play-col { --cell: clamp(52px, 8vw, 72px); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   MOBILE — <768px: player stack
-   Flattens the frame wrappers so grid → brackets → TOP 5 → notifications
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   MOBILE â€” <768px: player stack
+   Flattens the frame wrappers so grid â†’ brackets â†’ TOP 5 â†’ notifications
    flow in ONE column, with the answer brackets right under the grid.
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media (max-width: 767px) {
   html.cw-web .app { padding: 0 12px 20px; }
 
-  /* ── Header: decluttered for phones ── */
+  /* â”€â”€ Header: decluttered for phones â”€â”€ */
   html.cw-web .viewers-badge { display: none; }
   html.cw-web .user-name { display: none; }
-  html.cw-web .user-info { padding: 3px; border-radius: 50%; }
+  html.cw-web .user-info { padding: 3px; border-radius: 50%; display: flex !important; }
   html.cw-web .app-header { padding: 8px 4px; }
   html.cw-web .app-header .brand { gap: 6px; }
   html.cw-web .app-header .brand-name { font-size: 14px; letter-spacing: 1.5px; }
@@ -1092,15 +1092,15 @@ html.cw-web .waiting-player {
   html.cw-web .cw-fastest b { font-size: 12.5px; }
   html.cw-web .player-badge { font-size: 11.5px; padding: 5px 10px; }
 
-  /* ── Right rail is host-facing; the inline art board covers the drawing ── */
+  /* â”€â”€ Right rail is host-facing; the inline art board covers the drawing â”€â”€ */
   html.cw-web .game-col-right { display: none; }
 
   html.cw-web .game-layout { flex-direction: column; gap: 12px; align-items: stretch; }
   html.cw-web .game-col-left { gap: 10px; }
 
   /* Flatten ALL wrappers so every section is a flex item of .game-layout in
-     ONE column — giving the exact play order: grid → ANSWER+art → TOP 5 →
-     LIVE → ALL PLAYERS. (answer-art-box / notify / overall are siblings of
+     ONE column â€” giving the exact play order: grid â†’ ANSWER+art â†’ TOP 5 â†’
+     LIVE â†’ ALL PLAYERS. (answer-art-box / notify / overall are siblings of
      game-col-left in the real DOM, so the whole chain flattens.) */
   html.cw-web .game-layout > .game-col-left { display: contents; }
   html.cw-web .game-layout > .game-col-left > .game-frame,
@@ -1116,9 +1116,9 @@ html.cw-web .waiting-player {
   /* Drop the 300px row-layout basis so TOP 5 hugs its content (no void above LIVE) */
   html.cw-web .leader-col { flex: 0 0 auto !important; height: auto !important; min-height: 0 !important; }
 
-  /* ══ CLEAR + COMPACT tier — canvas-like: smaller grid, smaller text,
-        slim panels, high contrast. Order: grid → ANSWER+art → TOP 5 → LIVE
-        → ALL PLAYERS (set by the order rules above). ══ */
+  /* â•â• CLEAR + COMPACT tier â€” canvas-like: smaller grid, smaller text,
+        slim panels, high contrast. Order: grid â†’ ANSWER+art â†’ TOP 5 â†’ LIVE
+        â†’ ALL PLAYERS (set by the order rules above). â•â• */
   html.cw-web .game-layout { gap: 10px; }
   html.cw-web .game-col-left { gap: 8px; }
 
@@ -1151,7 +1151,7 @@ html.cw-web .waiting-player {
   html.cw-web .timer-display { font-size: clamp(30px, 9.5vw, 38px); }
   html.cw-web .timer-bar { height: 6px; }
 
-  /* ANSWER brackets + inline art — compact */
+  /* ANSWER brackets + inline art â€” compact */
   html.cw-web .answer-art-box {
     flex-direction: column;
     gap: 10px;
@@ -1171,7 +1171,7 @@ html.cw-web .waiting-player {
   html.cw-web .bracket-letter { font-size: clamp(14px, 2.3vw, 18px); }
   html.cw-web .drag-word-display { font-size: 16px; padding: 5px 14px; letter-spacing: 3px; }
 
-  /* TOP 5 — compact rows, clear ranks */
+  /* TOP 5 â€” compact rows, clear ranks */
   html.cw-web .top10-board { padding: 10px 8px 6px; }
   html.cw-web .top10-title { font-size: 11px; letter-spacing: 2.5px; padding-bottom: 7px; }
   html.cw-web .top10-row { padding: 4px 8px; gap: 6px; border-radius: 8px; }
@@ -1179,7 +1179,7 @@ html.cw-web .waiting-player {
   html.cw-web .top10-name { font-size: 11.5px; }
   html.cw-web .top10-pts { font-size: 13px; }
 
-  /* ALL PLAYERS — compact chip strip, at the very bottom */
+  /* ALL PLAYERS â€” compact chip strip, at the very bottom */
   html.cw-web .overall-board { padding: 10px 10px 8px; }
   html.cw-web .overall-title { font-size: 11px; letter-spacing: 2.5px; }
   html.cw-web .overall-scroll {
@@ -1223,12 +1223,12 @@ html.cw-web .waiting-player {
   html.cw-web .pick-popup-text { font-size: 18px; }
   html.cw-web .pick-hint-box, html.cw-web .pick-custom-box { margin-top: 12px; padding-top: 10px; }
 
-  /* ── Notch-safe header + no pull-to-refresh/bounce while dragging ── */
+  /* â”€â”€ Notch-safe header + no pull-to-refresh/bounce while dragging â”€â”€ */
   html.cw-web body { overscroll-behavior-y: none; }
   html.cw-web button { touch-action: manipulation; }
   html.cw-web .app-header { padding: calc(8px + env(safe-area-inset-top, 0px)) 4px 8px; }
 
-  /* ── Chat slides up as a bottom sheet (native app feel) ── */
+  /* â”€â”€ Chat slides up as a bottom sheet (native app feel) â”€â”€ */
   html.cw-web .chat-panel {
     top: auto;
     left: 0;
@@ -1270,7 +1270,7 @@ html.cw-web .waiting-player {
     -webkit-backdrop-filter: blur(4px);
   }
 
-  /* ── Round over / Game over become bottom sheets too ── */
+  /* â”€â”€ Round over / Game over become bottom sheets too â”€â”€ */
   html.cw-web .overlay {
     align-items: flex-end;
     background: rgba(4, 5, 14, 0.7);
@@ -1293,7 +1293,7 @@ html.cw-web .waiting-player {
     to { transform: translateY(0); }
   }
 
-  /* ── Subtle staggered panel entrances ── */
+  /* â”€â”€ Subtle staggered panel entrances â”€â”€ */
   html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .play-col,
   html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .answer-art-box,
   html.cw-web .game-layout > .game-col-left > .game-frame > .grid-score-row > .grid-leader-panel > .leader-col,
@@ -1321,10 +1321,10 @@ html.cw-web .waiting-player {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   HOME / LOGIN PAGE — professional arcade-neon (web mode: mobile + desktop)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HOME / LOGIN PAGE â€” professional arcade-neon (web mode: mobile + desktop)
    Scoped to html.cw-web; the studio canvas (tiktok-half) login is untouched.
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .login-page {
   min-height: 100dvh;
   display: flex;
@@ -1357,7 +1357,7 @@ html.cw-web .login-card::before {
   opacity: 0.7;
 }
 
-/* ── Left: brand block ── */
+/* â”€â”€ Left: brand block â”€â”€ */
 html.cw-web .login-top {
   grid-column: 1;
   grid-row: 1 / span 2;
@@ -1421,7 +1421,7 @@ html.cw-web .login-logo p {
   margin: 0;
 }
 
-/* ── Right: actions ── */
+/* â”€â”€ Right: actions â”€â”€ */
 html.cw-web .login-mid {
   grid-column: 2;
   grid-row: 1;
@@ -1498,7 +1498,7 @@ html.cw-web .guest-login-btn:hover {
   transform: translateY(-1px);
 }
 
-/* ── Right bottom: hall of fame + footer ── */
+/* â”€â”€ Right bottom: hall of fame + footer â”€â”€ */
 html.cw-web .login-bottom {
   grid-column: 2;
   grid-row: 2;
@@ -1604,7 +1604,7 @@ html.cw-web .login-legal { font-size: 11.5px; }
 html.cw-web .login-legal a { color: var(--cw-dim); text-decoration: none; }
 html.cw-web .login-legal a:hover { color: var(--cw-green); }
 
-/* ── Mobile home (single column, compact) ── */
+/* â”€â”€ Mobile home (single column, compact) â”€â”€ */
 @media (max-width: 767px) {
   html.cw-web .login-page { padding: 20px 12px 36px; align-items: flex-start; }
   html.cw-web .login-card { grid-template-columns: 1fr; border-radius: 22px; }
@@ -1625,12 +1625,12 @@ html.cw-web .login-legal a:hover { color: var(--cw-green); }
   html.cw-web .tiktok-login-btn, html.cw-web .guest-login-btn { padding-top: 15px; padding-bottom: 15px; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   LOBBY (Get Started) + DAILY WORD — professional, animated (web mode)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   LOBBY (Get Started) + DAILY WORD â€” professional, animated (web mode)
    Scoped to html.cw-web; the studio canvas (tiktok-half) is untouched.
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ── Shared keyframes ── */
+/* â”€â”€ Shared keyframes â”€â”€ */
 @keyframes cw-floaty {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-9px); }
@@ -1647,7 +1647,7 @@ html.cw-web .login-legal a:hover { color: var(--cw-green); }
   to { background-position: 200% 0; }
 }
 
-/* ── Get Started landing ── */
+/* â”€â”€ Get Started landing â”€â”€ */
 html.cw-web .lobby-intro {
   min-height: calc(100dvh - 64px);
   display: flex;
@@ -1757,7 +1757,7 @@ html.cw-web .btn-wotd {
 html.cw-web .btn-wotd:hover { background: rgba(255, 197, 61, 0.12) !important; box-shadow: 0 0 22px rgba(255, 197, 61, 0.3); transform: translateY(-1px); }
 html.cw-web .intro-foot { color: var(--cw-faint); font-size: 12px; margin: 18px 0 0; }
 
-/* ── Form pages (join / create / admin) ── */
+/* â”€â”€ Form pages (join / create / admin) â”€â”€ */
 html.cw-web .lobby-form {
   max-width: 780px;
   margin: 0 auto;
@@ -1888,9 +1888,9 @@ html.cw-web .form-error {
 html.cw-web .btn-link { background: none; border: none; color: var(--cw-dim); font-size: 13px; cursor: pointer; margin-top: 16px; }
 html.cw-web .btn-link:hover { color: var(--cw-green); }
 
-/* Join vs Create — two cards side by side on desktop.
+/* Join vs Create â€” two cards side by side on desktop.
    Unscoped legacy rules cap .lobby-options at 440px and compact the cards
-   with !important — re-assert the wide professional layout in web mode. */
+   with !important â€” re-assert the wide professional layout in web mode. */
 html.cw-web .lobby-options {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1927,7 +1927,7 @@ html.cw-web .btn-host-create {
 }
 html.cw-web .btn-host-create:hover { background: rgba(255, 197, 61, 0.12); box-shadow: 0 0 20px rgba(255, 197, 61, 0.3); transform: translateY(-1px); }
 
-/* ── Daily Word — floating card + drifting art ── */
+/* â”€â”€ Daily Word â€” floating card + drifting art â”€â”€ */
 html.cw-web .wotd-wrap {
   max-width: 560px;
   margin: 0 auto;
@@ -2001,7 +2001,7 @@ html.cw-web .wotd-done { color: var(--cw-green); font-size: 17px; font-weight: 8
 html.cw-web .wotd-streak { color: var(--cw-amber); font-size: 15px; font-weight: 800; margin: 0 0 6px; text-shadow: 0 0 14px rgba(255, 197, 61, 0.5); }
 html.cw-web .wotd-card.wotd-wrong { animation: cw-shake 0.45s ease; }
 
-/* ── Mobile lobby + daily word ── */
+/* â”€â”€ Mobile lobby + daily word â”€â”€ */
 @media (max-width: 767px) {
   html.cw-web .lobby-intro { padding: 24px 12px 48px; min-height: calc(100dvh - 52px); }
   html.cw-web .intro-card { padding: 32px 20px 28px; border-radius: 22px; }
@@ -2025,10 +2025,10 @@ html.cw-web .wotd-card.wotd-wrong { animation: cw-shake 0.45s ease; }
   html.cw-web .wotd-wrap { animation: none !important; }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   WAITING LOBBY — premium lounge (web mode: mobile + desktop)
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   WAITING LOBBY â€” premium lounge (web mode: mobile + desktop)
    Scoped to html.cw-web; the studio canvas (tiktok-half) is untouched.
-   ═══════════════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 html.cw-web .waiting-host {
   min-height: calc(100dvh - 64px);
   display: flex;
@@ -2063,7 +2063,7 @@ html.cw-web .waiting-host::after {
   animation: cw-glow-pulse 9s ease-in-out infinite 1.2s;
 }
 
-/* ── The room code — glowing marquee plate ── */
+/* â”€â”€ The room code â€” glowing marquee plate â”€â”€ */
 html.cw-web .room-code {
   font-family: var(--cw-display);
   font-size: clamp(40px, 9vw, 56px);
@@ -2097,7 +2097,7 @@ html.cw-web .room-code::before {
   }
 }
 
-/* ── Player count ── */
+/* â”€â”€ Player count â”€â”€ */
 html.cw-web .waiting-host .players-count {
   font-family: var(--cw-display);
   font-size: 13px;
@@ -2114,7 +2114,7 @@ html.cw-web .waiting-host .players-count span {
   text-shadow: 0 0 12px rgba(61, 255, 184, 0.5);
 }
 
-/* ── Player roster — staggered avatar chips ── */
+/* â”€â”€ Player roster â€” staggered avatar chips â”€â”€ */
 html.cw-web .waiting-host > div:not([class]) {
   display: flex;
   flex-wrap: wrap;
@@ -2156,7 +2156,7 @@ html.cw-web .player-badge.waiting-player .host-star {
   text-shadow: 0 0 8px rgba(255, 197, 61, 0.85);
 }
 
-/* ── Start / Leave / waiting note ── */
+/* â”€â”€ Start / Leave / waiting note â”€â”€ */
 html.cw-web .waiting-host .btn-primary {
   max-width: 320px !important;
   width: 100%;
@@ -2198,7 +2198,7 @@ html.cw-web .waiting-host > p:last-of-type {
   50% { opacity: 1; }
 }
 
-/* ── Mobile waiting lounge ── */
+/* â”€â”€ Mobile waiting lounge â”€â”€ */
 @media (max-width: 767px) {
   html.cw-web .waiting-host { min-height: calc(100dvh - 52px); padding: 28px 12px 52px; }
   html.cw-web .room-code { font-size: clamp(32px, 10vw, 44px); letter-spacing: 9px; padding: 16px 22px 12px 31px; border-radius: 16px; }
@@ -2212,4 +2212,295 @@ html.cw-web .waiting-host > p:last-of-type {
   html.cw-web .waiting-host > p:last-of-type,
   html.cw-web .waiting-host::before,
   html.cw-web .waiting-host::after { animation: none !important; }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GAME SCREEN â€” theme pass (web mode)
+   ABOVE the ANSWER brackets + art: format untouched â€” colors / fonts /
+   backgrounds only, matched to the site theme.
+   BELOW (TOP 5 Â· LIVE Â· ALL PLAYERS): premium redesign in my own style.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ Top zone â€” same format, richer theme colors â”€â”€ */
+html.cw-web .play-col,
+html.cw-web .answer-art-box {
+  background: linear-gradient(180deg, rgba(16, 20, 48, 0.92), rgba(9, 12, 28, 0.92));
+  border-color: rgba(122, 170, 255, 0.18);
+}
+html.cw-web .play-col { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+html.cw-web .answer-art-box { box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+html.cw-web .grid-4x4 {
+  background: rgba(5, 7, 20, 0.6);
+  border-color: rgba(122, 170, 255, 0.14);
+  box-shadow: inset 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+html.cw-web .grid-4x4 .grid-cell {
+  background: linear-gradient(180deg, #ffffff 0%, #dbe8ff 100%) !important;
+  border-color: rgba(120, 170, 255, 0.5) !important;
+}
+html.cw-web .bracket-box { border-color: rgba(61, 255, 184, 0.55) !important; }
+html.cw-web .bracket-letter { font-family: var(--cw-display); }
+html.cw-web .timer-display { letter-spacing: 3px; }
+
+/* â”€â”€ TOP 5 â€” medal leaderboard â”€â”€ */
+html.cw-web .top10-board {
+  background: linear-gradient(180deg, rgba(16, 20, 48, 0.92), rgba(9, 12, 28, 0.92));
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  border-color: rgba(122, 170, 255, 0.18);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+html.cw-web .top10-title {
+  font-size: 11px;
+  letter-spacing: 3px;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+html.cw-web .top10-row {
+  border-radius: 12px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+}
+html.cw-web .top10-row:hover { background: rgba(255, 255, 255, 0.06); }
+html.cw-web .top10-row.top10-me {
+  background: rgba(61, 255, 184, 0.1);
+  border-color: rgba(61, 255, 184, 0.4);
+}
+/* The round's solver row stays glowing until the next solve (CSS-only via :has) */
+html.cw-web .top10-row:has(.top10-name.solver) {
+  background: rgba(61, 255, 184, 0.12);
+  border-color: rgba(61, 255, 184, 0.55);
+  box-shadow: 0 0 16px rgba(61, 255, 184, 0.25), inset 0 0 12px rgba(61, 255, 184, 0.07);
+}
+/* Medal ranks */
+html.cw-web .top10-rank {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+html.cw-web .top10-rank.rank-1 {
+  background: radial-gradient(circle at 35% 30%, #fff3c4, #ffd45e 45%, #d99a24);
+  color: #4a3200;
+  box-shadow: 0 0 12px rgba(255, 197, 61, 0.6), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+html.cw-web .top10-rank.rank-2 {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c3d4ef 45%, #7f96b8);
+  color: #131c33;
+  box-shadow: 0 0 10px rgba(190, 212, 255, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+html.cw-web .top10-rank.rank-3 {
+  background: radial-gradient(circle at 35% 30%, #ffe2c4, #e0a06a 45%, #a96a3c);
+  color: #2a1200;
+  box-shadow: 0 0 10px rgba(255, 178, 122, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+html.cw-web .top10-name { font-size: 12px; font-weight: 700; }
+html.cw-web .top10-name.solver { color: var(--cw-green); text-shadow: 0 0 10px rgba(61, 255, 184, 0.45); }
+html.cw-web .top10-pts { font-size: 15px; font-weight: 800; }
+html.cw-web .top10-row:has(.top10-name.solver) .top10-pts { color: var(--cw-green); text-shadow: 0 0 12px rgba(61, 255, 184, 0.6); }
+
+/* â”€â”€ LIVE ticker â€” notification strip â”€â”€ */
+html.cw-web .notify-row {
+  border-radius: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, rgba(16, 20, 48, 0.9), rgba(9, 12, 28, 0.9));
+  border-color: rgba(122, 170, 255, 0.18);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+html.cw-web .notify-live {
+  font-size: 10.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(61, 255, 184, 0.1);
+  border: 1px solid rgba(61, 255, 184, 0.35);
+}
+html.cw-web .notify-item { font-size: 13px; font-weight: 800; letter-spacing: 0.3px; }
+html.cw-web .notify-icon {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: rgba(255, 197, 61, 0.12);
+}
+
+/* â”€â”€ ALL PLAYERS â€” medal chip strip (bottom of the page) â”€â”€ */
+html.cw-web .overall-board {
+  border-radius: 16px;
+  padding: 12px 10px 10px;
+  background: linear-gradient(180deg, rgba(16, 20, 48, 0.92), rgba(9, 12, 28, 0.92));
+  border-color: rgba(122, 170, 255, 0.18);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+html.cw-web .overall-title { font-size: 11px; letter-spacing: 3px; }
+html.cw-web .overall-scroll { gap: 6px; padding: 4px 0; }
+html.cw-web .overall-row {
+  border-radius: 999px;
+  padding: 5px 12px 5px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid transparent;
+}
+html.cw-web .overall-row.overall-me {
+  background: rgba(61, 255, 184, 0.1);
+  border-color: rgba(61, 255, 184, 0.4);
+}
+html.cw-web .overall-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+html.cw-web .overall-rank.rank-1 {
+  background: radial-gradient(circle at 35% 30%, #fff3c4, #ffd45e 45%, #d99a24);
+  color: #4a3200;
+  box-shadow: 0 0 8px rgba(255, 197, 61, 0.5);
+}
+html.cw-web .overall-rank.rank-2 {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c3d4ef 45%, #7f96b8);
+  color: #131c33;
+}
+html.cw-web .overall-rank.rank-3 {
+  background: radial-gradient(circle at 35% 30%, #ffe2c4, #e0a06a 45%, #a96a3c);
+  color: #2a1200;
+}
+html.cw-web .overall-name { font-size: 12px; font-weight: 700; }
+html.cw-web .overall-pts { font-size: 12px; font-weight: 800; }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   HEADER MENU â€” premium app bar (web mode, mobile + desktop)
+   Scoped to html.cw-web; the studio canvas (tiktok-half) header is untouched.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+html.cw-web .app-header {
+  background: rgba(5, 6, 15, 0.78);
+  border-bottom: 1px solid rgba(122, 170, 255, 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 4px;
+}
+html.cw-web .app-header .brand { gap: 10px; }
+html.cw-web .app-header .room-badge {
+  font-family: var(--cw-display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--cw-amber);
+  background: rgba(255, 197, 61, 0.08);
+  border: 1px solid rgba(255, 197, 61, 0.4);
+  border-radius: 999px;
+  padding: 4px 12px;
+  box-shadow: 0 0 14px rgba(255, 197, 61, 0.15);
+}
+html.cw-web .header-right { gap: 10px; }
+html.cw-web .viewers-badge {
+  font-family: var(--cw-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--cw-green);
+  background: rgba(61, 255, 184, 0.08);
+  border: 1px solid rgba(61, 255, 184, 0.35);
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+/* Segmented control group (sound + voice) */
+html.cw-web .header-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(122, 170, 255, 0.16);
+  border-radius: 999px;
+}
+html.cw-web .header-controls button,
+html.cw-web .header-controls .voice-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--cw-dim);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+html.cw-web .header-controls button:hover,
+html.cw-web .header-controls .voice-btn:hover {
+  color: var(--cw-cyan);
+  background: rgba(46, 230, 255, 0.1);
+  box-shadow: 0 0 10px rgba(46, 230, 255, 0.2);
+}
+html.cw-web .header-controls .voice-chat { display: inline-flex; }
+/* Achievements */
+html.cw-web .ach-btn {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--cw-dim);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+html.cw-web .ach-btn:hover {
+  color: var(--cw-amber);
+  background: rgba(255, 197, 61, 0.1);
+  box-shadow: 0 0 10px rgba(255, 197, 61, 0.2);
+}
+/* User chip */
+html.cw-web .user-info {
+  gap: 8px;
+  padding: 4px 12px 4px 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(122, 170, 255, 0.16);
+}
+html.cw-web .user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(46, 230, 255, 0.5);
+  box-shadow: 0 0 8px rgba(46, 230, 255, 0.25);
+}
+html.cw-web .user-name { font-size: 13px; font-weight: 700; color: var(--cw-text); }
+/* Logout */
+html.cw-web .logout-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(122, 170, 255, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--cw-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+html.cw-web .logout-btn:hover {
+  color: var(--cw-red);
+  border-color: rgba(255, 92, 124, 0.5);
+  box-shadow: 0 0 10px rgba(255, 92, 124, 0.2);
+}
+
+/* Show the watching pill again on wider phones (≥480px) */
+@media (min-width: 480px) and (max-width: 767px) {
+  html.cw-web .viewers-badge { display: inline-flex; }
 }
