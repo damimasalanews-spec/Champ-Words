@@ -2504,3 +2504,234 @@ html.cw-web .logout-btn:hover {
 @media (min-width: 480px) and (max-width: 767px) {
   html.cw-web .viewers-badge { display: inline-flex; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DESKTOP GAME CANVAS (tiktok-half) — website theme, same exact format.
+   Sizes are FROZEN (width/height/padding/font-size/gaps untouched) — only
+   colors, backgrounds and borders are themed. Applies to the desktop web
+   game AND the TikTok studio overlay (same canvas). All rules use the
+   html.tiktok-half prefix to win over the legacy canvas styles.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Theme tokens for the canvas (they live under html.cw-web elsewhere) */
+html.tiktok-half {
+  --cw-green: #3dffb8;
+  --cw-cyan: #2ee6ff;
+  --cw-pink: #ff4fd8;
+  --cw-amber: #ffc53d;
+  --cw-red: #ff5c7c;
+  --cw-text: #f2f6ff;
+  --cw-dim: #9aa8cf;
+  --cw-faint: #5f6c99;
+  --cw-display: 'Oxanium', 'Outfit', sans-serif;
+}
+
+/* ── Canvas backdrop: deep space with the site's glow orbs ── */
+html.tiktok-half body,
+html.tiktok-half #root,
+html.tiktok-half .app {
+  background:
+    radial-gradient(420px 300px at 82% -6%, rgba(139, 92, 255, 0.16), transparent 62%),
+    radial-gradient(360px 260px at -8% 24%, rgba(46, 230, 255, 0.12), transparent 58%),
+    radial-gradient(380px 300px at 50% 118%, rgba(61, 255, 184, 0.12), transparent 60%),
+    #07081a !important;
+}
+
+/* ── Header — theme pills ── */
+html.tiktok-half .app-header {
+  background: rgba(5, 6, 15, 0.72) !important;
+  border-bottom: 1px solid rgba(122, 170, 255, 0.18) !important;
+}
+html.tiktok-half .app-header .brand-name {
+  background: linear-gradient(90deg, #ffffff 5%, var(--cw-green) 55%, var(--cw-cyan) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+html.tiktok-half .app-header .room-badge {
+  color: var(--cw-amber) !important;
+  background: rgba(255, 197, 61, 0.1) !important;
+  border: 1px solid rgba(255, 197, 61, 0.45) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 12px rgba(255, 197, 61, 0.15);
+  font-family: var(--cw-display);
+}
+
+/* ── Panels — glass cards with neon hairline (sizes untouched) ── */
+html.tiktok-half .game-frame,
+html.tiktok-half .grid-leader-panel,
+html.tiktok-half .play-col,
+html.tiktok-half .top10-board,
+html.tiktok-half .answer-art-box,
+html.tiktok-half .notify-row,
+html.tiktok-half .overall-board,
+html.tiktok-half .art-board {
+  background: linear-gradient(180deg, rgba(16, 20, 48, 0.9), rgba(9, 12, 28, 0.9)) !important;
+  border-color: rgba(122, 170, 255, 0.32) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+html.tiktok-half .grid-4x4 {
+  background: rgba(5, 7, 20, 0.6) !important;
+  border-color: rgba(122, 170, 255, 0.14) !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 2px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Letter tiles — white with a cooler edge (format identical) ── */
+html.tiktok-half .grid-4x4 .grid-cell {
+  background: linear-gradient(180deg, #ffffff 0%, #dbe8ff 100%) !important;
+  color: #0a1130 !important;
+  border-color: rgba(120, 170, 255, 0.5) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 #ffffff, inset 0 -3px 8px rgba(40, 80, 180, 0.2);
+  font-family: var(--cw-display);
+}
+html.tiktok-half .grid-4x4 .grid-cell.selected {
+  background: linear-gradient(135deg, var(--cw-green), var(--cw-cyan)) !important;
+  color: #04121a !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  box-shadow: 0 0 14px rgba(61, 255, 184, 0.7), 0 0 36px rgba(46, 230, 255, 0.4) !important;
+}
+html.tiktok-half .grid-4x4 .grid-cell.last {
+  box-shadow: 0 0 18px rgba(46, 230, 255, 0.9), 0 0 44px rgba(46, 230, 255, 0.5) !important;
+}
+
+/* ── Timer ── */
+html.tiktok-half .timer-display {
+  color: #ffffff !important;
+  text-shadow: 0 0 16px rgba(61, 255, 184, 0.65), 0 0 44px rgba(46, 230, 255, 0.35);
+  font-family: var(--cw-display);
+}
+html.tiktok-half .timer-bar { background: rgba(255, 255, 255, 0.08) !important; border-radius: 99px !important; }
+html.tiktok-half .timer-bar-fill {
+  background: linear-gradient(90deg, var(--cw-green), var(--cw-cyan)) !important;
+  border-radius: 99px !important;
+  box-shadow: 0 0 12px rgba(61, 255, 184, 0.6);
+}
+
+/* ── Brackets — neon green, letters white ── */
+html.tiktok-half .bracket-box {
+  background: rgba(61, 255, 184, 0.07) !important;
+  border: 2px solid rgba(61, 255, 184, 0.5) !important;
+  border-radius: 10px !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+html.tiktok-half .bracket-box.hint-revealed {
+  border-color: var(--cw-amber) !important;
+  background: rgba(255, 197, 61, 0.08) !important;
+  box-shadow: 0 0 14px rgba(255, 197, 61, 0.45);
+}
+html.tiktok-half .bracket-box.found-me {
+  border-color: var(--cw-green) !important;
+  background: rgba(61, 255, 184, 0.16) !important;
+  box-shadow: 0 0 18px rgba(61, 255, 184, 0.7);
+}
+html.tiktok-half .bracket-box.found-other {
+  border-color: var(--cw-cyan) !important;
+  background: rgba(46, 230, 255, 0.13) !important;
+  box-shadow: 0 0 16px rgba(46, 230, 255, 0.5);
+}
+html.tiktok-half .bracket-letter {
+  font-family: var(--cw-display);
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(61, 255, 184, 0.8);
+}
+html.tiktok-half .bracket-box.hint-revealed .bracket-letter { color: var(--cw-amber) !important; }
+html.tiktok-half .bracket-box.found-me .bracket-letter { color: var(--cw-green) !important; }
+html.tiktok-half .bracket-box.found-other .bracket-letter { color: var(--cw-cyan) !important; }
+
+/* ── TOP 5 — medal ranks + solver glow ── */
+html.tiktok-half .top10-title {
+  color: var(--cw-green) !important;
+  font-family: var(--cw-display);
+  text-shadow: 0 0 12px rgba(61, 255, 184, 0.5);
+}
+html.tiktok-half .top10-row {
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid transparent !important;
+  border-radius: 10px !important;
+}
+html.tiktok-half .top10-row.top10-me {
+  background: rgba(61, 255, 184, 0.1) !important;
+  border-color: rgba(61, 255, 184, 0.4) !important;
+}
+html.tiktok-half .top10-row:has(.top10-name.solver) {
+  background: rgba(61, 255, 184, 0.12) !important;
+  border-color: rgba(61, 255, 184, 0.55) !important;
+  box-shadow: 0 0 14px rgba(61, 255, 184, 0.25);
+}
+html.tiktok-half .top10-rank {
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  font-family: var(--cw-display);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+html.tiktok-half .top10-rank.rank-1 {
+  background: radial-gradient(circle at 35% 30%, #fff3c4, #ffd45e 45%, #d99a24) !important;
+  color: #4a3200 !important;
+  box-shadow: 0 0 10px rgba(255, 197, 61, 0.55);
+}
+html.tiktok-half .top10-rank.rank-2 {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #c3d4ef 45%, #7f96b8) !important;
+  color: #131c33 !important;
+}
+html.tiktok-half .top10-rank.rank-3 {
+  background: radial-gradient(circle at 35% 30%, #ffe2c4, #e0a06a 45%, #a96a3c) !important;
+  color: #2a1200 !important;
+}
+html.tiktok-half .top10-name.solver { color: var(--cw-green) !important; text-shadow: 0 0 8px rgba(61, 255, 184, 0.4); }
+html.tiktok-half .top10-pts {
+  color: #ffffff !important;
+  font-family: var(--cw-display);
+  text-shadow: 0 0 10px rgba(61, 255, 184, 0.5);
+}
+
+/* ── Found chips · hint · score pop ── */
+html.tiktok-half .found-chip {
+  color: var(--cw-green) !important;
+  background: rgba(61, 255, 184, 0.1) !important;
+  border: 1px solid rgba(61, 255, 184, 0.45) !important;
+  border-radius: 999px !important;
+}
+html.tiktok-half .hint-clue {
+  color: var(--cw-amber) !important;
+  background: rgba(255, 197, 61, 0.1) !important;
+  border: 1px solid rgba(255, 197, 61, 0.5) !important;
+  border-radius: 999px !important;
+}
+html.tiktok-half .drag-word-display {
+  color: var(--cw-cyan) !important;
+  background: rgba(46, 230, 255, 0.08) !important;
+  border: 1px solid rgba(46, 230, 255, 0.35) !important;
+  border-radius: 999px !important;
+  font-family: var(--cw-display);
+}
+html.tiktok-half .score-pop {
+  color: var(--cw-green) !important;
+  text-shadow: 0 0 16px rgba(61, 255, 184, 0.9);
+  font-family: var(--cw-display);
+}
+html.tiktok-half .solved-text { color: var(--cw-green) !important; }
+html.tiktok-half .spot-banner span {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(46, 230, 255, 0.85);
+}
+
+/* ── Round info · progress ── */
+html.tiktok-half .round-info {
+  color: var(--cw-cyan) !important;
+  background: rgba(46, 230, 255, 0.08) !important;
+  border: 1px solid rgba(46, 230, 255, 0.35) !important;
+  border-radius: 999px !important;
+  font-family: var(--cw-display);
+}
+html.tiktok-half .game-progress-fill {
+  background: linear-gradient(90deg, var(--cw-green), var(--cw-cyan), var(--cw-pink)) !important;
+  box-shadow: 0 0 10px rgba(61, 255, 184, 0.5);
+}
