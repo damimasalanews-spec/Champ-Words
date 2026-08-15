@@ -2540,6 +2540,10 @@
 .tiktok-half .inline-chat-msg.system { font-size: 13px; }
 /* ── Round-over / game-over pop-out sits below the header (100px) ─────── */
 .tiktok-half .overlay { align-items: flex-start; padding-top: 100px; }
+/* Studio mode: kill the persistent screen-in transform — a lingering
+   ancestor transform traps position:fixed popups (round-over/game-over)
+   inside the tiny game box, collapsing them to an empty sliver */
+.tiktok-half .screen-anim { animation: none; transform: none; }
 /* Pop-up name + score fonts (+5px) */
 .tiktok-half .player-name { font-size: 19px; }
 .tiktok-half .player-score { font-size: 23px; }
