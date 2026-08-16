@@ -7114,9 +7114,9 @@ html[data-theme='aurora'] .live-dot {
   align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #201408;
   background: linear-gradient(135deg, #ffd76a, #ff9d3c); margin-right: 8px; }
 .alltime-row .mini-avatar { width: 22px; height: 22px; min-width: 22px; font-size: 10px; margin-right: 6px; }
-/* Ambient animated background */
+/* Ambient animated background — tinted by the round category */
 body { background-image:
-  radial-gradient(55% 45% at 12% 8%, rgba(124,58,237,.16), transparent 60%),
+  radial-gradient(55% 45% at 12% 8%, color-mix(in srgb, var(--cat-tint, #7c5cf0) 24%, transparent), transparent 60%),
   radial-gradient(45% 40% at 88% 12%, rgba(236,72,153,.13), transparent 60%),
   radial-gradient(60% 55% at 50% 105%, rgba(14,165,233,.12), transparent 65%);
   background-attachment: fixed;
@@ -7202,6 +7202,11 @@ body { background-image:
 .fastest-badge { display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 900; color: #201408; background: linear-gradient(135deg, #ffd76a, #ff9d3c); vertical-align: 1px; }
 /* #10 count-up tabular numbers in TOP 5 */
 .celeb-pts { font-variant-numeric: tabular-nums; }
+
+/* ═══════════════ Practical trio ═══════════════ */
+/* Leaderboard hover highlight */
+.score-item, .alltime-row { transition: background .15s ease, box-shadow .15s ease; border-radius: 8px; }
+.score-item:hover, .alltime-row:hover { background: rgba(255,255,255,.07); }
 
 
 

@@ -2,6 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import socket from './socket';
 import Logo from './components/Logo';
 import { playSound, toggleMute, isMuted } from './sounds';
+
+// Category → ambient background tint
+const CAT_TINTS = {
+  animals: '#34d399', food: '#fbbf24', nature: '#4ade80', body: '#f87171',
+  home: '#a78bfa', clothes: '#f472b6', travel: '#38bdf8', sports: '#2dd4bf',
+  arts: '#e879f9', colors: '#facc15', people: '#fde047', trade: '#fbbf24',
+  mixed: '#7c5cf0'
+};
 import LoginPage from './components/LoginPage';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
@@ -495,6 +503,13 @@ export default function App() {
     e.preventDefault();
     joinStudioGame();
   };
+
+  // Category-tinted ambient background
+  const catKey = room && room.category;
+  useEffect(() => {
+    const tint = CAT_TINTS[catKey] || '#7c5cf0';
+    document.documentElement.style.setProperty('--cat-tint', tint);
+  }, [catKey]);
 
   // Rivalry bar pulses whenever either side scores
   const rivalryChat = room && room.chatTotal;
