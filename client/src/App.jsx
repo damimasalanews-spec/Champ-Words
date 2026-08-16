@@ -39,6 +39,7 @@ export default function App() {
   // players never auto-join silently with a default name.
   const [studioNamePending, setStudioNamePending] = useState(false);
   const studioNameSecondsRef = useRef(20); // 20s on studio links, 10s on Play as guest
+  const [rivalryPulse, setRivalryPulse] = useState(false);
   const [studioName, setStudioName] = useState(() => {
     try { return localStorage.getItem('champWordsName') || ''; } catch (_) { return ''; }
   });
@@ -495,6 +496,17 @@ export default function App() {
     joinStudioGame();
   };
 
+  // Rivalry bar pulses whenever either side scores
+  const rivalryChat = room && room.chatTotal;
+  const rivalryHost = room && room.hostTotal;
+  useEffect(() => {
+    if (room && (typeof room.chatTotal === 'number' || typeof room.hostTotal === 'number')) {
+      setRivalryPulse(true);
+      const t = setTimeout(() => setRivalryPulse(false), 700);
+      return () => clearTimeout(t);
+    }
+  }, [rivalryChat, rivalryHost]);
+
   // ── Loading ──
   if (loading) {
     return (
@@ -698,7 +710,7 @@ export default function App() {
 
       {/* 🔥 Host vs Chat rivalry */}
       {room && (typeof room.chatTotal === 'number' || typeof room.hostTotal === 'number') && (
-        <div className="rivalry-bar">
+        <div className={`rivalry-bar${rivalryPulse ? ' rivalry-pulse' : ''}`}>
           <span className="rivalry-chat">CHAT {room.chatTotal || 0}</span>
           <span className="rivalry-vs">vs</span>
           <span className="rivalry-host">HOST {room.hostTotal || 0}</span>

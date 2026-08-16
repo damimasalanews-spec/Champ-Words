@@ -113,6 +113,7 @@ function Confetti({ word, onDone, msg, silent, variant }) {
       })}
       <div className="confetti-center">
         <div className="confetti-star">{variant === 'chat' ? '✦' : '✨'}</div>
+        {variant === 'chat' && <div className="confetti-avatar">{(word || '?').charAt(0).toUpperCase()}</div>}
         <div className="confetti-word">{word.toUpperCase()}</div>
         {variant === 'chat' && <div className="confetti-divider" />}
         <div className="confetti-msg">{msg}</div>
@@ -730,6 +731,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             </form>
           )}
           <span className="round-info">RD <span>{room.round}</span><em> / {totalRounds}</em></span>
+          {((room.players || []).find(p => p.id === socket.id)?.streak || 0) >= 2 && (
+            <span className="streak-pill">🔥 ×{((room.players || []).find(p => p.id === socket.id)?.streak) || 0}</span>
+          )}
           <div className="game-progress" aria-hidden="true"><div className="game-progress-fill" style={{ width: `${Math.min(100, Math.max(0, (room.round / totalRounds) * 100))}%` }} /></div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
@@ -787,7 +791,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               ))}
             </div>
           )}
-          <div className="grid-4x4" key={`g-${room.round}`}>
+          <div className={`grid-4x4${wordLen >= 7 ? ' grid-rainbow' : ''}`} key={`g-${room.round}`}>
             {grid.map((row, r) => (
               <div key={r} className="grid-row">
                 {row.map((ch, c) => {
@@ -947,6 +951,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                     </div>
                   );
                 })}
+              </div>
+              <div className="word-progress" aria-hidden="true">
+                {Array.from({ length: wordLen }, (_, i) => (
+                  <span key={i} className={`wdot${i < (room.revealedLetters || []).filter(c => c).length ? ' on' : ''}`} />
+                ))}
               </div>
               {solvedWord && (
                 <div className="solved-text">
