@@ -38,6 +38,7 @@ export default function App() {
   // Studio links (?auto=1 / ?host=1 / ?play=1) ask for a name first —
   // players never auto-join silently with a default name.
   const [studioNamePending, setStudioNamePending] = useState(false);
+  const studioNameSecondsRef = useRef(20); // 20s on studio links, 10s on Play as guest
   const [studioName, setStudioName] = useState(() => {
     try { return localStorage.getItem('champWordsName') || ''; } catch (_) { return ''; }
   });
@@ -135,6 +136,7 @@ export default function App() {
       return;
     }
     if (studioLink) {
+      studioNameSecondsRef.current = 20;
       setStudioNamePending(true);
       setLoading(false);
       return;
@@ -449,14 +451,17 @@ export default function App() {
   const handleLogout = () => { window.location.href = '/auth/logout'; };
 
   const handlePlayAsGuest = () => {
-    setUser({ name: 'Guest', avatar: '', isGuest: true });
-    socket.connect();
+    // Ask for the name first (10s countdown) — then join as guest, which
+    // auto-follows the host's room (waiting lobby).
+    studioNameSecondsRef.current = 10;
+    setStudioNamePending(true);
   };
 
   // Name prompt for studio links — the player types their name, then the
   // existing auto-join effect connects them (as a player for ?host=1/?play=1,
-  // as a spectator for plain ?auto=1). Auto-joins after 20 seconds with
-  // whatever name was typed (falls back to "Player").
+  // as a spectator for plain ?auto=1). Auto-joins after the countdown
+  // (20s studio links, 10s Play as guest) with whatever name was typed
+  // (falls back to "Player").
   const studioNameRef = useRef(studioName);
   studioNameRef.current = studioName;
   const [nameCountdown, setNameCountdown] = useState(20);
@@ -469,7 +474,7 @@ export default function App() {
   };
   useEffect(() => {
     if (!studioNamePending) return;
-    setNameCountdown(20);
+    setNameCountdown(studioNameSecondsRef.current);
     const iv = setInterval(() => {
       setNameCountdown(c => {
         if (c <= 1) { clearInterval(iv); joinStudioGame(); return 0; }
