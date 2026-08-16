@@ -148,6 +148,9 @@ export default function App() {
     if (!user || !user.isGuest) return;
     const params = new URLSearchParams(window.location.search);
     const roomCode = String(params.get('room') || '').toUpperCase().trim();
+    // ?host=1 / ?play=1 → the studio window joins as a REAL player, so the
+    // grid drag submits and scores instead of failing with "Player not found"
+    const playMode = params.has('host') || params.has('play');
     let stopped = false;
     let retryTimer = null;
     let watchTimer = null;
@@ -161,7 +164,7 @@ export default function App() {
       return true;
     };
     const tryJoin = () => {
-      socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: true }, (res) => {
+      socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: !playMode }, (res) => {
         if (stopped) return;
         if (applySpectatorRoom(res)) return;
         const err = (res && res.error) || 'Cannot join room';
@@ -174,7 +177,7 @@ export default function App() {
     // Fixed stream link — follow whichever room the host is running.
     let followedRoomId = null;
     const tryFollow = () => {
-      socket.emit('join_active_room', { name: user.name, avatar: '', spectator: true }, (res) => {
+      socket.emit('join_active_room', { name: user.name, avatar: '', spectator: !playMode }, (res) => {
         if (stopped) return;
         if (res && res.ok && res.room) {
           followedRoomId = res.room.id;
@@ -183,7 +186,7 @@ export default function App() {
           if (!watchTimer) {
             watchTimer = setInterval(() => {
               if (stopped) return;
-              socket.emit('join_active_room', { name: user.name, avatar: '', spectator: true }, (res2) => {
+              socket.emit('join_active_room', { name: user.name, avatar: '', spectator: !playMode }, (res2) => {
                 if (stopped) return;
                 if (res2 && res2.ok && res2.room && res2.room.id !== followedRoomId) {
                   followedRoomId = res2.room.id;
