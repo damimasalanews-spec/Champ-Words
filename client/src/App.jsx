@@ -455,14 +455,33 @@ export default function App() {
 
   // Name prompt for studio links — the player types their name, then the
   // existing auto-join effect connects them (as a player for ?host=1/?play=1,
-  // as a spectator for plain ?auto=1).
-  const handleStudioNameSubmit = (e) => {
-    e.preventDefault();
-    const trimmed = studioName.trim() || 'Player';
+  // as a spectator for plain ?auto=1). Auto-joins after 20 seconds with
+  // whatever name was typed (falls back to "Player").
+  const studioNameRef = useRef(studioName);
+  studioNameRef.current = studioName;
+  const [nameCountdown, setNameCountdown] = useState(20);
+  const joinStudioGame = () => {
+    const trimmed = (studioNameRef.current || '').trim() || 'Player';
     try { localStorage.setItem('champWordsName', trimmed); } catch (_) {}
     setUser({ name: trimmed, avatar: '', isGuest: true });
     setStudioNamePending(false);
     socket.connect();
+  };
+  useEffect(() => {
+    if (!studioNamePending) return;
+    setNameCountdown(20);
+    const iv = setInterval(() => {
+      setNameCountdown(c => {
+        if (c <= 1) { clearInterval(iv); joinStudioGame(); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studioNamePending]);
+  const handleStudioNameSubmit = (e) => {
+    e.preventDefault();
+    joinStudioGame();
   };
 
   // ── Loading ──
@@ -492,8 +511,9 @@ export default function App() {
                 placeholder="Your name" maxLength={20} />
             </div>
             <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
-              Join
+              Join now
             </button>
+            <p className="studio-countdown">Auto-joining in {nameCountdown}s…</p>
           </form>
         </div>
       </div>

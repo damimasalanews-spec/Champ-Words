@@ -2552,6 +2552,7 @@
   padding: 20px; background: rgba(10, 8, 20, 0.55);
 }
 .studio-name-screen .lobby-card { width: 100%; max-width: 340px; }
+.studio-name-screen .studio-countdown { margin-top: 10px; text-align: center; font-size: 12px; opacity: 0.75; }
 
 /* Pop-up name + score fonts (+5px) */
 .tiktok-half .player-name { font-size: 19px; }
