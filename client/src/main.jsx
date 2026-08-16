@@ -22,13 +22,10 @@ function applyTiktokHalfMode() {
   const isTiktokPath = path.startsWith('/tiktok');
   const isCompactPath = path.startsWith('/compact');
   const overlayMode = params.has('half') || params.has('auto') || isTiktokPath || isCompactPath || (isTikTok && isHalfScreen);
-  // Phones & small tablets get the SAME studio canvas design as desktop web /
-  // the stream view — one design everywhere, fitted to the screen. Desktop
-  // (wide) non-studio visits keep the responsive cw-web home/lobby.
-  const isNarrow = window.innerWidth < 768;
-  const wantHalf = overlayMode || isNarrow;
-  document.documentElement.classList.toggle('tiktok-half', wantHalf);
-  document.documentElement.classList.toggle('cw-web', !wantHalf);
+  // Studio links only — the home/lobby stay in the full web layout on all
+  // screen sizes (the compact canvas home would reduce the content).
+  document.documentElement.classList.toggle('tiktok-half', overlayMode);
+  document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
 
 // The half-size layout is a FIXED 540×960 design canvas, and the studio
