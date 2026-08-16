@@ -2544,6 +2544,15 @@
    ancestor transform traps position:fixed popups (round-over/game-over)
    inside the tiny game box, collapsing them to an empty sliver */
 .tiktok-half .screen-anim { animation: none; transform: none; }
+
+/* Studio name prompt — ask the player for their name before joining */
+.studio-name-screen {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(10, 8, 20, 0.55);
+}
+.studio-name-screen .lobby-card { width: 100%; max-width: 340px; }
+
 /* Pop-up name + score fonts (+5px) */
 .tiktok-half .player-name { font-size: 19px; }
 .tiktok-half .player-score { font-size: 23px; }

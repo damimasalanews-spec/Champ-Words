@@ -35,6 +35,12 @@ export default function App() {
   const [screen, setScreen] = useState('lobby');
   const [room, setRoom] = useState(null);
   const [toast, setToast] = useState(null);
+  // Studio links (?auto=1 / ?host=1 / ?play=1) ask for a name first —
+  // players never auto-join silently with a default name.
+  const [studioNamePending, setStudioNamePending] = useState(false);
+  const [studioName, setStudioName] = useState(() => {
+    try { return localStorage.getItem('champWordsName') || ''; } catch (_) { return ''; }
+  });
 
   // Render mode (tiktok-half studio canvas vs cw-web responsive app) is
   // decided once in main.jsx — do NOT toggle tiktok-half here based on the
@@ -117,11 +123,20 @@ export default function App() {
     // page first (same design as the old root link), then flows into the
     // lobby and game. Only explicit studio params (?guest= / ?auto=1) skip
     // the login page (used by browser sources that cannot be clicked).
-    const autoGuest = params.get('guest') || (params.has('auto') ? 'Guest' : null);
+    // Only an explicit ?guest=Name still auto-joins silently (no-click
+    // browser sources). Studio links (?auto / ?host / ?half / ?play) now
+    // ask the player for their name first — never auto-join with a default.
+    const autoGuest = params.get('guest');
+    const studioLink = params.has('auto') || params.has('host') || params.has('half') || params.has('play');
     if (autoGuest) {
       setUser({ name: String(autoGuest).trim() || 'Guest', avatar: '', isGuest: true });
       setLoading(false);
       socket.connect();
+      return;
+    }
+    if (studioLink) {
+      setStudioNamePending(true);
+      setLoading(false);
       return;
     }
     fetch('/auth/me')
@@ -438,6 +453,18 @@ export default function App() {
     socket.connect();
   };
 
+  // Name prompt for studio links — the player types their name, then the
+  // existing auto-join effect connects them (as a player for ?host=1/?play=1,
+  // as a spectator for plain ?auto=1).
+  const handleStudioNameSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = studioName.trim() || 'Player';
+    try { localStorage.setItem('champWordsName', trimmed); } catch (_) {}
+    setUser({ name: trimmed, avatar: '', isGuest: true });
+    setStudioNamePending(false);
+    socket.connect();
+  };
+
   // ── Loading ──
   if (loading) {
     return (
@@ -452,6 +479,27 @@ export default function App() {
   }
 
   // ── Not logged in ──
+  // Studio links: ask the player for their name before auto-joining
+  if (studioNamePending) {
+    return (
+      <div className="studio-name-screen">
+        <div className="lobby-card">
+          <h2>Enter your name</h2>
+          <p className="subtitle">What should players call you?</p>
+          <form onSubmit={handleStudioNameSubmit}>
+            <div className="form-group">
+              <input autoFocus value={studioName} onChange={e => setStudioName(e.target.value)}
+                placeholder="Your name" maxLength={20} />
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
+              Join
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) return <LoginPage onPlayAsGuest={handlePlayAsGuest} />;
 
   // ── Logged in / guest ──
