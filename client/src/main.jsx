@@ -26,14 +26,15 @@ function applyTiktokHalfMode() {
   document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
 
-// The half-size layout is a FIXED 540×960 design canvas. It scales down to
-// fit smaller screens/studios (never up), so the design always looks identical.
-// ?fill=1 (studio): the canvas COVERS the window instead — re-rendered via
-// CSS zoom, so it stays razor sharp at ANY source size. Pair with a studio
-// Link/browser source sized to your scene (e.g. 1080×1920) for a full-screen,
-// 1:1, blur-free game source.
+// The half-size layout is a FIXED 540×960 design canvas.
+// Studio stream links (?auto=1 / ?half=1 — and ?fill=1) make the canvas
+// COVER the window: it scales UP via CSS zoom to fill whatever screen size
+// is used, so the game fills the whole window (razor sharp at any size).
+// All other tiktok-half contexts (e.g. desktop web in-game) keep the fit
+// logic: scale DOWN to fit smaller screens, never up, design stays identical.
 function applyHalfScale() {
-  const fill = new URLSearchParams(window.location.search).has('fill');
+  const params = new URLSearchParams(window.location.search);
+  const fill = params.has('fill') || params.has('auto') || params.has('half');
   if (fill) {
     const s = Math.max(window.innerWidth / 540, window.innerHeight / 960);
     document.documentElement.style.zoom = String(Math.max(s, 1));
