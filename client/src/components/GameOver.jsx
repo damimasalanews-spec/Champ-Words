@@ -106,6 +106,19 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
           <div className="winner-name">{winner?.name || 'Nobody'} Wins!</div>
         </div>
 
+        {sorted.length >= 1 && (
+          <div className="podium">
+            {[sorted[1], sorted[0], sorted[2]].filter(Boolean).map((p, i) => (
+              <div key={(p.id || 'x') + i} className={`podium-col ${i === 1 ? 'first' : i === 0 ? 'second' : 'third'}`}>
+                <span className="podium-avatar">{p.name.slice(0, 1).toUpperCase()}</span>
+                <span className="podium-name">{p.name}</span>
+                <span className="podium-pts">{p.score} pts</span>
+                <div className="podium-block">{i === 1 ? '👑' : ''}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <p className="gameover-final-title">Final Scores</p>
         <div className="score-list">
           {sorted.map((p, i) => (

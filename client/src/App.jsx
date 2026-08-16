@@ -585,6 +585,7 @@ export default function App() {
             {user.avatar && <img src={user.avatar} alt="" className="user-avatar" />}
             <span className="user-name">{user.name}</span>
           </div>
+          <span className="host-badge" title="Stream host">🎙️ @champbj</span>
           {user.isGuest ? (
             <a className="logout-btn" href="/auth/tiktok" title="Log in with TikTok" style={{ textDecoration: 'none' }}>Log in</a>
           ) : (

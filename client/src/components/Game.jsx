@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
 import { playSound } from '../sounds';
+import useCountUp from '../useCountUp';
 
 // ═══ Helpers ══════════════════════════════════════════════════════════════
 function isAdjacent(r1, c1, r2, c2) {
@@ -123,6 +124,7 @@ function Confetti({ word, onDone, msg, silent, variant }) {
 }
 
 // ── Top 5 celebration (6s pause — covers the grid with a cartoon fanfare) ──
+function CountPts({ value }) { const d = useCountUp(value); return <span className="celeb-pts">{d}</span>; }
 function Top5Celebration({ players }) {
   useEffect(() => { playSound('celebrate'); }, []);
   const rankEmoji = ['🥇', '🥈', '🥉'];
@@ -134,7 +136,7 @@ function Top5Celebration({ players }) {
           <div key={p.id} className={`celeb-row celeb-${i + 1}`} style={{ '--d': `${0.15 + i * 0.18}s` }}>
             <span className="celeb-rank">{rankEmoji[i] || `#${i + 1}`}</span>
             <span className="celeb-name">{p.name.split(' ')[0]}</span>
-            <span className="celeb-pts">{p.score}</span>
+            <CountPts value={p.score} />
           </div>
         ))}
       </div>
@@ -177,6 +179,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [ticker, setTicker] = useState([]); // winner ticker (recent finds)
   const tickerId = useRef(1);
   const popupQueue = useRef([]); // popups show ONE BY ONE (each ~2s)
+  const [floats, setFloats] = useState([]); // floating chat emojis
+  const [milestone, setMilestone] = useState(null); // every-10-chat-solves banner
+  const chatSolves = useRef(0);
+  const lastMsgKey = useRef(null);
   const popupBusy = useRef(false); // true while a popup is on screen
   const popupId = useRef(1); // unique id per popup → forces a fresh mount each time
   useEffect(() => { popupBusy.current = !!foundPopup; }, [foundPopup]);
@@ -267,6 +273,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // Shows the profile FIRST name when available, else the @username.
       if (data.fromChat && (data.winnerNick || data.winnerName)) {
         pushFoundPopup({ name: data.winnerNick || data.winnerName, score: data.score, word: data.solved || '' });
+      }
+      // Every 10th chat solve → milestone celebration
+      if (data.fromChat) {
+        chatSolves.current += 1;
+        if (chatSolves.current % 10 === 0) {
+          setMilestone(chatSolves.current);
+          setTimeout(() => setMilestone(null), 2600);
+        }
       }
       // Achievement toasts (first blood / lightning fast / streak) — for the stream
       if (data.toasts && data.toasts.length) {
@@ -584,6 +598,26 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     ro.observe(el);
     return () => ro.disconnect();
   }, [top5Row]);
+
+  // Floating emojis from TikTok chat messages (float up over the grid)
+  useEffect(() => {
+    const key = messages.length;
+    if (lastMsgKey.current === key) return;
+    lastMsgKey.current = key;
+    const last = messages[key - 1];
+    if (!last || !last.text) return;
+    const emojis = (last.text.match(/\p{Extended_Pictographic}/gu) || []).slice(0, 3);
+    if (!emojis.length) return;
+    const batch = emojis.map((e, i) => ({
+      id: `${key}-${i}`, e,
+      x: 14 + Math.random() * 72,
+      dur: 2.4 + Math.random() * 1.2,
+      delay: i * 0.22,
+    }));
+    setFloats(f => [...f, ...batch]);
+    setTimeout(() => setFloats(f => f.filter(x => !batch.some(n => n.id === x.id))), 5200);
+  }, [messages]);
+
   const totalRounds = room.totalRounds || 5;
   const guesserPlayer = room.players.find(p => p.id === room.guesserId) || null;
   const guesserName = guesserPlayer?.name || 'the guesser';
@@ -791,7 +825,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               ))}
             </div>
           )}
-          <div className={`grid-4x4${wordLen >= 7 ? ' grid-rainbow' : ''}`} key={`g-${room.round}`}>
+          <div className={`grid-4x4${wordLen >= 7 ? ' grid-rainbow' : ''}${solvedWord ? ' grid-solved' : ''}`} key={`g-${room.round}`}>
             {grid.map((row, r) => (
               <div key={r} className="grid-row">
                 {row.map((ch, c) => {
@@ -828,6 +862,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {falling && solvedWord && (
             <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
           )}
+          <div className="float-layer" aria-hidden="true">
+            {floats.map(f => (
+              <span key={f.id} className="float-emoji" style={{ left: `${f.x}%`, '--d': `${f.delay}s`, '--dur': `${f.dur}s` }}>{f.e}</span>
+            ))}
+          </div>
+          {milestone && <div className="milestone-banner">🎉 {milestone} SOLVES! 🎉</div>}
         </div>
       )}
 

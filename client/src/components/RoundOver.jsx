@@ -106,7 +106,7 @@ export default function RoundOver({ result, room }) {
 
         {winner ? (
           <p className="round-winner-msg">
-            {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
+            <span className="fastest-badge">⚡ FASTEST</span> {winner.name} found it in {winner.elapsed}s for <b>+{winner.score} pts</b>!
           </p>
         ) : (
           <>

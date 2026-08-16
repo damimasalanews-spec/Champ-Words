@@ -7155,6 +7155,54 @@ body { background-image:
   animation: rainbowSweep 3.2s linear infinite; }
 @keyframes rainbowSweep { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
 
+/* ═══════════════ Design batch 3 ═══════════════ */
+.grid-leader-panel { position: relative; }
+/* #1 Correct-word flash wave on the grid */
+.grid-4x4.grid-solved { position: relative; overflow: hidden; }
+.grid-solved::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 25%, rgba(53,230,160,.16) 45%, rgba(255,255,255,.28) 50%, rgba(53,230,160,.16) 55%, transparent 75%);
+  animation: rainbowSweep 1.1s linear 1; }
+/* #2 Floating chat emojis */
+.float-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+.float-emoji { position: absolute; bottom: 12%; font-size: 26px;
+  animation: floatUp var(--dur, 2.6s) ease-out var(--d, 0s) both; }
+@keyframes floatUp { 0% { transform: translateY(0) scale(.6); opacity: 0; } 12% { opacity: 1; transform: translateY(-12px) scale(1); } 100% { transform: translateY(-280px) scale(1.4); opacity: 0; } }
+/* #3 Solve milestones */
+.milestone-banner { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); z-index: 20;
+  padding: 10px 22px; border-radius: 999px; font-size: 22px; font-weight: 900; color: #201408;
+  background: linear-gradient(135deg, #ffd76a, #ff9d3c); box-shadow: 0 6px 26px rgba(255,157,60,.5);
+  animation: milestonePop 2.6s ease both; white-space: nowrap; }
+@keyframes milestonePop { 0% { transform: translateX(-50%) scale(.4); opacity: 0; } 12% { transform: translateX(-50%) scale(1.12); opacity: 1; } 20% { transform: translateX(-50%) scale(1); } 85% { opacity: 1; } 100% { opacity: 0; } }
+/* #4 Podium at game over */
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; margin: 14px 0 6px; }
+.podium-col { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 78px;
+  animation: podiumIn .5s cubic-bezier(.2,.9,.3,1.2) both; animation-delay: calc(var(--pd, 0) * .12s); }
+.podium-col.first { --pd: 1; } .podium-col.second { --pd: 0; } .podium-col.third { --pd: 2; }
+.podium-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #201408; background: linear-gradient(135deg, #ffd76a, #ff9d3c); }
+.podium-name { font-size: 12px; font-weight: 800; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.podium-pts { font-size: 11px; opacity: .75; }
+.podium-block { width: 64px; border-radius: 10px 10px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 4px; font-size: 20px; }
+.podium-col.first .podium-block { height: 64px; background: linear-gradient(180deg, #ffd76a, #c98a1b); }
+.podium-col.second .podium-block { height: 50px; background: linear-gradient(180deg, #c9d4e4, #8a94a8); }
+.podium-col.third .podium-block { height: 38px; background: linear-gradient(180deg, #d29a6b, #a06a3d); }
+@keyframes podiumIn { from { transform: translateY(26px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+/* #5 Idle shimmer on the waiting lobby */
+.waiting-host { position: relative; overflow: hidden; }
+.waiting-host::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.05) 45%, rgba(255,255,255,.11) 50%, rgba(255,255,255,.05) 55%, transparent 70%);
+  animation: rainbowSweep 3.4s linear infinite; }
+/* #7 Chat slide-in */
+.chat-msg, .inline-chat-msg { animation: chatIn .3s ease; }
+@keyframes chatIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* #8 Hint glow pulse */
+.bracket-box.hint-revealed .bracket-letter { animation: letterDrop .4s cubic-bezier(.2,.9,.3,1.3) both, hintGlow 1.8s ease-in-out calc(var(--d, 0s) + .5s) infinite; }
+@keyframes hintGlow { 0%,100% { text-shadow: 0 0 0 rgba(255,215,106,0); } 50% { text-shadow: 0 0 12px rgba(255,215,106,.85); } }
+/* #6 Host badge + #9 fastest badge */
+.host-badge { font-size: 11px; font-weight: 700; color: #ffd76a; background: rgba(255,215,106,.12); border: 1px solid rgba(255,215,106,.35); padding: 3px 10px; border-radius: 999px; margin-right: 8px; }
+.fastest-badge { display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 900; color: #201408; background: linear-gradient(135deg, #ffd76a, #ff9d3c); vertical-align: 1px; }
+/* #10 count-up tabular numbers in TOP 5 */
+.celeb-pts { font-variant-numeric: tabular-nums; }
+
 
 
 
