@@ -109,7 +109,10 @@ export default function App() {
     if (isStudio) return;
     const applyMode = () => {
       const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
-      const canvas = inGame && window.innerWidth >= 768;
+      // Desktop web: game screens use the studio canvas. Narrow screens
+      // (phones/tablets): the whole session uses the studio canvas — the
+      // same design as desktop/stream, fitted to the screen.
+      const canvas = inGame || window.innerWidth < 768;
       document.documentElement.classList.toggle('tiktok-half', canvas);
       document.documentElement.classList.toggle('cw-web', !canvas);
     };
