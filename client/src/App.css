@@ -7099,13 +7099,10 @@ html[data-theme='aurora'] .live-dot {
 /* Tile pop — grid remounts each round, cells spring in staggered */
 .grid-cell { animation: tileIn .38s cubic-bezier(.2,.9,.3,1.2) both; animation-delay: calc(var(--i, 0) * 16ms); }
 @keyframes tileIn { from { transform: scale(.55); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-/* Timer countdown ring */
-.timer-ring { --pct: 100; width: 72px; height: 72px; margin: 4px auto 2px; border-radius: 50%; padding: 4px;
+/* Timer countdown ring — hugs the timer at its original size/font */
+.timer-ring { --pct: 100; display: inline-flex; padding: 3px; border-radius: 999px;
   background: conic-gradient(#ffd76a calc(var(--pct) * 1%), rgba(255,255,255,.09) 0); }
-.timer-ring .timer-display { width: 100%; height: 100%; margin: 0; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; background: var(--panel, #141b2e);
-  font-size: 15px; font-weight: 800; }
-.timer-warn { color: #ff5c5c !important; }
+.timer-ring .timer-display { border-radius: 999px; }
 /* Score pop: bigger + glowing; flame on streaks */
 .score-pop { font-size: 30px; font-weight: 900; color: #ffd76a;
   text-shadow: 0 0 16px rgba(255,190,80,.7), 0 2px 0 rgba(0,0,0,.4); }
