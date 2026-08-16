@@ -26,19 +26,29 @@ function applyTiktokHalfMode() {
   document.documentElement.classList.toggle('cw-web', !overlayMode);
 }
 
-// The half-size layout is a FIXED 540×960 design canvas.
-// Studio stream links (?auto=1 / ?half=1 — and ?fill=1) make the canvas
-// COVER the window: it scales UP via CSS zoom to fill whatever screen size
-// is used, so the game fills the whole window (razor sharp at any size).
-// All other tiktok-half contexts (e.g. desktop web in-game) keep the fit
-// logic: scale DOWN to fit smaller screens, never up, design stays identical.
+// The half-size layout is a FIXED 540×960 design canvas, and the studio
+// style is used everywhere — with responsive sizing:
+//   • Small screens (phones / windows smaller than the canvas): the canvas
+//     scales DOWN to FIT — the whole game is visible, same studio style,
+//     never cropped.
+//   • Large screens (studio / stream windows): the canvas scales UP via CSS
+//     zoom to COVER the window — the game fills the whole screen, razor sharp.
+// Other tiktok-half contexts (desktop web in-game) always fit.
 function applyHalfScale() {
   const params = new URLSearchParams(window.location.search);
-  const fill = params.has('fill') || params.has('auto') || params.has('half');
-  if (fill) {
-    const s = Math.max(window.innerWidth / 540, window.innerHeight / 960);
-    document.documentElement.style.zoom = String(Math.max(s, 1));
-    document.documentElement.style.setProperty('--half-scale', '1');
+  const cover = params.has('fill') || params.has('auto') || params.has('half');
+  if (cover) {
+    const fit = Math.min(window.innerWidth / 540, window.innerHeight / 960);
+    if (fit < 1) {
+      // Small screen — scale down to fit, whole canvas visible
+      document.documentElement.style.zoom = '';
+      document.documentElement.style.setProperty('--half-scale', fit.toFixed(4));
+    } else {
+      // Large screen — scale up to cover the window
+      const s = Math.max(window.innerWidth / 540, window.innerHeight / 960);
+      document.documentElement.style.zoom = String(s);
+      document.documentElement.style.setProperty('--half-scale', '1');
+    }
   } else {
     document.documentElement.style.zoom = '';
     const s = Math.min(1, window.innerWidth / 540, window.innerHeight / 960);
