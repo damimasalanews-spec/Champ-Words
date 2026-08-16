@@ -702,8 +702,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         />
       )}
 
-      {/* Flying "+N" popup on a correct guess */}
-      {scorePop !== null && <div className="score-pop">+{scorePop}</div>}
+      {/* Flying "+N" popup on a correct guess (flame on a streak ≥2) */}
+      {scorePop !== null && (
+        <div className={`score-pop${(room.players.find(p => p.id === socket.id)?.streak || 0) >= 2 ? ' score-pop-flame' : ''}`}>
+          +{scorePop}{(room.players.find(p => p.id === socket.id)?.streak || 0) >= 2 ? ' 🔥' : ''}
+        </div>
+      )}
 
       <div className="game-header">
         {/* Remaining chat info — right above the answer box (half-size layout) */}
@@ -760,7 +764,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
       {(state === 'playing' || state === 'round_over') && (
         <>
-          <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+          <div className="timer-ring" style={{ '--pct': Math.max(0, Math.min(100, (timeLeft / 60) * 100)) }}>
+            <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+          </div>
           <div className="timer-bar">
             <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
               style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />

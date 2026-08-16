@@ -88,6 +88,7 @@ export default function RoundOver({ result, room }) {
                       {rankEmoji[i] || `#${i + 1}`}
                     </span>
                     <div className="player-info">
+                      <span className="mini-avatar">{r.name.slice(0, 1).toUpperCase()}</span>
                       <div className="player-name">
                         {r.name.slice(0, typedLen)}
                         {typing && <span className="typewriter-caret" />}

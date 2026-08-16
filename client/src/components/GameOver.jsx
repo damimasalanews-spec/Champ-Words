@@ -114,6 +114,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
                 {rankEmoji[i] || `#${i + 1}`}
               </span>
               <div className="player-info">
+                <span className="mini-avatar">{p.name.slice(0, 1).toUpperCase()}</span>
                 <div className="player-name">{p.name}{p.isChat && <span className="chat-badge">CHAT</span>}</div>
               </div>
               <span className="player-score"><CountUpScore value={p.score} /></span>
@@ -127,6 +128,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
             {allTime.map((p, i) => (
               <div key={p.key || p.name} className="alltime-row">
                 <span className={`alltime-rank${i === 0 ? ' rank-1' : ''}`}>{i + 1}</span>
+                <span className="mini-avatar">{p.name.slice(0, 1).toUpperCase()}</span>
                 <span className="alltime-name">{p.name}{p.chat && <span className="chat-badge">CHAT</span>}</span>
                 <span className="alltime-meta" title={`${p.found || 0} words found · best streak ${p.bestStreak || 0}`}>
                   {p.found || 0}🔥{p.bestStreak || 0}
