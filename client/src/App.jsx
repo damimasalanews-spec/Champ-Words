@@ -480,6 +480,7 @@ export default function App() {
                 roomId={room.id}
                 socket={socket}
                 meName={room.players.find(p => p.id === socket.id)?.name}
+                isPlayer={!!room.players.find(p => p.id === socket.id)}
               />
             )}
           </div>

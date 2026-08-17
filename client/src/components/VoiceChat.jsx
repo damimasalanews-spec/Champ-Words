@@ -16,7 +16,7 @@ const ICE_SERVERS = [
   }
 ];
 
-export default function VoiceChat({ roomId, socket, meName }) {
+export default function VoiceChat({ roomId, socket, meName, isPlayer }) {
   const [joined, setJoined] = useState(false);
   const [joining, setJoining] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -196,6 +196,17 @@ export default function VoiceChat({ roomId, socket, meName }) {
       setJoining(false);
     }
   }, [roomId, socket]);
+
+  // Mic ON by default — auto-join voice when the game loads, so even a solo
+  // player's microphone is live immediately (no click needed). Players can
+  // still mute or leave; a blocked mic shows the normal error and the Join
+  // voice button stays for a manual retry. Spectators never auto-join.
+  const autoJoinedRef = useRef(false);
+  useEffect(() => {
+    if (!roomId || !isPlayer || joinedRef.current || autoJoinedRef.current) return;
+    autoJoinedRef.current = true;
+    joinVoice();
+  }, [roomId, isPlayer, joinVoice]);
 
   const leaveVoice = useCallback(() => {
     if (!joinedRef.current) return;
