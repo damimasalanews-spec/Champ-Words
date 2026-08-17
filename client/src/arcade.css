@@ -3290,35 +3290,37 @@ html.tiktok-half .notify-item {
 
 /* Board: size to its content so all 5 player rows ALWAYS fit — the old
    fixed column height (a leftover from the 4×4-grid layout) with
-   overflow:hidden was clipping the 5th row. */
+   overflow:hidden was clipping the 5th row. Compact padding keeps the
+   whole column shorter. */
 html.tiktok-half .top10-board {
   height: auto !important;
   min-height: 0;
   box-sizing: border-box !important;
   justify-content: flex-start;
-  padding: 10px 14px 10px !important;
-  gap: 6px;
+  padding: 8px 12px 8px !important;
+  gap: 5px;
 }
 
-/* Title: clean gold header */
+/* Title: clean gold header, compact */
 html.tiktok-half .top10-title {
-  font-size: 12px !important;
+  font-size: 11px !important;
   letter-spacing: 3px !important;
   text-align: left !important;
-  padding-bottom: 6px !important;
-  margin-bottom: 2px !important;
+  padding-bottom: 4px !important;
+  margin-bottom: 1px !important;
   border-bottom: 1px solid rgba(245, 214, 123, 0.25) !important;
   color: #f5d67b !important;
   flex: none;
+  line-height: 1.3;
 }
 
 /* Rows: natural height, no stretch — every player row is visible. */
 html.tiktok-half .top10-row {
   flex: none !important;
-  min-height: 34px;
-  padding: 6px 12px !important;
-  gap: 10px !important;
-  border-radius: 10px !important;
+  min-height: 0;
+  padding: 4px 10px !important;
+  gap: 8px !important;
+  border-radius: 8px !important;
   background: rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.07) !important;
 }
@@ -3328,15 +3330,15 @@ html.tiktok-half .top10-row + .top10-row {
 
 /* Rank badges: gold/silver/bronze with a soft circle behind */
 html.tiktok-half .top10-rank {
-  font-size: 19px !important;
+  font-size: 16px !important;
   font-weight: 800 !important;
-  min-width: 26px !important;
-  width: 26px;
-  height: 26px;
+  min-width: 22px !important;
+  width: 22px;
+  height: 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.06);
   color: #c9d4e6 !important;
   flex-shrink: 0;
@@ -3356,7 +3358,7 @@ html.tiktok-half .top10-rank.rank-3 {
 
 /* Name: readable white, ellipsis on long names */
 html.tiktok-half .top10-name {
-  font-size: 17px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
   color: #ffffff !important;
   white-space: nowrap;
@@ -3368,9 +3370,9 @@ html.tiktok-half .top10-name {
 
 /* Points: emerald, tabular for alignment */
 html.tiktok-half .top10-pts {
-  font-size: 18px !important;
+  font-size: 15px !important;
   font-weight: 800 !important;
-  min-width: 40px !important;
+  min-width: 34px !important;
   text-align: right !important;
   color: #3dffb8 !important;
   font-variant-numeric: tabular-nums;
