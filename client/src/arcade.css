@@ -3285,9 +3285,10 @@ html.tiktok-half .notify-item {
    flex:1 rows) that broke in the new layout.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* Board: size to content, no stretch, comfortable padding */
+/* Board: fill the column exactly as before (height 100% + rows flex 1),
+   so all 5 player rows are always visible. Only the style is new. */
 html.tiktok-half .top10-board {
-  height: auto !important;
+  height: 100% !important;
   min-height: 0;
   justify-content: flex-start;
   padding: 12px 14px 12px !important;
@@ -3305,10 +3306,11 @@ html.tiktok-half .top10-title {
   color: #f5d67b !important;
 }
 
-/* Rows: fixed comfortable height, no stretch, clean flex layout */
+/* Rows: share the column evenly exactly as before (flex 1), so every
+   player row is visible. Only the style is new. */
 html.tiktok-half .top10-row {
-  flex: none !important;
-  height: 40px;
+  flex: 1 !important;
+  min-height: 34px;
   padding: 0 12px !important;
   gap: 10px !important;
   border-radius: 10px !important;
