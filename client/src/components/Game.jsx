@@ -634,7 +634,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       )}
 
       {dragPath.length > 0 && !submitting && (
-        <div style={{ textAlign: 'center', marginTop: 6 }}>
+        <div className="drag-confirm-row">
           <span className="drag-word-display">{dragWord}</span>
           <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
         </div>
