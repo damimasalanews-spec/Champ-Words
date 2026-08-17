@@ -2704,70 +2704,87 @@ html.tiktok-half .round-intro-letters { font-size: 14px; }
   html.cw-web .game-col-left { gap: 6px; }
 }
 
+
 /* ═══════════════════════════════════════════════════════════════════════
-   540×960 CANVAS LAYOUT — artist drawing beside TOP 5 (30/70), letter
-   grid moved into the answer box below (where the drawing used to be).
-   Web/mobile (cw-web) layout is untouched.
+   540×960 CANVAS LAYOUT — TOP 5 full-width column on top, ANSWER
+   brackets in the gap below it, then a 50/50 row: timer + letter grid
+   (left) and artist drawing (right). Web/mobile (cw-web) untouched.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* Top row: TOP 5 takes 70% right, the play column (timer + artist) 30% left */
-html.tiktok-half .grid-leader-panel {
-  gap: 10px;
+/* Flatten the two wrapper panels so every section becomes a direct flex
+   child of .grid-score-row and can be reordered with `order`. */
+html.tiktok-half .grid-leader-panel,
+html.tiktok-half .answer-art-box {
+  display: contents !important;
 }
-html.tiktok-half .play-col {
-  width: 30% !important;
-  --cell: 44px; --gap: 8px; --pad: 10px;
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
+
+/* ── 1) TOP 5 leaderboard — one full-width column ── */
 html.tiktok-half .leader-col {
+  order: 1;
   flex: none !important;
-  width: 70% !important;
-  border-left: 1px solid #2b3d6b;
+  width: 100% !important;
+  border-left: none !important;
   overflow: hidden !important;
 }
-
-/* Artist drawing fills the left column under the timer */
-html.tiktok-half .play-col .art-board-inline {
+html.tiktok-half .leader-col .top10-board {
   width: 100%;
-  padding: 8px;
+  background: rgba(24, 33, 54, 0.72) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px 8px;
+}
+html.tiktok-half .leader-col .top10-row {
+  padding: 8px 12px;
+  gap: 12px;
+}
+
+/* ── 2) ANSWER brackets — full width, in the gap below the leaderboard ── */
+html.tiktok-half .answer-art-side {
+  order: 2;
+  width: 100% !important;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(24, 33, 54, 0.55) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 12px !important;
+  padding: 10px 12px;
+}
+html.tiktok-half .answer-art-side .brackets-label {
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+html.tiktok-half .answer-art-side .bracket-box {
+  width: 40px;
+  height: 40px;
+  border-width: 2.5px;
+  border-radius: 9px;
+}
+html.tiktok-half .answer-art-side .bracket-letter {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* ── 3) 50/50 row: timer + letter grid (left) | artist drawing (right) ── */
+html.tiktok-half .play-col {
+  order: 3;
+  flex: none !important;
+  width: 50% !important;
+  --cell: 46px; --gap: 8px; --pad: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  background: rgba(24, 33, 54, 0.55) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 12px !important;
+  padding: 10px;
 }
-html.tiktok-half .play-col .art-board-inline .art-canvas {
-  width: 112px;
-  height: 112px;
-}
-html.tiktok-half .play-col .art-board-inline .art-emoji {
-  font-size: 96px;
-  line-height: 112px;
-}
-html.tiktok-half .play-col .art-board-inline .art-progress {
-  width: 100%;
-}
-
-/* Letter grid inside the answer box (left) — sized to fit beside the brackets */
-html.tiktok-half .answer-art-box {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
-  width: 100%;
-  padding: 10px 12px;
-}
-html.tiktok-half .answer-art-box .grid-drag-wrapper {
-  flex: none;
-  width: 220px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-html.tiktok-half .answer-art-box .grid-4x4 {
+html.tiktok-half .play-col .grid-4x4 {
   margin: 0 auto;
   padding: 10px;
   gap: 8px;
@@ -2775,11 +2792,11 @@ html.tiktok-half .answer-art-box .grid-4x4 {
   border: 1.5px solid rgba(122, 170, 255, 0.16);
   border-radius: 12px;
 }
-html.tiktok-half .answer-art-box .grid-row { gap: 8px; }
-html.tiktok-half .answer-art-box .grid-4x4 .grid-cell {
-  width: 44px;
-  height: 44px;
-  font-size: 21px;
+html.tiktok-half .play-col .grid-row { gap: 8px; }
+html.tiktok-half .play-col .grid-4x4 .grid-cell {
+  width: 46px;
+  height: 46px;
+  font-size: 22px;
   font-weight: 800;
   border-radius: 9px;
   background: #ffffff !important;
@@ -2787,19 +2804,39 @@ html.tiktok-half .answer-art-box .grid-4x4 .grid-cell {
   border: none !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-html.tiktok-half .answer-art-box .grid-4x4 .grid-cell.selected,
-html.tiktok-half .answer-art-box .grid-4x4 .grid-cell.last {
+html.tiktok-half .play-col .grid-4x4 .grid-cell.selected,
+html.tiktok-half .play-col .grid-4x4 .grid-cell.last {
   background: linear-gradient(135deg, #3dffb8, #2ee6ff) !important;
   color: #04121a !important;
   box-shadow: 0 0 14px rgba(61, 255, 184, 0.5);
 }
-/* Brackets keep their spot on the right side of the answer box */
-html.tiktok-half .answer-art-side {
-  flex: 1;
-  min-width: 0;
+
+/* Artist drawing fills the right 50% column */
+html.tiktok-half .answer-art-box .art-board-inline {
+  order: 4;
+  flex: none !important;
+  width: 50% !important;
+  padding: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 6px;
+  background: rgba(24, 33, 54, 0.55) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  border-radius: 12px !important;
 }
+html.tiktok-half .answer-art-box .art-board-inline .art-canvas {
+  width: 118px;
+  height: 118px;
+}
+html.tiktok-half .answer-art-box .art-board-inline .art-emoji {
+  font-size: 100px;
+  line-height: 118px;
+}
+html.tiktok-half .answer-art-box .art-board-inline .art-progress {
+  width: 100%;
+}
+
+/* Remaining sections keep the natural order below the 50/50 row */
+html.tiktok-half .notify-row { order: 5; }
+html.tiktok-half .overall-board { order: 6; }

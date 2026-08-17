@@ -853,13 +853,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </>
       )}
 
-      {/* ── Play column content: on the 540×960 canvas the artist drawing
-             replaces the grid here (grid moves to the answer box below);
-             on web/mobile the grid stays in the play column. ── */}
-      {!isWeb && artistSection}
-      {isWeb && gridSection}
-      {isWeb && foundSection}
-      {isWeb && hintSection}
+      {/* ── Play column content: timer + letter grid (both modes). The
+             540×960 canvas reorders sections via CSS (TOP 5 → brackets →
+             this 50% column); web/mobile keeps the original flow. ── */}
+      {gridSection}
+      {foundSection}
+      {hintSection}
 
       {/* Stream reactions flying over the grid */}
       <div className="reaction-layer" aria-hidden="true">
@@ -925,15 +924,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
         </div>
 
-        {/* ── Answer brackets + grid/artist in one bordered box: on the
-               540×960 canvas the letter grid sits here (left, where the
-               drawing used to be) with the ANSWER brackets on the right;
-               on web/mobile the artist drawing keeps this spot. ── */}
+        {/* ── Answer brackets + artist drawing in one bordered box: the
+               artist keeps this spot on web/mobile; on the 540×960 canvas
+               it becomes the right 50% column of the grid/artist row (CSS
+               reorders it beside the play column). ── */}
         <div className="answer-art-box">
-          {!isWeb && gridSection}
-          {!isWeb && foundSection}
-          {!isWeb && hintSection}
-          {isWeb && artistSection}
+          {artistSection}
 
           <div className="answer-art-side">
           {(wordLen > 0 || (room.revealedLetters && room.revealedLetters.length > 0)) && (state === 'playing' || state === 'round_over') && (
