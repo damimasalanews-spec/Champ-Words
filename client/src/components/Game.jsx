@@ -101,10 +101,12 @@ function Confetti({ word, onDone, msg, silent, variant }) {
     const t = setTimeout(onDone, 2000);
     return () => clearTimeout(t);
   }, [onDone, silent]);
-  const palette = variant === 'chat'
-    ? ['#35e6a0','#22c9e0','#f5b544','#5ec8ff','#ffffff','#1fc98a']
-    : ['#35e6a0','#22c9e0','#f5b544','#5ec8ff','#ffffff','#1fc98a'];
-  const pieces = variant === 'chat' ? 16 : 36;
+  const palette = variant === 'milestone'
+    ? ['#ffd76a', '#ff9d3c', '#f5b544', '#ffcc33', '#fff3c4', '#ffa94d']
+    : variant === 'chat'
+    ? ['#35e6a0', '#22c9e0', '#f5b544', '#5ec8ff', '#ffffff', '#1fc98a']
+    : ['#35e6a0', '#22c9e0', '#f5b544', '#5ec8ff', '#ffffff', '#1fc98a'];
+  const pieces = variant === 'chat' ? 16 : (variant === 'milestone' ? 26 : 36);
   return (
     <div className={`confetti-overlay${variant ? ' confetti-' + variant : ''}`}>
       {Array.from({ length: pieces }, (_, i) => {
@@ -113,7 +115,7 @@ function Confetti({ word, onDone, msg, silent, variant }) {
         return <div key={i} className="confetti-piece" style={{'--x':Math.random()*100,'--delay':(Math.random()*0.6)+'s','--color':c,'--size':size+'px',left:Math.random()*100+'%'}}/>;
       })}
       <div className="confetti-center">
-        <div className="confetti-star">{variant === 'chat' ? '✦' : '✨'}</div>
+        <div className="confetti-star">{variant === 'milestone' ? '🏆' : variant === 'chat' ? '✦' : '✨'}</div>
         {variant === 'chat' && <div className="confetti-avatar">{(word || '?').charAt(0).toUpperCase()}</div>}
         <div className="confetti-word">{word.toUpperCase()}</div>
         {variant === 'chat' && <div className="confetti-divider" />}
@@ -282,78 +284,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           setTimeout(() => setMilestone(null), 2600);
         }
       }
-      // Achievement toasts (first blood / lightning fast / streak) — for the stream
-      if (data.toasts && data.toasts.length) {
-        const name = data.winnerNick || data.winnerName || '';
-        const ts = data.toasts.map(t => ({ id: toastId.current++, icon: t.icon, text: t.text, name }));
-        setToasts(prev => [...prev, ...ts]);
-        ts.forEach(t => window.setTimeout(() => setToasts(prev => prev.filter(x => x.id !== t.id)), 2400));
-      }
-      // Winner ticker — recent finds scrolling at the bottom
-      if (data.winnerName && data.elapsed) {
-        setTicker(prev => [...prev.slice(-4), { id: tickerId.current++, name: data.winnerName, sec: data.elapsed }]);
-      }
-      // Live "fastest this round" target (mobile): everyone sees the time to beat
-      if (data.elapsed) setFastestSec(prev => (prev === null ? data.elapsed : Math.min(prev, data.elapsed)));
-      // …but only the finder sees the word fall into the brackets
-      if (data.word) {
-        setSolvedWord(data.word);
-        setFalling(true);
-        setTimeout(() => setFalling(false), 1800);
-        if (data.winnerId === socket.id) {
-          buzz([30, 40, 70]);
-          setConfetti({ word: data.word, msg: `You found it! +${data.score} pts` });
-          setScorePop(data.score);
-          setTimeout(() => setScorePop(null), 1300);
-          setSolvedFlash(true);
-          setTimeout(() => setSolvedFlash(false), 800);
-        }
-      }
-      setFoundList(prev => [...prev, { name: data.winnerName || 'Someone', score: data.score, self: data.winnerId === socket.id }]);
-      setAllFound(!!data.allFound);
     };
-    const onTimeUp = (data) => { setSolvedWord(data.word); playSound('timeup'); };
-    socket.on('word_found', onFound); socket.on('time_up', onTimeUp);
-    return () => { socket.off('word_found', onFound); socket.off('time_up', onTimeUp); };
-  }, [socket]);
+    socket.on('word_found', onFound);
+    return () => socket.off('word_found', onFound);
+  }, [socket, pushFoundPopup]);
 
-  // Spectator view: see what the hot-seat guesser is dragging
-  const [spectPath, setSpectPath] = useState([]);
-  const [spectWord, setSpectWord] = useState('');
-  const [spectName, setSpectName] = useState('');
-  const [spectDrawn, setSpectDrawn] = useState(null); // { name, word } after a completed drag
+  // 1k / 5k / 10k point milestones — queued with the found-word popups so
+  // they appear in the same spot, in order
   useEffect(() => {
-    const onDrag = (d) => { setSpectPath(d.path || []); setSpectWord(d.word || ''); setSpectName(d.playerName || ''); setSpectDrawn(null); };
-    const onEnd = (d) => {
-      setSpectPath([]); setSpectWord('');
-      setSpectDrawn({ name: d.playerName || '', word: d.word || '' });
-      setTimeout(() => setSpectDrawn(null), 3000);
+    const onMilestone = (data) => {
+      if (!data || !data.name || !data.points) return;
+      pushFoundPopup({ kind: 'milestone', name: data.name, points: data.points });
     };
-    socket.on('guess_drag', onDrag); socket.on('guess_drag_end', onEnd);
-    return () => { socket.off('guess_drag', onDrag); socket.off('guess_drag_end', onEnd); };
-  }, [socket]);
+    socket.on('milestone', onMilestone);
+    return () => socket.off('milestone', onMilestone);
+  }, [socket, pushFoundPopup]);
 
-  // Champ hint: the picker's one-line clue
-  useEffect(() => {
-    const onClue = (data) => { setWordClue(data.text || ''); playSound('hint'); };
-    socket.on('word_hint', onClue);
-    return () => { socket.off('word_hint', onClue); };
-  }, [socket]);
-
-  // Champ's 5s hint-action window (hint_request) + penalty notice (points_lost)
-  useEffect(() => {
-    const onReq = (data) => { setHintAction(data); setHintActionLeft(data.timeLeft || 5); setHintSending(false); setClueSent(false); playSound('alert'); };
-    const onLost = (data) => { showToast(`−${data.amount} pts — ${data.reason}`, 'error'); playSound('penalty'); };
-    socket.on('hint_request', onReq); socket.on('points_lost', onLost);
-    return () => { socket.off('hint_request', onReq); socket.off('points_lost', onLost); };
-  }, [socket, showToast]);
-
-  // "Champ is choosing" popup sound for other players
-  useEffect(() => {
-    if (state === 'champ_pick' && !isChamp) playSound('popup');
-  }, [state, isChamp]);
-
-  // 5s countdown for the hint window
+  // Hint countdown — champ's 5s hint window
   useEffect(() => {
     if (!hintAction) return;
     const iv = setInterval(() => {
@@ -729,11 +676,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       {foundPopup && (
         <Confetti
           key={foundPopup.id}
-          variant="chat"
+          variant={foundPopup.kind === 'milestone' ? 'milestone' : 'chat'}
           silent
           word={foundPopup.name}
           onDone={showNextPopup}
-          msg="You found a Champ Word!"
+          msg={foundPopup.kind === 'milestone' ? `crossed ${foundPopup.points} points!` : 'You found a Champ Word!'}
         />
       )}
 

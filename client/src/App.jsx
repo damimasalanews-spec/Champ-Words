@@ -65,13 +65,11 @@ export default function App() {
   const [duelMsg, setDuelMsg] = useState(''); // speed-duel result banner
   const [duelWord, setDuelWord] = useState(''); // defender's duel answer input
   const duelMsgTimer = useRef(null);
-  const [milestoneMsg, setMilestoneMsg] = useState(''); // 1k/5k/10k celebration
   const [notifications, setNotifications] = useState([]); // live ticker messages
   const [watching, setWatching] = useState(0); // live viewer count
   const [achPopup, setAchPopup] = useState(null); // achievement unlock toast
   const [achOpen, setAchOpen] = useState(false); // achievements cabinet
   const [achList, setAchList] = useState(null);
-  const milestoneMsgTimer = useRef(null);
   const [blacklistWord, setBlacklistWord] = useState(''); // host blacklist input
 
   const showToast = useCallback((text, type = 'error') => {
@@ -215,12 +213,6 @@ export default function App() {
       } else {
         setDuelMsg('');
       }
-    });
-    socket.on('milestone', (data) => {
-      if (!data || !data.name || !data.points) return;
-      setMilestoneMsg(`${data.name} crossed ${data.points} points!`);
-      if (milestoneMsgTimer.current) clearTimeout(milestoneMsgTimer.current);
-      milestoneMsgTimer.current = setTimeout(() => setMilestoneMsg(''), 4000);
     });
     socket.on('notify', (n) => {
       if (n && n.text) setNotifications(prev => [...prev.slice(-7), n]);
@@ -602,13 +594,6 @@ export default function App() {
               <button className="paused-resume" onClick={() => socket.emit('resume_game', { roomId: room.id })}>▶️ Resume</button>
             )}
           </div>
-        </div>
-      )}
-
-      {/* 🏆 Milestone celebration */}
-      {milestoneMsg && (
-        <div className="milestone-banner">
-          <div className="milestone-card">🏆 {milestoneMsg}</div>
         </div>
       )}
 
