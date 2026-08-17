@@ -2725,13 +2725,16 @@ html.tiktok-half .grid-score-row {
   gap: 8px;
 }
 
-/* ── 1) TOP 5 leaderboard — one full-width column ── */
+/* ── 1) TOP 5 leaderboard — one full-width column ──
+   Height is auto: the old fixed calc height (a 4×4-grid leftover) with
+   overflow:hidden clipped the 5th row. Content now sizes the column. */
 html.tiktok-half .leader-col {
   order: 1;
   flex: none !important;
   width: 100% !important;
   border-left: none !important;
-  overflow: hidden !important;
+  overflow: visible !important;
+  height: auto !important;
 }
 html.tiktok-half .leader-col .top10-board {
   width: 100%;
@@ -3285,11 +3288,11 @@ html.tiktok-half .notify-item {
    flex:1 rows) that broke in the new layout.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* Board: fill the column exactly as before (height 100% + rows flex 1),
-   so all 5 player rows are always visible. Border-box keeps the padding
-   INSIDE the fixed column height so nothing clips. */
+/* Board: size to its content so all 5 player rows ALWAYS fit — the old
+   fixed column height (a leftover from the 4×4-grid layout) with
+   overflow:hidden was clipping the 5th row. */
 html.tiktok-half .top10-board {
-  height: 100% !important;
+  height: auto !important;
   min-height: 0;
   box-sizing: border-box !important;
   justify-content: flex-start;
@@ -3309,12 +3312,11 @@ html.tiktok-half .top10-title {
   flex: none;
 }
 
-/* Rows: share the column evenly exactly as before (flex 1), so every
-   player row is visible. Only the style is new. */
+/* Rows: natural height, no stretch — every player row is visible. */
 html.tiktok-half .top10-row {
-  flex: 1 !important;
+  flex: none !important;
   min-height: 34px;
-  padding: 0 12px !important;
+  padding: 6px 12px !important;
   gap: 10px !important;
   border-radius: 10px !important;
   background: rgba(255, 255, 255, 0.05) !important;
