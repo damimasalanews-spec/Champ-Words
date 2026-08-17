@@ -574,6 +574,98 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const topPlayer = [...room.players].sort((a, b) => b.score - a.score)[0] || null;
   const showLeader = state === 'playing' && topPlayer && topPlayer.score > 0;
 
+  // ── Canvas vs web section placement ─────────────────────────────────────
+  // On the 540×960 canvas the artist drawing sits beside the TOP 5 board
+  // (30% left) and the letter grid lives in the answer box below (where the
+  // drawing used to be). On web/mobile (cw-web) the original order is kept:
+  // grid in the play column, artist in the answer box. These variables let
+  // the same markup be placed in either container per mode.
+  const artistSection = (state === 'playing' || state === 'round_over') ? (
+    <div key={`inline-${room.round}`} className="art-board art-board-inline">
+      {room.art ? (
+        <>
+          <div className="art-canvas">
+            {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
+          </div>
+          <div className="art-progress"><div className="art-progress-fill" /></div>
+        </>
+      ) : (
+        <div className="art-canvas">
+          <span className="art-emoji art-emoji-fallback">🎨</span>
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  const gridSection = (state === 'playing' || state === 'round_over') && grid.length > 0 ? (
+    <div className={`grid-drag-wrapper${wrongFlash ? ' shake' : ''}${solvedFlash ? ' grid-solved' : ''}`} ref={gridRef}>
+      {solvedFlash && (
+        <div className="spark-burst" aria-hidden="true">
+          {Array.from({ length: 12 }, (_, i) => (
+            <span key={i} style={{ '--dx': `${Math.cos((i / 12) * Math.PI * 2) * 36}px`, '--dy': `${Math.sin((i / 12) * Math.PI * 2) * 36}px` }} />
+          ))}
+        </div>
+      )}
+      <div className={`grid-4x4${wordLen >= 7 ? ' grid-rainbow' : ''}${solvedWord ? ' grid-solved' : ''}`} key={`g-${room.round}`}>
+        {grid.map((row, r) => (
+          <div key={r} className="grid-row">
+            {row.map((ch, c) => {
+              const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
+              const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
+              // Mobile only: subtly pulse the reachable cells while dragging
+              const isGhost = isWeb && isDragging && dragPath.length > 0 && !sel &&
+                isAdjacent(dragPath[dragPath.length - 1][0], dragPath[dragPath.length - 1][1], r, c);
+              return (
+                <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}${isGhost ? ' ghost' : ''}`}
+                  data-row={r} data-col={c} style={{ '--i': r * 4 + c }}
+                  onMouseDown={(e) => startDrag(r, c, e)}
+                  onTouchStart={(e) => startDrag(r, c, e)}>
+                  {ch.toUpperCase()}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Top 5 celebration during the 6s pause (covers the grid) ── */}
+      {(allFound || state === 'round_over') && top5Row.length > 0 && (
+        <Top5Celebration players={top5Row} />
+      )}
+
+      {dragPath.length > 0 && !submitting && (
+        <div style={{ textAlign: 'center', marginTop: 6 }}>
+          <span className="drag-word-display">{dragWord}</span>
+          <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
+        </div>
+      )}
+
+      {falling && solvedWord && (
+        <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
+      )}
+      <div className="float-layer" aria-hidden="true">
+        {floats.map(f => (
+          <span key={f.id} className="float-emoji" style={{ left: `${f.x}%`, '--d': `${f.delay}s`, '--dur': `${f.dur}s` }}>{f.e}</span>
+        ))}
+      </div>
+      {milestone && <div className="milestone-banner">🎉 {milestone} SOLVES! 🎉</div>}
+    </div>
+  ) : null;
+
+  const foundSection = foundList.length > 0 && state === 'playing' ? (
+    <div className="found-now">
+      {foundList.map((f, i) => (
+        <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
+          ✅ {f.name} +{f.score}
+        </span>
+      ))}
+    </div>
+  ) : null;
+
+  const hintSection = wordClue && state === 'playing' ? (
+    <div className="hint-clue">💡 {wordClue}</div>
+  ) : null;
+
   return (
     <div className="game-area">
       {/* ── Round intro: mobile gets a 3-2-1 GO chip (grid visible to
@@ -761,76 +853,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </>
       )}
 
-      {/* ── 4×4 Grid (play column) — stays visible the 6s after the round ends ── */}
-      {(state === 'playing' || state === 'round_over') && grid.length > 0 && (
-        <div className={`grid-drag-wrapper${wrongFlash ? ' shake' : ''}${solvedFlash ? ' grid-solved' : ''}`} ref={gridRef}>
-          {solvedFlash && (
-            <div className="spark-burst" aria-hidden="true">
-              {Array.from({ length: 12 }, (_, i) => (
-                <span key={i} style={{ '--dx': `${Math.cos((i / 12) * Math.PI * 2) * 36}px`, '--dy': `${Math.sin((i / 12) * Math.PI * 2) * 36}px` }} />
-              ))}
-            </div>
-          )}
-          <div className={`grid-4x4${wordLen >= 7 ? ' grid-rainbow' : ''}${solvedWord ? ' grid-solved' : ''}`} key={`g-${room.round}`}>
-            {grid.map((row, r) => (
-              <div key={r} className="grid-row">
-                {row.map((ch, c) => {
-                  const sel = dragPath.some(([pr, pc]) => pr === r && pc === c);
-                  const isLast = dragPath.length > 0 && dragPath[dragPath.length - 1][0] === r && dragPath[dragPath.length - 1][1] === c;
-                  // Mobile only: subtly pulse the reachable cells while dragging
-                  const isGhost = isWeb && isDragging && dragPath.length > 0 && !sel &&
-                    isAdjacent(dragPath[dragPath.length - 1][0], dragPath[dragPath.length - 1][1], r, c);
-                  return (
-                    <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}${isGhost ? ' ghost' : ''}`}
-                      data-row={r} data-col={c} style={{ '--i': r * 4 + c }}
-                      onMouseDown={(e) => startDrag(r, c, e)}
-                      onTouchStart={(e) => startDrag(r, c, e)}>
-                      {ch.toUpperCase()}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-
-          {/* ── Top 5 celebration during the 6s pause (covers the grid) ── */}
-          {(allFound || state === 'round_over') && top5Row.length > 0 && (
-            <Top5Celebration players={top5Row} />
-          )}
-
-          {dragPath.length > 0 && !submitting && (
-            <div style={{ textAlign: 'center', marginTop: 6 }}>
-              <span className="drag-word-display">{dragWord}</span>
-              <button className="btn btn-small btn-danger" style={{ marginLeft: 10 }} onClick={() => { setDragPath([]); setIsDragging(false); lastCellRef.current = null; }}>Clear</button>
-            </div>
-          )}
-
-          {falling && solvedWord && (
-            <div className="falling-word falling-answer">{solvedWord.toUpperCase()}</div>
-          )}
-          <div className="float-layer" aria-hidden="true">
-            {floats.map(f => (
-              <span key={f.id} className="float-emoji" style={{ left: `${f.x}%`, '--d': `${f.delay}s`, '--dur': `${f.dur}s` }}>{f.e}</span>
-            ))}
-          </div>
-          {milestone && <div className="milestone-banner">🎉 {milestone} SOLVES! 🎉</div>}
-        </div>
-      )}
-
-      {/* ── Who found the word (round keeps going until everyone gets it) ── */}
-      {foundList.length > 0 && state === 'playing' && (
-        <div className="found-now">
-          {foundList.map((f, i) => (
-            <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
-              ✅ {f.name} +{f.score}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {wordClue && state === 'playing' && (
-        <div className="hint-clue">💡 {wordClue}</div>
-      )}
+      {/* ── Play column content: on the 540×960 canvas the artist drawing
+             replaces the grid here (grid moves to the answer box below);
+             on web/mobile the grid stays in the play column. ── */}
+      {!isWeb && artistSection}
+      {isWeb && gridSection}
+      {isWeb && foundSection}
+      {isWeb && hintSection}
 
       {/* Stream reactions flying over the grid */}
       <div className="reaction-layer" aria-hidden="true">
@@ -896,24 +925,15 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
         </div>
 
-        {/* ── Answer brackets + artist drawing in one bordered box ── */}
+        {/* ── Answer brackets + grid/artist in one bordered box: on the
+               540×960 canvas the letter grid sits here (left, where the
+               drawing used to be) with the ANSWER brackets on the right;
+               on web/mobile the artist drawing keeps this spot. ── */}
         <div className="answer-art-box">
-          {(state === 'playing' || state === 'round_over') && (
-            <div key={`inline-${room.round}`} className="art-board art-board-inline">
-              {room.art ? (
-                <>
-                  <div className="art-canvas">
-                    {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
-                  </div>
-                  <div className="art-progress"><div className="art-progress-fill" /></div>
-                </>
-              ) : (
-                <div className="art-canvas">
-                  <span className="art-emoji art-emoji-fallback">🎨</span>
-                </div>
-              )}
-            </div>
-          )}
+          {!isWeb && gridSection}
+          {!isWeb && foundSection}
+          {!isWeb && hintSection}
+          {isWeb && artistSection}
 
           <div className="answer-art-side">
           {(wordLen > 0 || (room.revealedLetters && room.revealedLetters.length > 0)) && (state === 'playing' || state === 'round_over') && (
