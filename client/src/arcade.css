@@ -2717,6 +2717,12 @@ html.tiktok-half .grid-leader-panel,
 html.tiktok-half .answer-art-box {
   display: contents !important;
 }
+html.tiktok-half .grid-score-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
 
 /* ── 1) TOP 5 leaderboard — one full-width column ── */
 html.tiktok-half .leader-col {
@@ -2739,8 +2745,8 @@ html.tiktok-half .leader-col .top10-row {
 }
 
 /* ── 2) ANSWER brackets — full width, in the gap below the leaderboard ── */
-html.tiktok-half .answer-art-side {
-  order: 2;
+html.tiktok-half .answer-art-box .answer-art-side {
+  order: 2 !important;
   width: 100% !important;
   flex: none;
   display: flex;
@@ -2772,8 +2778,9 @@ html.tiktok-half .answer-art-side .bracket-letter {
 /* ── 3) 50/50 row: timer + letter grid (left) | artist drawing (right) ── */
 html.tiktok-half .play-col {
   order: 3;
-  flex: none !important;
-  width: 50% !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0;
   --cell: 46px; --gap: 8px; --pad: 10px;
   display: flex;
   flex-direction: column;
@@ -2814,12 +2821,14 @@ html.tiktok-half .play-col .grid-4x4 .grid-cell.last {
 /* Artist drawing fills the right 50% column */
 html.tiktok-half .answer-art-box .art-board-inline {
   order: 4;
-  flex: none !important;
-  width: 50% !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0;
   padding: 8px;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
