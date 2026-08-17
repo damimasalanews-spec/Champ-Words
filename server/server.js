@@ -1169,7 +1169,7 @@ function isAdjacent(r1, c1, r2, c2) {
 
 function generateWordGrid(word) {
   const letters = word.replace(/\s+/g, '').split(''); // spaces are not grid cells
-  const GRID = 4; // 4×4 grid
+  const GRID = 3; // 3×3 grid
 
   // Backtracking placement — GUARANTEES the word is embedded in the grid
   // (the old greedy random-walk could fail for 7-8 letter words and returned
@@ -1226,7 +1226,7 @@ function validatePath(grid, path, word) {
   if (!path || !Array.isArray(path) || path.length < 3) return false;
   const letters = word.replace(/\s+/g, ''); // spaces are not grid cells
   if (path.length !== letters.length) return false;
-  const GRID = 4; // 4×4 grid
+  const GRID = grid.length; // 3×3 grid (derived from the actual grid)
   for (let i = 1; i < path.length; i++) {
     const [pr, pc] = path[i - 1], [cr, cc] = path[i];
     if (!isAdjacent(pr, pc, cr, cc)) return false;

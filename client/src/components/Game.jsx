@@ -617,7 +617,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                 isAdjacent(dragPath[dragPath.length - 1][0], dragPath[dragPath.length - 1][1], r, c);
               return (
                 <div key={c} className={`grid-cell ${sel ? 'selected' : ''} ${isLast ? 'last' : ''}${isGhost ? ' ghost' : ''}`}
-                  data-row={r} data-col={c} style={{ '--i': r * 4 + c }}
+                  data-row={r} data-col={c} style={{ '--i': r * (grid[0]?.length || 4) + c }}
                   onMouseDown={(e) => startDrag(r, c, e)}
                   onTouchStart={(e) => startDrag(r, c, e)}>
                   {ch.toUpperCase()}
@@ -655,7 +655,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const foundSection = foundList.length > 0 && state === 'playing' ? (
     <div className="found-now">
       {foundList.map((f, i) => (
-        <span key={i} className={`found-chip ${f.self ? 'found-self' : ''}`}>
+        <span key={`${f.id}-${i}`} className={`found-chip ${f.self ? 'found-self' : ''}`} style={{ '--i': i }}>
           ✅ {f.name} +{f.score}
         </span>
       ))}

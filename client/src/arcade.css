@@ -2753,43 +2753,88 @@ html.tiktok-half .answer-art-box .answer-art-side {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
   border-radius: 12px !important;
-  padding: 10px 12px;
+  padding: 6px 12px; /* reduced height */
 }
+/* No "ANSWER" label and no dots on the TikTok canvas — just the brackets */
 html.tiktok-half .answer-art-side .brackets-label {
-  font-size: 12px;
-  letter-spacing: 3px;
-  margin-bottom: 4px;
+  display: none !important;
+}
+html.tiktok-half .answer-art-side .word-progress {
+  display: none !important;
 }
 html.tiktok-half .answer-art-side .bracket-box {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   border-width: 2.5px;
-  border-radius: 9px;
+  border-radius: 8px;
 }
 html.tiktok-half .answer-art-side .bracket-letter {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
 }
 
-/* ── 3) 50/50 row: timer + letter grid (left) | artist drawing (right) ── */
+/* ── Found players: one chip pops in, pops out, then the next — sequential ── */
+html.tiktok-half .found-now {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 26px;
+  margin: 0;
+  overflow: hidden;
+}
+html.tiktok-half .found-chip {
+  --i: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: foundPopSeq 1.6s ease forwards;
+  animation-delay: calc(var(--i) * 1.7s);
+  font-size: 12px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
+@keyframes foundPopSeq {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.4) translateY(6px); }
+  12%  { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  22%  { transform: translate(-50%, -50%) scale(1); }
+  70%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  88%  { opacity: 0; transform: translate(-50%, -50%) scale(0.6) translateY(-4px); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6) translateY(-4px); }
+}
+
+/* ── 3) 50/50 row: timer + 3×3 letter grid (left) | artist drawing (right) ── */
 html.tiktok-half .play-col {
   order: 3;
   flex: 1 1 0 !important;
   width: auto !important;
   min-width: 0;
-  --cell: 46px; --gap: 8px; --pad: 10px;
+  --cell: 64px; --gap: 8px; --pad: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
   border-radius: 12px !important;
-  padding: 10px;
+  padding: 8px;
+}
+/* Smaller timer for the compact 3×3 column */
+html.tiktok-half .play-col .timer-ring {
+  width: 84px;
+  height: 84px;
+}
+html.tiktok-half .play-col .timer-ring .timer-display {
+  font-size: 22px;
+}
+html.tiktok-half .play-col .timer-bar {
+  max-width: 180px;
+  height: 5px;
 }
 html.tiktok-half .play-col .grid-4x4 {
   margin: 0 auto;
@@ -2801,11 +2846,11 @@ html.tiktok-half .play-col .grid-4x4 {
 }
 html.tiktok-half .play-col .grid-row { gap: 8px; }
 html.tiktok-half .play-col .grid-4x4 .grid-cell {
-  width: 46px;
-  height: 46px;
-  font-size: 22px;
+  width: var(--cell);
+  height: var(--cell);
+  font-size: 30px;
   font-weight: 800;
-  border-radius: 9px;
+  border-radius: 10px;
   background: #ffffff !important;
   color: #0a1130 !important;
   border: none !important;
@@ -2818,7 +2863,7 @@ html.tiktok-half .play-col .grid-4x4 .grid-cell.last {
   box-shadow: 0 0 14px rgba(61, 255, 184, 0.5);
 }
 
-/* Artist drawing fills the right 50% column */
+/* Artist drawing fills the right 50% column — same size as the 3×3 grid */
 html.tiktok-half .answer-art-box .art-board-inline {
   order: 4;
   flex: 1 1 0 !important;
@@ -2829,18 +2874,18 @@ html.tiktok-half .answer-art-box .art-board-inline {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
   border-radius: 12px !important;
 }
 html.tiktok-half .answer-art-box .art-board-inline .art-canvas {
-  width: 118px;
-  height: 118px;
+  width: 200px;
+  height: 200px;
 }
 html.tiktok-half .answer-art-box .art-board-inline .art-emoji {
-  font-size: 100px;
-  line-height: 118px;
+  font-size: 170px;
+  line-height: 200px;
 }
 html.tiktok-half .answer-art-box .art-board-inline .art-progress {
   width: 100%;
@@ -2849,3 +2894,45 @@ html.tiktok-half .answer-art-box .art-board-inline .art-progress {
 /* Remaining sections keep the natural order below the 50/50 row */
 html.tiktok-half .notify-row { order: 5; }
 html.tiktok-half .overall-board { order: 6; }
+
+/* ── 4) ALL PLAYERS — smaller fonts, scrollable list on the canvas ── */
+html.tiktok-half .overall-board {
+  padding: 7px 10px;
+  gap: 4px;
+}
+html.tiktok-half .overall-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding-bottom: 4px;
+}
+html.tiktok-half .overall-scroll {
+  gap: 3px;
+  max-height: 118px;
+}
+html.tiktok-half .overall-row {
+  gap: 7px;
+  padding: 3px 7px;
+  border-radius: 7px;
+}
+html.tiktok-half .overall-rank {
+  width: 17px;
+  height: 17px;
+  font-size: 10px;
+}
+html.tiktok-half .overall-name {
+  font-size: 11px;
+}
+html.tiktok-half .overall-pts {
+  font-size: 11.5px;
+}
+html.tiktok-half .overall-row .stat-chip {
+  font-size: 9px;
+  padding: 1px 6px;
+}
+
+/* ── 5) Bottom bar stays exactly as it is (input + activity ticker) ── */
+html.tiktok-half .game-header,
+html.tiktok-half .type-answer,
+html.tiktok-half .notify-row {
+  /* no overrides — keep current look */
+}
