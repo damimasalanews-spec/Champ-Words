@@ -280,10 +280,12 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // TikTok chat solver: queue the popup (shown one by one, ~2s each).
-      // Shows the profile FIRST name when available, else the @username.
+      // TikTok chat solver: same professional popup as an in-game player,
+      // showing the chat user's name — plus the queued popup (one by one).
       if (data.fromChat && (data.winnerNick || data.winnerName)) {
-        pushFoundPopup({ name: data.winnerNick || data.winnerName, score: data.score, word: data.solved || '' });
+        const chatName = data.winnerNick || data.winnerName;
+        setConfetti({ word: chatName, msg: 'You found a Champ Word!' });
+        pushFoundPopup({ name: chatName, score: data.score, word: data.solved || '' });
       }
       // Every 10th chat solve → milestone celebration
       if (data.fromChat) {
@@ -733,14 +735,16 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* In-game finder popup — SAME professional style as the TikTok chat popup */}
+      {/* Finder popup — SAME professional style for in-game players AND
+          TikTok chat solvers; shows the solver's name (chat nickname for
+          chat solvers, the player's name in-game). */}
       {confetti && (
         <Confetti
           variant="chat"
           silent
-          word={(me && me.name) || 'You'}
+          word={confetti.word || (me && me.name) || 'You'}
           onDone={clearConfetti}
-          msg="You found a Champ Word!"
+          msg={confetti.msg || 'You found a Champ Word!'}
         />
       )}
 
