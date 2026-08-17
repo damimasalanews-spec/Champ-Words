@@ -3286,24 +3286,27 @@ html.tiktok-half .notify-item {
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* Board: fill the column exactly as before (height 100% + rows flex 1),
-   so all 5 player rows are always visible. Only the style is new. */
+   so all 5 player rows are always visible. Border-box keeps the padding
+   INSIDE the fixed column height so nothing clips. */
 html.tiktok-half .top10-board {
   height: 100% !important;
   min-height: 0;
+  box-sizing: border-box !important;
   justify-content: flex-start;
-  padding: 12px 14px 12px !important;
-  gap: 7px;
+  padding: 10px 14px 10px !important;
+  gap: 6px;
 }
 
 /* Title: clean gold header */
 html.tiktok-half .top10-title {
-  font-size: 13px !important;
-  letter-spacing: 4px !important;
+  font-size: 12px !important;
+  letter-spacing: 3px !important;
   text-align: left !important;
-  padding-bottom: 8px !important;
+  padding-bottom: 6px !important;
   margin-bottom: 2px !important;
   border-bottom: 1px solid rgba(245, 214, 123, 0.25) !important;
   color: #f5d67b !important;
+  flex: none;
 }
 
 /* Rows: share the column evenly exactly as before (flex 1), so every
