@@ -2566,3 +2566,140 @@ html.tiktok-half .hint-clue {
 html.tiktok-half .top10-row.top10-me {
   border-color: rgba(61, 255, 184, 0.35) !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   540×960 CANVAS REDESIGN — game page polish (same format, bigger fonts,
+   tighter gaps). Loaded last so it wins the cascade. Only the in-game
+   canvas is touched; layout order (header → timer/grid/TOP5 → answer+art
+   → ALL PLAYERS → footer) is unchanged.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Canvas base: deeper contrast + slightly tighter frame ── */
+html.tiktok-half .game-area {
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+
+/* ── Header: bigger brand, room code, controls ── */
+html.tiktok-half .app-header { padding: 10px 14px 8px; }
+html.tiktok-half .app-header .brand-name {
+  font-size: 19px;
+  letter-spacing: 2.5px;
+  font-weight: 800;
+}
+html.tiktok-half .app-header .room-badge {
+  font-size: 13px;
+  padding: 5px 12px;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+html.tiktok-half .viewers-badge { font-size: 12px; padding: 4px 10px; }
+
+/* ── Timer: bigger number, clearer bar ── */
+html.tiktok-half .timer-display {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 3px;
+}
+html.tiktok-half .timer-bar { height: 6px; margin-bottom: 6px; border-radius: 3px; }
+
+/* ── Grid: bigger tiles with refined tiles ── */
+html.tiktok-half .grid-4x4 { gap: 9px; padding: 11px; }
+html.tiktok-half .grid-row { gap: 9px; }
+html.tiktok-half .grid-4x4 .grid-cell {
+  font-size: 25px;
+  font-weight: 800;
+  border-radius: 11px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ── TOP 5: bigger title + rows ── */
+html.tiktok-half .top10-board { padding: 10px 10px 7px; }
+html.tiktok-half .top10-title {
+  font-size: 17px;
+  letter-spacing: 3px;
+  padding-bottom: 7px;
+  margin-bottom: 5px;
+}
+html.tiktok-half .top10-row {
+  padding: 8px 10px;
+  gap: 10px;
+  border-radius: 8px;
+}
+html.tiktok-half .top10-row + .top10-row { margin-top: 5px; }
+html.tiktok-half .top10-rank { font-size: 27px; min-width: 34px; }
+html.tiktok-half .top10-name { font-size: 22px; font-weight: 800; }
+html.tiktok-half .top10-pts { font-size: 26px; min-width: 46px; }
+
+/* ── Answer brackets: bigger boxes + letters ── */
+html.tiktok-half .answer-art-box { gap: 20px; padding: 14px 12px; }
+html.tiktok-half .brackets-label { font-size: 11px; letter-spacing: 3px; margin-bottom: 6px; }
+html.tiktok-half .bracket-row { gap: 7px; }
+html.tiktok-half .bracket-box {
+  width: 38px; height: 38px;
+  border-width: 2.5px;
+  border-radius: 9px;
+}
+html.tiktok-half .bracket-letter { font-size: 20px; font-weight: 800; }
+html.tiktok-half .answer-art-box .art-canvas { width: 110px; height: 110px; }
+html.tiktok-half .answer-art-box .art-emoji { font-size: 96px; line-height: 110px; }
+
+/* ── ALL PLAYERS: bigger rows ── */
+html.tiktok-half .overall-board { padding: 11px 12px; }
+html.tiktok-half .overall-title { font-size: 14px; letter-spacing: 3px; padding-bottom: 6px; }
+html.tiktok-half .overall-row { padding: 6px 10px; gap: 10px; border-radius: 8px; }
+html.tiktok-half .overall-rank { width: 24px; height: 24px; font-size: 12px; }
+html.tiktok-half .overall-name { font-size: 16px; font-weight: 700; }
+html.tiktok-half .overall-pts { font-size: 17px; font-weight: 800; }
+
+/* ── Footer bar: bigger round info + input ── */
+html.tiktok-half .game-header { padding: 9px 12px; gap: 8px; }
+html.tiktok-half .round-info {
+  font-size: 15px;
+  padding: 6px 16px;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+}
+html.tiktok-half .type-answer input { font-size: 17px; padding: 11px 14px; }
+html.tiktok-half .footer-answer .btn { font-size: 13px; padding: 9px 18px; font-weight: 800; }
+html.tiktok-half .drag-word-display { font-size: 17px; letter-spacing: 3px; }
+
+/* ── Inline chat line: readable ── */
+html.tiktok-half .inline-chat { font-size: 13px; padding: 5px 8px; }
+html.tiktok-half .inline-chat-msg { font-size: 13px; }
+
+/* ── Live ticker + found chips: readable ── */
+html.tiktok-half .found-chip { font-size: 12px; padding: 3px 10px; }
+html.tiktok-half .solved-text { font-size: 14px; }
+html.tiktok-half .hint-clue { font-size: 13px; padding: 5px 10px; }
+html.tiktok-half .congrats-line { font-size: 18px; padding: 10px 12px; }
+
+/* ── Round intro card on canvas: bigger type ── */
+html.tiktok-half .round-intro-num { font-size: 64px; }
+html.tiktok-half .round-intro-label { font-size: 14px; letter-spacing: 6px; }
+html.tiktok-half .round-intro-letters { font-size: 14px; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOBILE GAME PAGE POLISH — phones now use the responsive cw-web layout
+   during games (no more shrunken 540×960 canvas). Slightly bigger type
+   for readability, tighter gaps. Same format as before.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  html.cw-web .timer-display { font-size: clamp(36px, 10.5vw, 44px); }
+  html.cw-web .round-info { font-size: 14px; padding: 7px 15px; }
+  html.cw-web .top10-title { font-size: 13px; letter-spacing: 3px; }
+  html.cw-web .top10-name { font-size: 13px; }
+  html.cw-web .top10-pts { font-size: 15px; }
+  html.cw-web .overall-name { font-size: 13px; }
+  html.cw-web .overall-pts { font-size: 13px; }
+  html.cw-web .player-badge { font-size: 12.5px; padding: 6px 11px; }
+  html.cw-web .bracket-letter { font-size: clamp(16px, 2.6vw, 20px); }
+  html.cw-web .drag-word-display { font-size: 18px; letter-spacing: 3px; }
+  html.cw-web .notify-item { font-size: 13.5px; }
+  html.cw-web .cw-fastest { font-size: 12px; padding: 5px 11px; }
+  html.cw-web .cw-fastest b { font-size: 14px; }
+  html.cw-web .game-layout { gap: 8px; }
+  html.cw-web .game-col-left { gap: 6px; }
+}

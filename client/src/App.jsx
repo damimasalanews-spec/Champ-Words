@@ -116,9 +116,11 @@ export default function App() {
     if (isStudio) return;
     const applyMode = () => {
       const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
-      // Game screens use the studio canvas on ALL sizes (same design as
-      // desktop/stream); home and lobby stay in the full web layout.
-      const canvas = inGame;
+      // Game screens use the studio canvas (540×960) on DESKTOP viewports and
+      // studio sources — exactly as they always were. On small/mobile viewports
+      // they stay in the responsive cw-web layout so phones get a full-size,
+      // thumb-friendly game instead of a shrunken stream canvas.
+      const canvas = inGame && window.innerWidth >= 768;
       document.documentElement.classList.toggle('tiktok-half', canvas);
       document.documentElement.classList.toggle('cw-web', !canvas);
     };
