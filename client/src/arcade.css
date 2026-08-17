@@ -3017,3 +3017,67 @@ html.tiktok-half .type-answer,
 html.tiktok-half .notify-row {
   /* no overrides — keep current look */
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PROFESSIONAL PALETTE — remove purple/plum backgrounds from the 540×960
+   game page and use the site's slate-navy + emerald/amber scheme.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Game frame + inner panels: plum glass → deep slate navy glass */
+html.tiktok-half .game-frame,
+html.tiktok-half .grid-leader-panel,
+html.tiktok-half .answer-art-box {
+  background: rgba(13, 21, 38, 0.72) !important;
+  border: 1.5px solid var(--border-strong) !important;
+}
+/* The panels we added for the 200×200 columns and brackets: same slate */
+html.tiktok-half .play-col,
+html.tiktok-half .answer-art-box .art-board-inline,
+html.tiktok-half .answer-art-box .answer-art-side {
+  background: rgba(17, 26, 48, 0.72) !important;
+}
+html.tiktok-half .leader-col .top10-board {
+  background: rgba(17, 26, 48, 0.72) !important;
+}
+
+/* Round intro card: plum → slate */
+html.tiktok-half .round-intro-card {
+  background: linear-gradient(165deg, rgba(17, 26, 48, 0.96), rgba(9, 13, 25, 0.98)) !important;
+}
+
+/* Pick-word popup: plum gradient → slate navy + emerald accents */
+html.tiktok-half .pick-popup-card,
+html.tiktok-half .overlay-card {
+  background: linear-gradient(175deg, rgba(17, 26, 48, 0.97), rgba(9, 13, 25, 0.99)) !important;
+  border: 1.5px solid var(--border-strong) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+html.tiktok-half .pick-popup-word,
+html.tiktok-half .category-choice,
+html.tiktok-half .hint-clue-option {
+  background: rgba(53, 230, 160, 0.10) !important;
+  border: 1px solid rgba(53, 230, 160, 0.25) !important;
+}
+html.tiktok-half .pick-popup-word:hover,
+html.tiktok-half .category-choice:hover,
+html.tiktok-half .hint-clue-option:hover {
+  background: rgba(53, 230, 160, 0.18) !important;
+}
+html.tiktok-half .score-item {
+  background: rgba(17, 26, 48, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+html.tiktok-half .round-word-item {
+  background: rgba(17, 26, 48, 0.8) !important;
+}
+html.tiktok-half .all-possible .word-chip {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-dim);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Confetti popup (finder popup): plum tint → clean slate */
+html.tiktok-half .confetti-center {
+  background: rgba(9, 13, 25, 0.96) !important;
+  border: 1.5px solid var(--border-strong) !important;
+}
