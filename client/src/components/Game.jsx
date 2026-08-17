@@ -242,7 +242,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setFoundPopup(null);
     setToasts([]);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
-    setSpectPath([]); setSpectWord(''); setSpectName(''); setSpectDrawn(null);
   }, [room.round, room.champId]);
 
   // Countdown (freezes while the host pauses the game)
