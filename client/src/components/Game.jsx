@@ -265,6 +265,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // TikTok chat solvers get the celebration popup + ta-da sound instead
       // of the regular 'found' blip (so it doesn't double-play).
       if (!data.fromChat) playSound('found');
+      // PRIVATE reveal: only the player who solved it receives the real word
+      // (`self: true`). Others get `word: null`, so the letters falling into
+      // the ANSWER brackets are visible ONLY to the solver — never to other
+      // players or to TikTok live chat viewers watching the stream.
+      if (data.self && data.word) {
+        setSolvedWord(data.word);
+      }
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
         setSolvedBy(data.winnerId);
