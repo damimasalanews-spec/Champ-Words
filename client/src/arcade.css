@@ -2745,16 +2745,17 @@ html.tiktok-half .leader-col .top10-row {
   gap: 12px;
 }
 
-/* ── 2) ANSWER brackets — full width, in the gap below the leaderboard ── */
+/* ── 2) ANSWER brackets — full width, in the gap below the leaderboard ──
+   Row layout: square timer on the LEFT (recolored), brackets beside it. */
 html.tiktok-half .answer-art-box .answer-art-side {
   order: 2 !important;
   width: 100% !important;
   flex: none;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 14px;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
   border-radius: 12px !important;
@@ -2776,6 +2777,38 @@ html.tiktok-half .answer-art-side .bracket-box {
 html.tiktok-half .answer-art-side .bracket-letter {
   font-size: 17px;
   font-weight: 800;
+}
+/* Square timer on the left of the brackets — same shape, different color */
+html.tiktok-half .answer-art-side .bracket-timer {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+html.tiktok-half .answer-art-side .bracket-timer .timer-ring {
+  width: 34px;
+  height: 34px;
+  padding: 2px;
+  border-radius: 7px;
+  flex: none;
+  background:
+    conic-gradient(var(--cw-teal, #3dffb8) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.09) 0) !important;
+}
+html.tiktok-half .answer-art-side .bracket-timer .timer-ring .timer-display {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: var(--cw-teal, #3dffb8);
+  -webkit-text-fill-color: currentColor;
+}
+html.tiktok-half .answer-art-side .bracket-timer .timer-ring .timer-display.timer-warn {
+  color: #ff5c7c !important;
+  -webkit-text-fill-color: currentColor;
 }
 
 /* ── Found players: one chip pops in, pops out, then the next — sequential ──
@@ -2815,8 +2848,9 @@ html.tiktok-half .found-chip {
   100% { opacity: 0; transform: translate(-50%, -50%) scale(0.6) translateY(-4px); }
 }
 
-/* ── 3) 50/50 row: timer + 3×3 letter grid (left) | artist drawing (right) ──
-   Both columns are fixed 200×200 and identical in size. Extra in-round
+/* ── 3) 50/50 row: 3×3 letter grid (left) | artist drawing (right) ──
+   Both columns are fixed 200×200 and identical in size (no timer inside
+   the grid column — it moved to the ANSWER brackets row). Extra in-round
    elements (champ word, hint, drag confirm, found chips) are absolutely
    positioned so they never change the column size. */
 html.tiktok-half .play-col {
@@ -2827,40 +2861,18 @@ html.tiktok-half .play-col {
   box-sizing: border-box;
   min-width: 0;
   position: relative;
-  --cell: 40px; --gap: 5px; --pad: 6px;
+  --cell: 56px; --gap: 5px; --pad: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
+  justify-content: center;
+  gap: 0;
   background: rgba(24, 33, 54, 0.55) !important;
   border: 1.5px solid var(--border-strong) !important;
   border-radius: 12px !important;
   padding: 6px;
 }
-/* Timer: small SQUARE, professional look */
-html.tiktok-half .play-col .timer-ring {
-  width: 34px;
-  height: 34px;
-  padding: 2px;
-  border-radius: 7px;
-  flex: none;
-}
-html.tiktok-half .play-col .timer-ring .timer-display {
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  line-height: 1;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 5px;
-}
-html.tiktok-half .play-col .timer-bar {
-  display: none !important;
-}
-/* Champ word line overlays the top instead of pushing the timer down */
+/* Champ word line overlays the top — no layout space */
 html.tiktok-half .play-col .champ-word-display {
   position: absolute;
   top: 2px;
@@ -2892,7 +2904,7 @@ html.tiktok-half .play-col .grid-drag-wrapper .drag-confirm-row {
   z-index: 7;
   pointer-events: auto;
 }
-/* 3×3 grid fits the 200px column */
+/* 3×3 grid fills the 200px column (timer removed, so tiles are bigger) */
 html.tiktok-half .play-col .grid-drag-wrapper {
   width: 100%;
   display: flex;
@@ -2911,9 +2923,9 @@ html.tiktok-half .play-col .grid-row { gap: 5px; }
 html.tiktok-half .play-col .grid-4x4 .grid-cell {
   width: var(--cell);
   height: var(--cell);
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 800;
-  border-radius: 8px;
+  border-radius: 9px;
   background: #ffffff !important;
   color: #0a1130 !important;
   border: none !important;

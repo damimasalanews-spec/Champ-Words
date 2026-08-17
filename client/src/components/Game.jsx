@@ -838,7 +838,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className="champ-word-display">Your word: <b>{champWord.toUpperCase()}</b></div>
           )}
 
-      {(state === 'playing' || state === 'round_over') && (
+      {/* Timer: web keeps it above the grid; on the 540×960 canvas it moves
+          to the left of the ANSWER brackets (recolored square). */}
+      {isWeb && (state === 'playing' || state === 'round_over') && (
         <>
           <div className="timer-ring" style={{ '--pct': Math.max(0, Math.min(100, (timeLeft / 60) * 100)) }}>
             <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
@@ -847,7 +849,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div className={`timer-bar-fill ${timeLeft <= 10 ? 'timer-bar-warn' : ''}`}
               style={{ width: `${Math.max(0, Math.min(100, (timeLeft / 60) * 100))}%` }} />
           </div>
-          {isWeb && state === 'playing' && fastestSec !== null && (
+          {state === 'playing' && fastestSec !== null && (
             <div className="cw-fastest">⚡ Fastest this round: <b>{fastestSec}s</b> — beat it!</div>
           )}
         </>
@@ -932,6 +934,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {artistSection}
 
           <div className="answer-art-side">
+          {/* Canvas: the square timer sits on the left of the ANSWER brackets */}
+          {!isWeb && (state === 'playing' || state === 'round_over') && (
+            <div className="bracket-timer">
+              <div className="timer-ring" style={{ '--pct': Math.max(0, Math.min(100, (timeLeft / 60) * 100)) }}>
+                <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+              </div>
+            </div>
+          )}
           {(wordLen > 0 || (room.revealedLetters && room.revealedLetters.length > 0)) && (state === 'playing' || state === 'round_over') && (
             <div className="brackets-section">
               <div className="brackets-label">ANSWER</div>
