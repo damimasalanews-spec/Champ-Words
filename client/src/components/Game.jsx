@@ -271,6 +271,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // players or to TikTok live chat viewers watching the stream.
       if (data.self && data.word) {
         setSolvedWord(data.word);
+        // Popup for the correct answer — same professional style as the
+        // TikTok chat solver popup (rendered at the confetti spot below).
+        setConfetti({ word: data.word, msg: 'You found a Champ Word!' });
       }
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
