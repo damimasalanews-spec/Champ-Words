@@ -498,6 +498,26 @@ app.get('/api/wotd', (req, res) => {
 // Category list for the host's create-room form
 app.get('/api/categories', (req, res) => res.json({ ok: true, list: CATEGORIES.list }));
 
+// Active room details — shown on the join page so players can join with a
+// tap (no need to type the room code)
+app.get('/api/active-room', (req, res) => {
+  let active = null;
+  for (const [, r] of rooms) {
+    if (r.state !== 'game_over') { active = r; break; }
+  }
+  if (!active) return res.json({ ok: true, room: null });
+  const host = (active.players || []).find(p => p.id === active.host);
+  res.json({
+    ok: true,
+    room: {
+      code: active.id,
+      hostName: (host && host.name) || 'the host',
+      playerCount: (active.players || []).length,
+      state: active.state
+    }
+  });
+});
+
 // ── Policy Pages ─────────────────────────────────────────────────────────
 app.get('/terms', (req, res) => res.sendFile(path.join(__dirname, 'public-terms.html')));
 app.get('/privacy', (req, res) => res.sendFile(path.join(__dirname, 'public-privacy.html')));

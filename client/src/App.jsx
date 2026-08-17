@@ -166,122 +166,9 @@ export default function App() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Auto-join a room as spectator — no clicks needed, works even when the
-  // game is already in progress. Two modes:
-  //  ?auto=1&room=CODE  → watch a specific room (code changes per game)
-  //  ?auto=1             → the FIXED stream link: follow the host's current
-  //                        active room automatically (and re-follow when a
-  //                        game ends and the host starts the next one).
-  useEffect(() => {
-    if (!user || !user.isGuest) return;
-    const params = new URLSearchParams(window.location.search);
-    const roomCode = String(params.get('room') || '').toUpperCase().trim();
-    // ?host=1 / ?play=1 → the studio window joins as a REAL player, so the
-    // grid drag submits and scores instead of failing with "Player not found"
-    const playMode = params.has('host') || params.has('play');
-    // Plain guests (Play as guest / auto-follow) join as REAL players too —
-    // their names show in the host's waiting lobby and they can answer.
-    // Only pure ?auto=1 viewing links stay spectators.
-    const spectatorJoin = params.has('auto') && !playMode;
-    let stopped = false;
-    let retryTimer = null;
-    let watchTimer = null;
-    const applySpectatorRoom = (res) => {
-      if (stopped || !res || !res.ok || !res.room) return false;
-      setAutoStatus('');
-      setRoom(res.room);
-      setScreen(res.room.state === 'playing' || res.room.state === 'champ_pick' ? 'playing' : 'waiting');
-      setGameResult(null);
-      setMessages([]);
-      return true;
-    };
-    const tryJoin = () => {
-      socket.emit('join_room', { roomId: roomCode, name: user.name, avatar: '', spectator: spectatorJoin, playerKey: getPlayerKey() }, (res) => {
-        if (stopped) return;
-        if (applySpectatorRoom(res)) return;
-        const err = (res && res.error) || 'Cannot join room';
-        setAutoStatus(err === 'Room not found'
-          ? `Room ${roomCode} not found — create it on your phone, connecting automatically…`
-          : err);
-        retryTimer = setTimeout(tryJoin, 4000); // keep retrying until the room exists
-      });
-    };
-    // Fixed stream link — follow whichever room the host is running.
-    let followedRoomId = null;
-    const tryFollow = () => {
-      socket.emit('join_active_room', { name: user.name, avatar: '', spectator: spectatorJoin, playerKey: getPlayerKey() }, (res) => {
-        if (stopped) return;
-        if (res && res.ok && res.room) {
-          followedRoomId = res.room.id;
-          applySpectatorRoom(res);
-          // Keep watching across games: re-follow once the current one ends.
-          if (!watchTimer) {
-            watchTimer = setInterval(() => {
-              if (stopped) return;
-              socket.emit('join_active_room', { name: user.name, avatar: '', spectator: spectatorJoin, playerKey: getPlayerKey() }, (res2) => {
-                if (stopped) return;
-                if (res2 && res2.ok && res2.room && res2.room.id !== followedRoomId) {
-                  followedRoomId = res2.room.id;
-                  applySpectatorRoom(res2);
-                }
-              });
-            }, 8000);
-          }
-        } else {
-          setAutoStatus('Stream mode: waiting for the host to start a room…');
-          retryTimer = setTimeout(tryFollow, 4000);
-        }
-      });
-    };
-    const start = roomCode ? tryJoin : tryFollow;
-    if (socket.connected) start();
-    else socket.on('connect', start);
-    return () => {
-      stopped = true;
-      if (retryTimer) clearTimeout(retryTimer);
-      if (watchTimer) clearInterval(watchTimer);
-      socket.off('connect', start);
-    };
-  }, [user, socket]);
-
-  // Auto-rejoin the last room — but only after a 30s grace period on the
-  // join page, so the player has time to write their name first. Manual
-  // join/create cancels it. (Studio ?room= spectator join stays instant.)
-  useEffect(() => {
-    if (!user) return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('room')) return; // explicit studio ?room= takes priority
-    const lastRoom = localStorage.getItem('cw_last_room');
-    if (!lastRoom) return;
-    let stopped = false;
-    const doJoin = () => {
-      if (stopped) return;
-      cancelAutoRejoin();
-      // No name sent — the server keeps the player's existing name/points
-      socket.emit('join_room', { roomId: lastRoom, playerKey: getPlayerKey() }, (res) => {
-        if (stopped) return;
-        if (res && res.ok) applyJoinedRoom(res);
-        else localStorage.removeItem('cw_last_room'); // room is gone — forget it
-      });
-    };
-    const start = () => {
-      setPendingRoom(lastRoom);
-      setRejoinIn(Math.round(REJOIN_DELAY_MS / 1000));
-      rejoinTimerRef.current = setInterval(() => {
-        setRejoinIn(prev => {
-          if (prev <= 1) {
-            clearInterval(rejoinTimerRef.current); rejoinTimerRef.current = null;
-            doJoin();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    };
-    if (socket.connected) start();
-    else socket.on('connect', start);
-    return () => { stopped = true; cancelAutoRejoin(); socket.off('connect', start); };
-  }, [user, socket, applyJoinedRoom, cancelAutoRejoin]);
+  // ── No auto-join: players join the active room themselves from the lobby
+  // (details shown — room code + host — no code typing needed). Removed the
+  // old auto-follow / auto-rejoin system that silently re-joined rooms.
 
   // Skip the remaining wait and return to the pending room right now
   const handleRejoinNow = useCallback(() => {
@@ -551,7 +438,7 @@ export default function App() {
             <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
               Join now
             </button>
-            <p className="studio-countdown">Auto-joining in {nameCountdown}s…</p>
+            <p className="studio-countdown">Opening the join screen in {nameCountdown}s…</p>
           </form>
         </div>
       </div>

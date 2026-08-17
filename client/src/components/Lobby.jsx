@@ -69,6 +69,15 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   useEffect(() => { nameRef.current?.focus(); }, [step, adminStep]);
   useEffect(() => { localStorage.setItem('champWordsName', name); }, [name]);
 
+  // Live room details — shown so players can join with one tap (no code typing)
+  const [activeRoom, setActiveRoom] = useState(null);
+  useEffect(() => {
+    fetch('/api/active-room')
+      .then(r => r.json())
+      .then(d => { if (d && d.ok && d.room) setActiveRoom(d.room); })
+      .catch(() => {});
+  }, []);
+
   // Category list for the create form (from the server)
   useEffect(() => {
     fetch('/api/categories')
@@ -256,6 +265,16 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
           <Logo size={76} className="form-logo" />
           <h2 className="form-heading">How do you want to play?</h2>
           <p className="form-sub">Players join with one tap · Hosts log in to create</p>
+          {activeRoom && (
+            <div className="active-room-card">
+              <span className="arc-pill">🔴 LIVE</span>
+              <div className="active-room-info">
+                <b>Room {activeRoom.code}</b>
+                <span className="active-room-meta">hosted by {activeRoom.hostName} · {activeRoom.playerCount} in the room</span>
+              </div>
+              <p className="active-room-hint">No code needed — just tap Join below</p>
+            </div>
+          )}
           <div className="lobby-options">
             <form className="lobby-card" onSubmit={handleJoinActive}>
               <h2>Join the Room</h2>

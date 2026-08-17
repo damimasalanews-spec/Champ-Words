@@ -7207,6 +7207,16 @@ body { background-image:
 /* Leaderboard hover highlight */
 .score-item, .alltime-row { transition: background .15s ease, box-shadow .15s ease; border-radius: 8px; }
 .score-item:hover, .alltime-row:hover { background: rgba(255,255,255,.07); }
+/* Active room card on the join page */
+.active-room-card { display: flex; flex-direction: column; align-items: center; gap: 4px;
+  width: 100%; max-width: 360px; margin: 0 auto 14px; padding: 12px 16px; border-radius: 14px;
+  background: linear-gradient(135deg, rgba(53,230,160,.12), rgba(34,201,224,.08));
+  border: 1px solid rgba(53,230,160,.35); text-align: center; }
+.active-room-info { display: flex; flex-direction: column; gap: 2px; }
+.active-room-info b { font-size: 18px; letter-spacing: .5px; }
+.active-room-meta { font-size: 12px; opacity: .8; }
+.active-room-hint { font-size: 11px; opacity: .65; margin-top: 2px; }
+.arc-pill { font-size: 11px; font-weight: 800; color: #201408; background: linear-gradient(135deg, #35e6a0, #22c9e0); padding: 2px 10px; border-radius: 999px; }
 
 
 
