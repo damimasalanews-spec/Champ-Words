@@ -2778,33 +2778,34 @@ html.tiktok-half .answer-art-side .bracket-letter {
   font-size: 17px;
   font-weight: 800;
 }
-/* Square timer on the left of the brackets — same shape, different color */
+/* Square timer on the left of the brackets — just numbers, no ring effect */
 html.tiktok-half .answer-art-side .bracket-timer {
   flex: none;
   display: flex;
   align-items: center;
 }
 html.tiktok-half .answer-art-side .bracket-timer .timer-ring {
-  width: 34px;
-  height: 34px;
-  padding: 2px;
-  border-radius: 7px;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
   flex: none;
-  background:
-    conic-gradient(var(--cw-teal, #3dffb8) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.09) 0) !important;
+  background: none !important;
 }
 html.tiktok-half .answer-art-side .bracket-timer .timer-ring .timer-display {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   line-height: 1;
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 5px;
-  color: var(--cw-teal, #3dffb8);
+  border-radius: 0;
+  color: #ffffff;
   -webkit-text-fill-color: currentColor;
+  min-width: 34px;
+  text-align: center;
 }
 html.tiktok-half .answer-art-side .bracket-timer .timer-ring .timer-display.timer-warn {
   color: #ff5c7c !important;
