@@ -957,6 +957,16 @@ function createRoom(hostId, hostName, hostAvatar, opts) {
 }
 
 function sanitizeRoom(room) {
+  // Dedupe players by identity key — the re-follow/reconnect race can
+  // briefly push the same player twice; clients must never see duplicates.
+  const seenKeys = new Set();
+  const players = [];
+  for (const p of room.players) {
+    const k = p.playerKey || p.id;
+    if (seenKeys.has(k)) continue;
+    seenKeys.add(k);
+    players.push(p);
+  }
   return {
     id: room.id, host: room.host, state: room.state,
     round: room.round, totalRounds: room.totalRounds,
@@ -976,12 +986,12 @@ function sanitizeRoom(room) {
     grid: room.state === 'playing' ? room.grid : null,
     speedRound: !!room.speedRound,
     paused: !!room.paused,
-    chatTotal: room.players.reduce((s, p) => s + (p.isChat ? (p.score || 0) : 0), 0),
-    hostTotal: (room.players.find(p => p.id === room.host) || {}).score || 0,
+    chatTotal: players.reduce((s, p) => s + (p.isChat ? (p.score || 0) : 0), 0),
+    hostTotal: (players.find(p => p.id === room.host) || {}).score || 0,
     duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
     voteOptions: (room.state === 'champ_pick' && room.voteOptions && room.voteOptions.length >= 2)
       ? room.voteOptions.map(o => ({ id: o.id, label: o.label, votes: (room.votes && room.votes[o.id]) || 0 })) : null,
-    players: room.players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
+    players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
   };
 }
 
@@ -1513,6 +1523,14 @@ io.on('connection', socket => {
     // New player — allowed at ANY game state (mid-game join)
     const p = { id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0 };
     room.players.push(p);
+    // Race guard: the re-follow interval + reconnect can emit the SAME
+    // browser key twice in one tick (find-then-push isn't atomic) → two
+    // players with one key. Keep the newest, drop the stale duplicate.
+    if (playerKey) {
+      for (let i = room.players.length - 1; i >= 0; i--) {
+        if (room.players[i] !== p && room.players[i].playerKey === playerKey) room.players.splice(i, 1);
+      }
+    }
     socket.join(room.id);
     cancelRoomCleanup(room);
     if (room.state === 'round_over') scheduleAdvance(room);
