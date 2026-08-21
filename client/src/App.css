@@ -7328,6 +7328,115 @@ html.tiktok-half .roundover-overlay .lb10-score { font-size: 22px; }
 html.tiktok-half .roundover-overlay .lb10-chip { font-size: 11px; }
 html.tiktok-half .roundover-overlay .lb10-list { max-height: 32vh; }
 
+/* ═══════════════ Studio game-play menu (dropdown) — ?auto=1 / ?half=1 only ═══════════════
+   Scoped to the studio canvas: a compact menu button in the bottom game bar
+   with a frosted-glass dropdown (room code · stats · sound · leave).          */
+html.tiktok-half .game-menu { position: relative; flex: none; }
+html.tiktok-half .game-menu-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+html.tiktok-half .game-menu-btn .game-menu-icon { font-size: 13px; line-height: 1; color: var(--accent); }
+html.tiktok-half .game-menu-btn:hover,
+html.tiktok-half .game-menu-btn.open {
+  border-color: rgba(53, 230, 160, 0.45);
+  color: var(--text);
+  background: rgba(53, 230, 160, 0.08);
+  box-shadow: 0 0 12px rgba(53, 230, 160, 0.22);
+}
+
+/* ── Dropdown panel (opens upward, anchored to the bottom bar) ── */
+html.tiktok-half .game-menu-dd {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  width: 238px;
+  max-width: min(238px, calc(100vw - 16px));
+  padding: 10px;
+  border-radius: 14px;
+  background: linear-gradient(175deg, #1a2542 0%, #0f1834 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transform-origin: bottom left;
+  animation: gameMenuPop 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  z-index: 80;
+}
+@keyframes gameMenuPop { from { opacity: 0; transform: translateY(8px) scale(0.94); } to { opacity: 1; transform: none; } }
+
+html.tiktok-half .game-menu-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 2px 8px; }
+html.tiktok-half .game-menu-title {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 11px; font-weight: 800; letter-spacing: 2.5px;
+  color: var(--text-dim); text-transform: uppercase;
+}
+html.tiktok-half .game-menu-room {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(53, 230, 160, 0.35);
+  background: rgba(53, 230, 160, 0.10);
+  color: #5ff0b8;
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+html.tiktok-half .game-menu-room:hover { box-shadow: 0 0 12px rgba(53, 230, 160, 0.35); border-color: rgba(53, 230, 160, 0.6); }
+html.tiktok-half .game-menu-copy { font-size: 12px; line-height: 1; color: var(--accent); }
+
+/* ── Live stats grid (players · streak · level · XP) ── */
+html.tiktok-half .game-menu-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  padding-bottom: 9px;
+}
+html.tiktok-half .game-menu-stat {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  min-width: 0;
+}
+html.tiktok-half .game-menu-stat-ico { font-size: 12px; line-height: 1; }
+html.tiktok-half .game-menu-stat-label { flex: 1; font-size: 10px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.3px; }
+html.tiktok-half .game-menu-stat-val {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 12px; font-weight: 800; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Menu items ── */
+html.tiktok-half .game-menu-sep { height: 1px; margin: 7px 2px; background: rgba(255, 255, 255, 0.08); }
+html.tiktok-half .game-menu-item {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%;
+  padding: 8px 9px;
+  border: none; border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+}
+html.tiktok-half .game-menu-item:hover { background: rgba(255, 255, 255, 0.06); }
+html.tiktok-half .game-menu-item-ico { font-size: 13px; line-height: 1; width: 16px; text-align: center; }
+html.tiktok-half .game-menu-item-label { flex: 1; }
+html.tiktok-half .game-menu-item-val { font-size: 10px; font-weight: 800; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; }
+html.tiktok-half .game-menu-item.danger { color: #ff8096; }
+html.tiktok-half .game-menu-item.danger:hover { background: rgba(255, 92, 124, 0.10); color: #ff9daf; }
+
 
 
 

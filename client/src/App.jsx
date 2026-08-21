@@ -545,6 +545,7 @@ export default function App() {
           onChooseWord={handleChooseWord}
           messages={messages}
           notifications={notifications}
+          onLeave={handleLeave}
         />
       )}
 

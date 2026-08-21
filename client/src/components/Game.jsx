@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
+import GameMenu from './GameMenu';
 import { playSound } from '../sounds';
 import useCountUp from '../useCountUp';
 
@@ -152,7 +153,14 @@ function Top5Celebration({ players }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], notifications = [] }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], notifications = [], onLeave }) {
+  // The game-play menu with its dropdown is a studio-page feature only
+  // (?auto=1 / ?half=1 browser sources) — never on the regular web game.
+  const isStudioPage = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const p = new URLSearchParams(window.location.search);
+    return p.has('auto') || p.has('half');
+  }, []);
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -823,6 +831,9 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           )}
           <div className="game-progress" aria-hidden="true"><div className="game-progress-fill" style={{ width: `${Math.min(100, Math.max(0, (room.round / totalRounds) * 100))}%` }} /></div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {isStudioPage && (
+              <GameMenu room={room} me={me} showToast={showToast} onLeave={onLeave} />
+            )}
             <button className="chat-toggle" onClick={onChatToggle} style={{ fontSize: 10 }}>
               {chatOpen ? 'Close Chat' : 'Chat'}
             </button>
