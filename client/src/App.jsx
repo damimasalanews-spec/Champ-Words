@@ -14,6 +14,7 @@ import LoginPage from './components/LoginPage';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
 import GameMenu from './components/GameMenu';
+import ScoreCards from './components/ScoreCards';
 import RoundOver from './components/RoundOver';
 import GameOver from './components/GameOver';
 import Chat from './components/Chat';
@@ -69,6 +70,7 @@ export default function App() {
   const [notifications, setNotifications] = useState([]); // live ticker messages
   const [watching, setWatching] = useState(0); // live viewer count
   const [achPopup, setAchPopup] = useState(null); // achievement unlock toast
+  const [scoreCards, setScoreCards] = useState([]); // !score slide-in cards
   const [achOpen, setAchOpen] = useState(false); // achievements cabinet
   const [achList, setAchList] = useState(null);
   const [blacklistWord, setBlacklistWord] = useState(''); // host blacklist input
@@ -239,6 +241,10 @@ export default function App() {
     });
     socket.on('connect_error', () => showToast('Cannot connect to server', 'error'));
     socket.on('viewers', (d) => setWatching(d && d.count ? d.count : 0));
+    socket.on('score_card', (d) => {
+      if (!d) return;
+      setScoreCards(prev => [...prev.slice(-4), { ...d, id: Date.now() + Math.random() }]);
+    });
     socket.on('achieve', (d) => {
       if (!d) return;
       setAchPopup(d);
@@ -250,7 +256,7 @@ export default function App() {
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
       socket.off('game_over'); socket.off('chat'); socket.off('chat_cleared'); socket.off('kicked'); socket.off('connect_error');
-      socket.off('viewers'); socket.off('achieve');
+      socket.off('viewers'); socket.off('achieve'); socket.off('score_card');
     };
   }, [user, showToast]);
 
@@ -687,6 +693,9 @@ export default function App() {
         />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
+
+      {/* !score cards — slide-in column, left edge (TikTok chat + in-game chat) */}
+      <ScoreCards cards={scoreCards} onDone={(id) => setScoreCards(prev => prev.filter(x => x.id !== id))} />
 
       {modOpen && room && (
         <div className="mod-panel">

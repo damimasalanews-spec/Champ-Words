@@ -191,7 +191,8 @@ function findChatRoomInState(state) {
 
 // Register (or find) the virtual chat player in a room
 function ensureChatPlayer(room, username, profileFirst) {
-  let player = room.players.find(p => p.isChat && p.chatUser === username);
+  const key = String(username || '').toLowerCase();
+  let player = room.players.find(p => p.isChat && String(p.chatUser || '').toLowerCase() === key);
   if (!player) {
     player = {
       id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
@@ -201,6 +202,21 @@ function ensureChatPlayer(room, username, profileFirst) {
     room.players.push(player);
   }
   return player;
+}
+
+// ── !score command — show a player's own score as a slide-in card ─────────
+// Fired for both TikTok LIVE chat (!score) and the in-game chat (!score).
+// The client renders a small column of cards (leaderboard score format).
+function emitScoreCard(room, player) {
+  if (!room || !player) return;
+  io.to(room.id).emit('score_card', {
+    name: maskText(player.name || '?'),
+    score: player.score || 0,
+    streak: player.streak || 0,
+    level: player.level || 1,
+    xp: player.xp || 0,
+    isChat: !!player.isChat
+  });
 }
 
 // ── Point economy + chat commands (chat players spend what they earn) ────
@@ -301,6 +317,13 @@ function handleChatAnswer({ user, text, nickname }) {
     if (!room) return { ok: false, error: 'no active round' };
     const player = ensureChatPlayer(room, username, profileFirst);
     return guess.startsWith('!hint') ? handleChatHint(room, player) : handleChatFreeze(room, player);
+  }
+  // ── !score — the user's own score slides in as a card (not a guess) ──
+  if (guess === '!score') {
+    const room = findChatTargetRoom();
+    if (!room) return { ok: false, error: 'no active round' };
+    emitScoreCard(room, ensureChatPlayer(room, username, profileFirst));
+    return { ok: true, scoreCard: true };
   }
   if (guess.startsWith('!challenge')) {
     const room = findChatRoomInState('round_over');
@@ -1965,6 +1988,11 @@ io.on('connection', socket => {
     if (isMuted(room, socket.id)) return;
     const player = room.players.find(p => p.id === socket.id); if (!player) return;
     const t = String(text || '').trim();
+    // !score — show the player's own score card instead of a chat line
+    if (t.toLowerCase() === '!score') {
+      emitScoreCard(room, player);
+      return;
+    }
     if (REACTION_EMOJIS.has(t)) { io.to(roomId).emit('reaction', { emoji: t, name: maskText(player.name) }); return; }
     io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(t) });
   });

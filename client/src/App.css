@@ -7554,6 +7554,59 @@ html.tiktok-half .mod-controls .mod-panel-title { margin-bottom: 2px; }
 html.tiktok-half .mod-blacklist-row { display: flex; gap: 5px; }
 html.tiktok-half .mod-blacklist-input { flex: 1; min-width: 0; }
 
+/* The ALL PLAYERS board below the LIVE ticker is removed from the game
+   canvas — the menu dropdown + leaderboard already cover the scores.
+   (It stays on the regular web layout.) */
+html.tiktok-half .overall-board { display: none !important; }
+
+/* ═══════════════ !score slide-in cards ═══════════════
+   Small column on the left edge — one card per !score command, showing the
+   player's own score in the exact leaderboard score format (Oxanium emerald
+   number + pts), sliding in from the left, then back out. */
+.score-cards {
+  position: fixed;
+  left: 14px; top: 46%;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 85;
+  pointer-events: none;
+}
+.score-card {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 104px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(175deg, rgba(26, 37, 66, 0.94), rgba(15, 24, 52, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.score-card.in { animation: scoreCardIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+.score-card.out { animation: scoreCardOut 0.35s ease-in both; }
+@keyframes scoreCardIn {
+  from { opacity: 0; transform: translateX(-130%); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scoreCardOut {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateX(-130%); }
+}
+.score-card-name {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--text-dim);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 130px;
+}
+.score-card-score {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 20px; font-weight: 800; line-height: 1;
+  color: #5ff0b8;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(53, 230, 160, 0.35);
+}
+.score-card-pts { font-size: 9px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.5px; }
+.score-card-streak { font-size: 9px; font-weight: 800; color: #ffd98a; letter-spacing: 0.3px; }
+
 /* On the game canvas the header consolidates into the menu: the quick-access
    controls that now live in the dropdown (achievements, sound, account, host
    badge, login/logout) are hidden so the header never overflows the 540px
