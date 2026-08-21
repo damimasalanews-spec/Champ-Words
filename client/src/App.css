@@ -7221,6 +7221,113 @@ body { background-image:
 .active-room-hint { font-size: 11px; opacity: .65; margin-top: 2px; }
 .arc-pill { font-size: 11px; font-weight: 800; color: #201408; background: linear-gradient(135deg, #35e6a0, #22c9e0); padding: 2px 10px; border-radius: 999px; }
 
+/* ═══════════════ Round-over TOP 10 leaderboard — professional redesign ═══════════════
+   Scoped strictly to the round-over popup (.roundover-overlay / .lb10-*).
+   Uses the site's slate-navy + emerald/sky/amber palette. No medals.          */
+.roundover-overlay .lb10 { margin-top: 10px; }
+.roundover-overlay .lb10-list {
+  display: flex; flex-direction: column; gap: 6px;
+  max-height: 42vh; overflow-y: auto; padding-right: 3px;
+}
+.roundover-overlay .lb10-list::-webkit-scrollbar { width: 5px; }
+.roundover-overlay .lb10-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 3px; }
+.roundover-overlay .lb10-list::-webkit-scrollbar-thumb { background: rgba(53, 230, 160, 0.35); border-radius: 3px; }
+
+.roundover-overlay .lb10-row {
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  /* score-strength tint painted into the row background (--bar set inline) */
+  background: linear-gradient(90deg,
+    rgba(53, 230, 160, 0.10) var(--bar, 0%),
+    rgba(255, 255, 255, 0.045) var(--bar, 0%));
+  animation: lb10In 0.4s cubic-bezier(.2, .9, .3, 1.15) both;
+  animation-delay: calc(var(--idx, 0) * 55ms);
+  transition: border-color .15s ease, transform .15s ease;
+}
+@keyframes lb10In { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+.roundover-overlay .lb10-row:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.roundover-overlay .lb10-row.leader {
+  border-color: rgba(53, 230, 160, 0.38);
+  box-shadow: 0 0 16px rgba(53, 230, 160, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Rank badge — numbered, no medals; top 3 get the accent treatment */
+.roundover-overlay .lb10-rank {
+  width: 24px; height: 24px; min-width: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 800;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+}
+.roundover-overlay .lb10-rank.r1 {
+  color: #062b1d;
+  background: linear-gradient(135deg, #4ff2b4, #1fc98a);
+  border-color: rgba(53, 230, 160, 0.55);
+  box-shadow: 0 0 12px rgba(53, 230, 160, 0.35);
+}
+.roundover-overlay .lb10-rank.r2 {
+  color: #082036;
+  background: linear-gradient(135deg, #7fd4ff, #3fa8e8);
+  border-color: rgba(94, 200, 255, 0.5);
+}
+.roundover-overlay .lb10-rank.r3 {
+  color: #2d1c04;
+  background: linear-gradient(135deg, #ffd98a, #f5b544);
+  border-color: rgba(245, 181, 68, 0.5);
+}
+
+/* Player: avatar + name + stat chips */
+.roundover-overlay .lb10-player { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; }
+.roundover-overlay .lb10-avatar {
+  width: 28px; height: 28px; min-width: 28px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  color: #062b1d;
+  background: linear-gradient(135deg, #35e6a0, #22c9e0);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  object-fit: cover;
+}
+.roundover-overlay .lb10-meta { min-width: 0; flex: 1; }
+.roundover-overlay .lb10-name {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.roundover-overlay .lb10-row.leader .lb10-name { color: #5ff0b8; text-shadow: 0 0 14px rgba(53, 230, 160, 0.4); }
+.roundover-overlay .lb10-chips { display: flex; align-items: center; gap: 4px; margin-top: 2px; flex-wrap: wrap; }
+.roundover-overlay .lb10-chip {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 1px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+  color: #ffd98a; background: rgba(245, 181, 68, 0.12); border: 1px solid rgba(245, 181, 68, 0.28);
+}
+.roundover-overlay .lb10-chip.lvl { color: #9fd0ff; background: rgba(94, 200, 255, 0.10); border-color: rgba(94, 200, 255, 0.26); }
+.roundover-overlay .lb10-chip.xp,
+.roundover-overlay .lb10-chip.words { color: #b9f0d9; background: rgba(53, 230, 160, 0.10); border-color: rgba(53, 230, 160, 0.26); }
+
+/* Score — count-up number, right aligned */
+.roundover-overlay .lb10-score {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  min-width: 56px; text-align: right;
+  white-space: nowrap;
+}
+.roundover-overlay .lb10-pts { font-size: 10px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.5px; }
+
+/* Studio (tiktok-half) sizing — mirrors the old round-over scale */
+html.tiktok-half .roundover-overlay .lb10-row { padding: 7px 10px; }
+html.tiktok-half .roundover-overlay .lb10-avatar { width: 26px; height: 26px; min-width: 26px; font-size: 11px; }
+html.tiktok-half .roundover-overlay .lb10-name { font-size: 16px; }
+html.tiktok-half .roundover-overlay .lb10-score { font-size: 22px; }
+html.tiktok-half .roundover-overlay .lb10-chip { font-size: 11px; }
+html.tiktok-half .roundover-overlay .lb10-list { max-height: 32vh; }
+
 
 
 

@@ -26,18 +26,41 @@ export default function RoundOver({ result, room }) {
     fetch('/api/alltime')
       .then(r => r.json())
       .then(d => { if (d && d.ok && Array.isArray(d.top)) setAllTimeTop(d.top.slice(0, 10)); })
+      // All-time can be empty (fresh deploy) — fall back to this game's scores
+      .then(() => { if (allTimeTop.length === 0 && sorted.length > 0) setAllTimeTop(sorted.map(p => ({ name: p.name, score: p.score }))); })
       .catch(() => {});
   }, []);
+  // Enrich each board row with the player's live stats (streak / level / XP /
+  // avatar come from the room payload; all-time rows carry bestStreak + found).
+  const playersById = useMemo(() => new Map((room?.players || []).map(p => [p.id, p])), [room]);
   const topRows = useMemo(() => {
-    const cur = sorted.slice(0, 10).map(p => ({ id: p.id, name: p.name, score: p.score, nameLen: p.name.length }));
+    const cur = sorted.slice(0, 10).map(p => {
+      const full = playersById.get(p.id) || {};
+      return {
+        id: p.id,
+        name: p.name,
+        score: p.score,
+        nameLen: p.name.length,
+        avatar: full.avatar || '',
+        streak: full.streak || 0,
+        level: full.level || 0,
+        xp: full.xp || 0,
+        isAllTime: false
+      };
+    });
     if (cur.length) return cur;
     return allTimeTop.map(p => ({
       id: 'all-' + (p.name || p.username || '?'),
       name: p.name || p.username || '?',
       score: p.score || 0,
-      nameLen: String(p.name || p.username || '?').length
+      nameLen: String(p.name || p.username || '?').length,
+      avatar: p.avatar || '',
+      streak: p.bestStreak || 0,
+      level: 0,
+      xp: p.found || 0,
+      isAllTime: true
     }));
-  }, [result, allTimeTop, sorted]);
+  }, [result, allTimeTop, sorted, playersById]);
   const [typed, setTyped] = useState({ row: 0, chars: 0 });
   useEffect(() => {
     if (!topRows.length) return;
@@ -76,26 +99,43 @@ export default function RoundOver({ result, room }) {
         </div>
 
         {topRows.length > 0 && (
-          <div className="roundover-top5">
+          <div className="roundover-top5 lb10">
             <p className="gameover-final-title">{sorted.length ? 'Top 10 — total points' : 'Top 10 — all time'}</p>
-            <div className="score-list">
+            <div className="lb10-list">
               {topRows.map((r, i) => {
                 const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;
                 const typing = i === typed.row && typedLen < r.nameLen;
+                const maxScore = topRows[0]?.score || 0;
+                const rankCls = i === 0 ? ' r1' : i === 1 ? ' r2' : i === 2 ? ' r3' : '';
                 return (
-                  <div key={r.id || i} className="score-item">
-                    <span className={`rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}`}>
-                      {rankEmoji[i] || `#${i + 1}`}
-                    </span>
-                    <div className="player-info">
-                      <span className="mini-avatar">{r.name.slice(0, 1).toUpperCase()}</span>
-                      <div className="player-name">
-                        {r.name.slice(0, typedLen)}
-                        {typing && <span className="typewriter-caret" />}
+                  <div
+                    key={r.id || i}
+                    className={`lb10-row${i === 0 ? ' leader' : ''}`}
+                    style={{ '--idx': i, '--bar': `${maxScore > 0 ? Math.max(6, Math.round((r.score / maxScore) * 100)) : 0}%` }}
+                  >
+                    <span className={`lb10-rank${rankCls}`}>{i + 1}</span>
+                    <div className="lb10-player">
+                      {r.avatar ? (
+                        <img className="lb10-avatar" src={r.avatar} alt="" />
+                      ) : (
+                        <span className="lb10-avatar initials">{r.name.slice(0, 1).toUpperCase()}</span>
+                      )}
+                      <div className="lb10-meta">
+                        <div className="lb10-name">
+                          {r.name.slice(0, typedLen)}
+                          {typing && <span className="typewriter-caret" />}
+                        </div>
+                        <div className="lb10-chips" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
+                          {r.streak >= 2 && <span className="lb10-chip streak">🔥 ×{r.streak}</span>}
+                          {!r.isAllTime && r.level > 1 && <span className="lb10-chip lvl">LV {r.level}</span>}
+                          {!r.isAllTime && r.xp > 0 && <span className="lb10-chip xp">{r.xp} XP</span>}
+                          {r.isAllTime && r.xp > 0 && <span className="lb10-chip words">{r.xp} words</span>}
+                        </div>
                       </div>
                     </div>
-                    <span className="player-score" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
-                      <CountUpScore value={r.score} /> pts
+                    <span className="lb10-score" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
+                      <CountUpScore value={r.score} />
+                      <span className="lb10-pts"> pts</span>
                     </span>
                   </div>
                 );
