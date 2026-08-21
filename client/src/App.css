@@ -7484,6 +7484,10 @@ html.tiktok-half .header-controls .voice-chat {
   display: none !important;
 }
 
+/* The floating CHAT-vs-HOST pill is redundant on the canvas — the live
+   scores live inside the menu dropdown. Hide it here (web keeps it). */
+html.tiktok-half .rivalry-bar { display: none !important; }
+
 /* Moderation (host) button — clearly visible on the dark canvas header:
    amber shield on a warm glass pill, with a hover glow. */
 html.tiktok-half .header-controls .mod-toggle {
@@ -7501,6 +7505,54 @@ html.tiktok-half .header-controls .mod-toggle:hover {
   border-color: rgba(245, 181, 68, 0.85);
   box-shadow: 0 0 12px rgba(245, 181, 68, 0.35);
 }
+
+/* Moderation panel — same frosted-glass design language as the game menu
+   dropdown: slate gradient card, hairline border, blur, Oxanium titles and
+   glass rows. (Anchored in canvas coords by the canvas scale transform.) */
+html.tiktok-half .mod-panel {
+  top: 62px; right: 12px;
+  z-index: 92;
+  width: 280px;
+  padding: 10px;
+  background: linear-gradient(175deg, #1a2542 0%, #0f1834 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: gameMenuPop 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+html.tiktok-half .mod-panel-title {
+  font-family: 'Oxanium', 'Outfit', sans-serif;
+  font-size: 11px; font-weight: 800; letter-spacing: 2.5px;
+  color: var(--text-dim); text-align: left; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+html.tiktok-half .mod-close { top: 9px; right: 11px; font-size: 13px; }
+html.tiktok-half .mod-close:hover { color: #ff9daf; }
+html.tiktok-half .mod-list {
+  max-height: 240px; overflow-y: auto; padding-right: 2px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+html.tiktok-half .mod-list::-webkit-scrollbar { width: 5px; }
+html.tiktok-half .mod-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 3px; }
+html.tiktok-half .mod-list::-webkit-scrollbar-thumb { background: rgba(53, 230, 160, 0.35); border-radius: 3px; }
+html.tiktok-half .mod-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+}
+html.tiktok-half .mod-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.tiktok-half .mod-actions { display: flex; gap: 5px; }
+html.tiktok-half .mod-actions .btn { font-size: 10px; padding: 3px 8px; border-radius: 7px; }
+html.tiktok-half .mod-empty { font-size: 11px; color: var(--text-dim); padding: 10px 0; }
+html.tiktok-half .mod-clear { width: 100%; margin-top: 8px; font-size: 10px; padding: 5px 8px; border-radius: 8px; }
+html.tiktok-half .mod-controls { margin-top: 6px; display: flex; flex-direction: column; gap: 5px; }
+html.tiktok-half .mod-controls .mod-panel-title { margin-bottom: 2px; }
+html.tiktok-half .mod-blacklist-row { display: flex; gap: 5px; }
+html.tiktok-half .mod-blacklist-input { flex: 1; min-width: 0; }
 
 /* On the game canvas the header consolidates into the menu: the quick-access
    controls that now live in the dropdown (achievements, sound, account, host
