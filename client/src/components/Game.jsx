@@ -984,11 +984,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
                   <span key={i} className={`wdot${i < (room.revealedLetters || []).filter(c => c).length ? ' on' : ''}`} />
                 ))}
               </div>
-              {solvedWord && (
-                <div className="solved-text">
-                  {wonRound ? `You cracked ${champPlayer?.name || 'Champ'}'s word!` : solvedByName || 'Time is up!'}
-                </div>
-              )}
             </div>
           )}
           </div>
