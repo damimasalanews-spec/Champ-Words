@@ -3328,37 +3328,37 @@ html.tiktok-half .top10-row + .top10-row {
   margin-top: 0 !important;
 }
 
-/* Rank badges: gold/silver/bronze with a soft circle behind */
+/* Rank badges: gold/silver/bronze — original 24px size */
 html.tiktok-half .top10-rank {
-  font-size: 16px !important;
+  font-size: 24px !important;
   font-weight: 800 !important;
-  min-width: 22px !important;
-  width: 22px;
-  height: 22px;
+  min-width: 30px !important;
+  width: auto;
+  height: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #c9d4e6 !important;
+  border-radius: 0;
+  background: none;
+  color: var(--text-dim) !important;
   flex-shrink: 0;
 }
 html.tiktok-half .top10-rank.rank-1 {
-  color: #ffd76a !important;
-  background: rgba(255, 215, 106, 0.14);
+  color: var(--gold) !important;
+  background: none;
 }
 html.tiktok-half .top10-rank.rank-2 {
-  color: #d7dfe9 !important;
-  background: rgba(215, 223, 233, 0.12);
+  color: #c0c0c0 !important;
+  background: none;
 }
 html.tiktok-half .top10-rank.rank-3 {
-  color: #e8a464 !important;
-  background: rgba(232, 164, 100, 0.14);
+  color: #cd7f32 !important;
+  background: none;
 }
 
-/* Name: readable white, ellipsis on long names */
+/* Name: original 20px white, ellipsis on long names */
 html.tiktok-half .top10-name {
-  font-size: 14px !important;
+  font-size: 20px !important;
   font-weight: 700 !important;
   color: #ffffff !important;
   white-space: nowrap;
@@ -3368,13 +3368,13 @@ html.tiktok-half .top10-name {
   flex: 1;
 }
 
-/* Points: emerald, tabular for alignment */
+/* Points: original 24px emerald, tabular for alignment */
 html.tiktok-half .top10-pts {
-  font-size: 15px !important;
+  font-size: 24px !important;
   font-weight: 800 !important;
-  min-width: 34px !important;
+  min-width: 40px !important;
   text-align: right !important;
-  color: #3dffb8 !important;
+  color: var(--green) !important;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -3431,3 +3431,10 @@ html.tiktok-half .top10-rank.rank-1 {
 html.tiktok-half .top10-row.top10-me {
   animation: none !important;
 }
+
+/* ═══ ROUND-OVER ON THE CANVAS ═══
+   On the 540×960 canvas the RoundOver scoreboard overlay is hidden so
+   viewers see the game page during the 6s pause: the answer drops into
+   the brackets and the artist drawing stays visible. Web/mobile keeps
+   the normal RoundOver screen. */
+html.tiktok-half .roundover-overlay { display: none !important; }
