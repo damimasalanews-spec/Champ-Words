@@ -7560,12 +7560,12 @@ html.tiktok-half .mod-blacklist-input { flex: 1; min-width: 0; }
 html.tiktok-half .overall-board { display: none !important; }
 
 /* ═══════════════ !score slide-in cards ═══════════════
-   Small column on the left edge — one card per !score command, showing the
+   Small column on the RIGHT edge — one card per !score command, showing the
    player's own score in the exact leaderboard score format (Oxanium emerald
-   number + pts), sliding in from the left, then back out. */
+   number + pts), sliding in from the right moving left, then back out. */
 .score-cards {
   position: fixed;
-  left: 14px; top: 46%;
+  right: 14px; top: 46%;
   display: flex; flex-direction: column; gap: 8px;
   /* Above the round-over / game-over overlays (110) so a !score card stays
      visible even while the leaderboard popup is covering the canvas. */
@@ -7574,8 +7574,8 @@ html.tiktok-half .overall-board { display: none !important; }
 }
 .score-card {
   display: flex; flex-direction: column; gap: 2px;
-  min-width: 104px;
-  padding: 8px 12px;
+  min-width: 118px;
+  padding: 9px 14px;
   border-radius: 12px;
   background: linear-gradient(175deg, rgba(26, 37, 66, 0.94), rgba(15, 24, 52, 0.94));
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -7586,28 +7586,33 @@ html.tiktok-half .overall-board { display: none !important; }
 .score-card.in { animation: scoreCardIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
 .score-card.out { animation: scoreCardOut 0.35s ease-in both; }
 @keyframes scoreCardIn {
-  from { opacity: 0; transform: translateX(-130%); }
+  from { opacity: 0; transform: translateX(130%); }
   to { opacity: 1; transform: none; }
 }
 @keyframes scoreCardOut {
   from { opacity: 1; transform: none; }
-  to { opacity: 0; transform: translateX(-130%); }
+  to { opacity: 0; transform: translateX(130%); }
 }
 .score-card-name {
-  font-size: 10px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;
+  font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
   color: var(--text-dim);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  max-width: 130px;
+  max-width: 150px;
 }
 .score-card-score {
   font-family: 'Oxanium', 'Outfit', sans-serif;
-  font-size: 20px; font-weight: 800; line-height: 1;
+  font-size: 26px; font-weight: 800; line-height: 1;
   color: #5ff0b8;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 14px rgba(53, 230, 160, 0.35);
 }
-.score-card-pts { font-size: 9px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.5px; }
-.score-card-streak { font-size: 9px; font-weight: 800; color: #ffd98a; letter-spacing: 0.3px; }
+.score-card-pts { font-size: 10px; font-weight: 700; color: var(--text-faint); letter-spacing: 0.5px; }
+.score-card-streak { font-size: 10px; font-weight: 800; color: #ffd98a; letter-spacing: 0.3px; }
+
+/* The LIVE "player found the word" ticker below the grid/artist row is
+   removed from the game canvas (the score cards + leaderboard cover it).
+   Must override the earlier .tiktok-half .notify-row display:block rule. */
+html.tiktok-half .notify-row { display: none !important; }
 
 /* On the game canvas the header consolidates into the menu: the quick-access
    controls that now live in the dropdown (achievements, sound, account, host
