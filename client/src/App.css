@@ -7477,6 +7477,31 @@ html.tiktok-half .app:has(.game-menu-btn.open) .rivalry-bar {
    tucks behind it with no visual disruption. */
 html.tiktok-half .app-header { z-index: 92; }
 
+/* The room code and the voice mic now live inside the menu dropdown — hide
+   them from the canvas header so the top-right stays clean. */
+html.tiktok-half .app-header .room-badge,
+html.tiktok-half .header-controls .voice-chat {
+  display: none !important;
+}
+
+/* Moderation (host) button — clearly visible on the dark canvas header:
+   amber shield on a warm glass pill, with a hover glow. */
+html.tiktok-half .header-controls .mod-toggle {
+  width: 24px; height: 24px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 181, 68, 0.5);
+  background: rgba(245, 181, 68, 0.14);
+  color: #ffc53d;
+  transition: box-shadow 0.15s, border-color 0.15s, background 0.15s;
+}
+html.tiktok-half .header-controls .mod-toggle:hover {
+  background: rgba(245, 181, 68, 0.28);
+  border-color: rgba(245, 181, 68, 0.85);
+  box-shadow: 0 0 12px rgba(245, 181, 68, 0.35);
+}
+
 /* On the game canvas the header consolidates into the menu: the quick-access
    controls that now live in the dropdown (achievements, sound, account, host
    badge, login/logout) are hidden so the header never overflows the 540px
