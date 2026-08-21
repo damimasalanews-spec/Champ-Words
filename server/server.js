@@ -1758,6 +1758,14 @@ io.on('connection', socket => {
     if (isMuted(room, socket.id)) return cb && cb({ ok: false, error: 'You are muted' });
     if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ - you know the word!" });
 
+    // !score typed in the answer box — show the player's own score card
+    // instead of treating it as a (wrong) word guess.
+    const typedCmd = String(word || '').trim().toLowerCase();
+    if (typedCmd === '!score') {
+      emitScoreCard(room, room.players.find(p => p.id === socket.id));
+      return cb && cb({ ok: true, scoreCard: true });
+    }
+
     let guessWord = null;
     if (path && Array.isArray(path) && path.length >= 3) {
       // Drag mode — validate path against grid
@@ -1993,6 +2001,8 @@ io.on('connection', socket => {
     // !score — show the player's own score card instead of a chat line
     if (t.toLowerCase() === '!score') {
       emitScoreCard(room, player);
+      // Small confirmation in the chat so the command's result is visible
+      io.to(roomId).emit('chat', { system: true, text: `⚡ ${maskText(player.name)} · ${player.score || 0} pts` });
       return;
     }
     if (REACTION_EMOJIS.has(t)) { io.to(roomId).emit('reaction', { emoji: t, name: maskText(player.name) }); return; }
