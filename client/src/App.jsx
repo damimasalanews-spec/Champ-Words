@@ -534,7 +534,7 @@ export default function App() {
         </div>
       )}
 
-      {(screen === 'playing' || screen === 'round_over') && room && (
+      {screen === 'playing' && room && (
         <Game
           room={room}
           socket={socket}
@@ -545,7 +545,6 @@ export default function App() {
           onChooseWord={handleChooseWord}
           messages={messages}
           notifications={notifications}
-          revealWord={screen === 'round_over' && roundResult ? (roundResult.word || '') : ''}
         />
       )}
 

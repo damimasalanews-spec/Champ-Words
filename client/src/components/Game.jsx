@@ -152,7 +152,7 @@ function Top5Celebration({ players }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], notifications = [], revealWord = '' }) {
+export default function Game({ room, socket, me, showToast, onChatToggle, chatOpen, onChooseWord, messages = [], notifications = [] }) {
   const isChamp = room.champId === socket.id;
   const champPlayer = room.players.find(p => p.id === room.champId);
   const wordLen = room.wordLength;
@@ -243,16 +243,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setToasts([]);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
   }, [room.round, room.champId]);
-
-  // Round over: drop the answer into the correct bracket boxes. The server
-  // sends the word in the round_over payload (revealWord prop) — everyone
-  // sees the letters fall into the brackets while the 6s pause runs.
-  useEffect(() => {
-    if (state === 'round_over' && revealWord && !solvedWord) {
-      setSolvedWord(revealWord);
-      setFalling(false);
-    }
-  }, [state, revealWord]);
 
   // Countdown (freezes while the host pauses the game)
   useEffect(() => {
