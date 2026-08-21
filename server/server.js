@@ -295,6 +295,16 @@ function handleChatChallenge(room, player) {
 
 // Shared handler used by both the HTTP endpoint and the live-chat bridge.
 const chatAnswerCooldowns = new Map(); // user → last wrong-attempt timestamp
+
+// ── !score anti-spam: one card per user every 15s ─────────────────────────
+const scoreCardCooldowns = new Map(); // key (user/socket) → last !score time
+function scoreCardStatus(key, now = Date.now()) {
+  const last = scoreCardCooldowns.get(key) || 0;
+  const wait = Math.ceil((last + 15000 - now) / 1000);
+  if (wait > 0) return { allowed: false, wait };
+  scoreCardCooldowns.set(key, now);
+  return { allowed: true, wait: 0 };
+}
 function handleChatAnswer({ user, text, nickname }) {
   const username = String(user || '').trim().slice(0, 30);
   const guess = String(text || '').trim().toLowerCase().replace(/\s+/g, '');
@@ -324,6 +334,9 @@ function handleChatAnswer({ user, text, nickname }) {
     // (round_over), so viewers are never told "no active round".
     const room = findChatTargetRoom() || findChatRoomInState('round_over');
     if (!room) return { ok: false, error: 'no active round' };
+    // Anti-spam: 15s per user
+    const scs = scoreCardStatus('chat:' + username.toLowerCase());
+    if (!scs.allowed) return { ok: true, scoreCard: false, cooldown: true, wait: scs.wait };
     emitScoreCard(room, ensureChatPlayer(room, username, profileFirst));
     return { ok: true, scoreCard: true };
   }
@@ -1759,11 +1772,12 @@ io.on('connection', socket => {
     if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ - you know the word!" });
 
     // !score typed in the answer box — show the player's own score card
-    // instead of treating it as a (wrong) word guess.
+    // instead of treating it as a (wrong) word guess. Anti-spam: 15s per player.
     const typedCmd = String(word || '').trim().toLowerCase();
     if (typedCmd === '!score') {
-      emitScoreCard(room, room.players.find(p => p.id === socket.id));
-      return cb && cb({ ok: true, scoreCard: true });
+      const scs = scoreCardStatus('sock:' + socket.id);
+      if (scs.allowed) emitScoreCard(room, room.players.find(p => p.id === socket.id));
+      return cb && cb({ ok: true, scoreCard: scs.allowed, cooldown: !scs.allowed });
     }
 
     let guessWord = null;
@@ -1998,11 +2012,13 @@ io.on('connection', socket => {
     if (isMuted(room, socket.id)) return;
     const player = room.players.find(p => p.id === socket.id); if (!player) return;
     const t = String(text || '').trim();
-    // !score — show the player's own score card instead of a chat line
+    // !score — show the player's own score card instead of a chat line.
+    // Read-only bridge: never reply to or message the player — the 15s
+    // cooldown silently decides whether a card displays; nothing is sent
+    // back to anyone (TikTok chat is untouched either way).
     if (t.toLowerCase() === '!score') {
-      emitScoreCard(room, player);
-      // Small confirmation in the chat so the command's result is visible
-      io.to(roomId).emit('chat', { system: true, text: `⚡ ${maskText(player.name)} · ${player.score || 0} pts` });
+      const scs = scoreCardStatus('sock:' + socket.id); // anti-spam: 15s per player
+      if (scs.allowed) emitScoreCard(room, player);
       return;
     }
     if (REACTION_EMOJIS.has(t)) { io.to(roomId).emit('reaction', { emoji: t, name: maskText(player.name) }); return; }

@@ -28,12 +28,13 @@ function ScoreCardItem({ card, onDone }) {
 }
 
 export default function ScoreCards({ cards, onDone }) {
+  // One card at a time: cards arriving together (or a spam burst) queue up in
+  // the App state and slide in turn by turn — the first card shows, and when
+  // it slides out (onDone) the next one takes its place.
   if (!cards || cards.length === 0) return null;
   return (
     <div className="score-cards">
-      {cards.map(c => (
-        <ScoreCardItem key={c.id} card={c} onDone={onDone} />
-      ))}
+      <ScoreCardItem key={cards[0].id} card={cards[0]} onDone={onDone} />
     </div>
   );
 }
