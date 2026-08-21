@@ -13,6 +13,7 @@ const CAT_TINTS = {
 import LoginPage from './components/LoginPage';
 import Lobby from './components/Lobby';
 import Game from './components/Game';
+import GameMenu from './components/GameMenu';
 import RoundOver from './components/RoundOver';
 import GameOver from './components/GameOver';
 import Chat from './components/Chat';
@@ -488,6 +489,18 @@ export default function App() {
           ) : (
             <button className="logout-btn" onClick={handleLogout} title="Logout">↪</button>
           )}
+          {/* Studio game-play menu — top-right corner, studio pages only */}
+          {isStudio && (
+            <GameMenu
+              room={room}
+              me={(room && room.players.find(p => p.id === socket.id)) || null}
+              showToast={showToast}
+              onLeave={handleLeave}
+              user={user}
+              onLogout={handleLogout}
+              onOpenAchievements={openAchievements}
+            />
+          )}
         </div>
       </div>
 
@@ -545,7 +558,6 @@ export default function App() {
           onChooseWord={handleChooseWord}
           messages={messages}
           notifications={notifications}
-          onLeave={handleLeave}
         />
       )}
 
