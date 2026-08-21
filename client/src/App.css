@@ -7470,6 +7470,26 @@ html.tiktok-half .app:has(.game-menu-btn.open) .rivalry-bar {
   z-index: 20; pointer-events: none;
 }
 
+/* The header (with the ☰ Menu button and its dropdown) must paint above the
+   floating CHAT-vs-HOST pill (z-index 91) — when the pill is wide ("CHAT IS
+   WINNING" state) it otherwise covers the button at the top-right corner.
+   The header is an opaque glass bar, so the pill's overlapping sliver simply
+   tucks behind it with no visual disruption. */
+html.tiktok-half .app-header { z-index: 92; }
+
+/* On the game canvas the header consolidates into the menu: the quick-access
+   controls that now live in the dropdown (achievements, sound, account, host
+   badge, login/logout) are hidden so the header never overflows the 540px
+   canvas — which used to push the ☰ Menu button off-screen on desktop.
+   (Viewers badge, voice mic and host moderation stay visible.) */
+html.tiktok-half .app-header .ach-btn,
+html.tiktok-half .app-header .sound-toggle,
+html.tiktok-half .app-header .user-info,
+html.tiktok-half .app-header .host-badge,
+html.tiktok-half .app-header .logout-btn {
+  display: none !important;
+}
+
 
 
 

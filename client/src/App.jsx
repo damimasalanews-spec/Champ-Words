@@ -113,8 +113,15 @@ export default function App() {
   // DESKTOP viewport, exactly as they always were. Studio sources (?half /
   // ?auto) are locked to the canvas by main.jsx and are never touched here.
   const isStudio = new URLSearchParams(window.location.search).has('half') || new URLSearchParams(window.location.search).has('auto');
+  // The game-play menu rides on the game canvas: it shows on studio pages
+  // (?auto=1 / ?half=1 — always canvas) AND on desktop web game screens
+  // (which switch to the same canvas at ≥768px). Mobile web stays menu-free.
+  const [canvasMode, setCanvasMode] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    return document.documentElement.classList.contains('tiktok-half');
+  });
   useEffect(() => {
-    if (isStudio) return;
+    if (isStudio) { setCanvasMode(true); return; }
     const applyMode = () => {
       const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
       // Game screens use the studio canvas (540×960) on DESKTOP viewports and
@@ -124,6 +131,7 @@ export default function App() {
       const canvas = inGame && window.innerWidth >= 768;
       document.documentElement.classList.toggle('tiktok-half', canvas);
       document.documentElement.classList.toggle('cw-web', !canvas);
+      setCanvasMode(canvas);
     };
     applyMode();
     window.addEventListener('resize', applyMode);
@@ -489,8 +497,9 @@ export default function App() {
           ) : (
             <button className="logout-btn" onClick={handleLogout} title="Logout">↪</button>
           )}
-          {/* Studio game-play menu — top-right corner, studio pages only */}
-          {isStudio && (
+          {/* Game-play menu — top-right corner, on the game canvas (studio
+              pages and desktop web game screens) */}
+          {canvasMode && (
             <GameMenu
               room={room}
               me={(room && room.players.find(p => p.id === socket.id)) || null}
