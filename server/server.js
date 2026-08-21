@@ -320,7 +320,9 @@ function handleChatAnswer({ user, text, nickname }) {
   }
   // ── !score — the user's own score slides in as a card (not a guess) ──
   if (guess === '!score') {
-    const room = findChatTargetRoom();
+    // Works while a round is live AND during the between-round pause
+    // (round_over), so viewers are never told "no active round".
+    const room = findChatTargetRoom() || findChatRoomInState('round_over');
     if (!room) return { ok: false, error: 'no active round' };
     emitScoreCard(room, ensureChatPlayer(room, username, profileFirst));
     return { ok: true, scoreCard: true };

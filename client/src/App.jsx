@@ -694,7 +694,9 @@ export default function App() {
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}
 
-      {/* !score cards — slide-in column, left edge (TikTok chat + in-game chat) */}
+      {/* !score cards — slide-in column, left edge (TikTok chat + in-game
+          chat). Rendered inside .screen-anim so it shares the overlays'
+          stacking context (z 120 beats the round-over overlay's 110). */}
       <ScoreCards cards={scoreCards} onDone={(id) => setScoreCards(prev => prev.filter(x => x.id !== id))} />
 
       {modOpen && room && (
