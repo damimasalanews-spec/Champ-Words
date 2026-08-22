@@ -29,9 +29,9 @@ services:
       # CHAT_ROOM_PIN: optional room code to lock chat answers to one room.
       # CHAT_TEST_KEY: ONLY for testing — enables /api/debug/word. Never set in production.
       - key: CHAT_BRIDGE_ENABLED
-        sync: false
+        value: true
       - key: TIKTOK_LIVE_USERNAME
-        sync: false
+        value: champbj
       - key: TIKTOK_SESSION_ID
         sync: false
       - key: CHAT_FIXED_POINTS
