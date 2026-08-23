@@ -362,9 +362,10 @@ export default function App() {
   const handleLogout = () => { window.location.href = '/auth/logout'; };
 
   const handlePlayAsGuest = () => {
-    // Ask for the name first — join on tap, no auto-join countdown.
-    studioNameSecondsRef.current = 0;
-    setStudioNamePending(true);
+    // Join immediately as guest — no name prompt. Uses the saved name or "Player".
+    let saved = '';
+    try { saved = localStorage.getItem('champWordsName') || ''; } catch (_) {}
+    joinStudioGame(saved);
   };
 
   // Name prompt for studio links — the player types their name, then the
@@ -375,8 +376,8 @@ export default function App() {
   const studioNameRef = useRef(studioName);
   studioNameRef.current = studioName;
   const [nameCountdown, setNameCountdown] = useState(20);
-  const joinStudioGame = () => {
-    const trimmed = (studioNameRef.current || '').trim() || 'Player';
+  const joinStudioGame = (prefill) => {
+    const trimmed = ((prefill !== undefined ? prefill : studioNameRef.current) || '').trim() || 'Player';
     try { localStorage.setItem('champWordsName', trimmed); } catch (_) {}
     setUser({ name: trimmed, avatar: '', isGuest: true });
     setStudioNamePending(false);
