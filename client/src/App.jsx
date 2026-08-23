@@ -362,9 +362,8 @@ export default function App() {
   const handleLogout = () => { window.location.href = '/auth/logout'; };
 
   const handlePlayAsGuest = () => {
-    // Ask for the name first (10s countdown) — then join as guest, which
-    // auto-follows the host's room (waiting lobby).
-    studioNameSecondsRef.current = 10;
+    // Ask for the name first — join on tap, no auto-join countdown.
+    studioNameSecondsRef.current = 0;
     setStudioNamePending(true);
   };
 
@@ -385,6 +384,7 @@ export default function App() {
   };
   useEffect(() => {
     if (!studioNamePending) return;
+    if (studioNameSecondsRef.current <= 0) return; // no countdown for guests
     setNameCountdown(studioNameSecondsRef.current);
     const iv = setInterval(() => {
       setNameCountdown(c => {
@@ -447,7 +447,6 @@ export default function App() {
             <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 6 }}>
               Join now
             </button>
-            <p className="studio-countdown">Opening the join screen in {nameCountdown}s…</p>
           </form>
         </div>
       </div>
