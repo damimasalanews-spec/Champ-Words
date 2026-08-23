@@ -1,28 +1,26 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Round-winner celebration — Tikfinity-style alert.
- * Big trophy pop, huge winner name, confetti rain and a Web Audio fanfare.
- * Self-contained: styles + particles + sound are all inline.
+ * Round-winner celebration — Tikfinity-style alert (like PARTNER_HOOKAH_BRO).
+ * Dark charcoal stage, a character (trophy) on the left, the winner's name
+ * in big PUFFY SMOKE text that pops in and breathes, rising smoke rings,
+ * vapor particles and a Web Audio fanfare. Self-contained.
  */
 export default function Celebration({ winner }) {
-  const confetti = useRef([]);
-  if (confetti.current.length === 0) {
-    const colors = ['#ffd76a', '#7c6cff', '#ff5c7c', '#3ddc97', '#ffffff', '#9b8fff', '#ffb84d'];
-    for (let i = 0; i < 60; i++) {
-      confetti.current.push({
-        left: Math.random() * 100,
-        delay: Math.random() * 0.9,
-        dur: 2.2 + Math.random() * 2.2,
-        size: 6 + Math.random() * 9,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        rot: Math.random() * 360,
-        shape: Math.random() > 0.5 ? 'rect' : 'circle',
+  const particles = useRef([]);
+  if (particles.current.length === 0) {
+    for (let i = 0; i < 26; i++) {
+      particles.current.push({
+        left: 8 + Math.random() * 84,
+        delay: Math.random() * 2.4,
+        dur: 2 + Math.random() * 2.6,
+        size: 3 + Math.random() * 6,
+        op: 0.35 + Math.random() * 0.5,
       });
     }
   }
 
-  // Web Audio fanfare — a short ascending flourish, no audio file needed
+  // Web Audio fanfare — short ascending flourish, no audio file needed
   useEffect(() => {
     let ctx = null;
     try {
@@ -60,39 +58,56 @@ export default function Celebration({ winner }) {
   return (
     <div className="cw-celebrate">
       <style>{`
-        .cw-celebrate{position:absolute;inset:0;z-index:1100;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,rgba(13,10,31,.5),rgba(13,10,31,.93) 82%);animation:cwFadeIn .25s ease both}
-        .cw-celebrate-rays{position:absolute;inset:-20%;animation:cwSpin 16s linear infinite;pointer-events:none}
-        .cw-celebrate-rays span{position:absolute;top:50%;left:50%;width:170%;height:120px;transform-origin:0 0;background:repeating-linear-gradient(90deg,rgba(255,215,106,.18) 0 26px,transparent 26px 54px)}
-        .cw-confetti{position:absolute;top:-4%;animation:cwFall linear infinite;opacity:.95;pointer-events:none}
-        .cw-confetti-rect{border-radius:2px}
-        .cw-confetti-circle{border-radius:50%}
-        @keyframes cwFall{0%{transform:translateY(0) rotate(var(--rot));opacity:1}100%{transform:translateY(125vh) rotate(calc(var(--rot) + 540deg));opacity:.65}}
-        .cw-celebrate-card{position:relative;text-align:center;max-width:86%;animation:cwPop .5s cubic-bezier(.2,1.7,.4,1) both}
-        @keyframes cwPop{from{transform:scale(.25);opacity:0}to{transform:scale(1);opacity:1}}
-        .cw-celebrate-trophy{font-size:clamp(64px,16vw,120px);animation:cwTrophy 1.2s ease-in-out infinite;filter:drop-shadow(0 0 34px rgba(255,215,106,.65))}
-        @keyframes cwTrophy{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
-        .cw-celebrate-title{font-family:'Oxanium',sans-serif;font-size:clamp(13px,2.6vw,20px);letter-spacing:7px;color:#ffd76a;margin-top:12px;text-transform:uppercase}
-        .cw-celebrate-name{font-family:'Oxanium',sans-serif;font-weight:800;font-size:clamp(30px,9vw,72px);line-height:1.05;background:linear-gradient(92deg,#ffd76a,#fff3c9,#ffb84d);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 26px rgba(255,215,106,.5));white-space:nowrap;margin-top:4px}
-        .cw-celebrate-sub{font-size:clamp(13px,2.8vw,18px);color:rgba(244,241,255,.9);margin-top:8px;letter-spacing:1.5px}
-        @keyframes cwFadeIn{from{opacity:0}to{opacity:1}}
+        .cw-celebrate{position:absolute;inset:0;z-index:1100;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4%;padding:0 8%;background:radial-gradient(circle at 28% 52%,#1b1b24,#0e0e15 72%);animation:cwOut .45s ease 3.75s both}
+        @keyframes cwOut{to{opacity:0}}
+        /* character (trophy) pops in from the left, like the Tikfinity avatar */
+        .cw-char{font-size:clamp(64px,17vw,128px);line-height:1;animation:cwCharPop .55s cubic-bezier(.2,1.8,.4,1) both;filter:drop-shadow(0 0 34px rgba(255,255,255,.28));transform-origin:center}
+        @keyframes cwCharPop{from{transform:scale(.15) translateX(-70px);opacity:0}to{transform:scale(1) translateX(0);opacity:1}}
+        /* smoke text block */
+        .cw-smoke-wrap{max-width:58%;text-align:left}
+        .cw-smoke-label{font-family:'Oxanium',sans-serif;font-weight:700;font-size:clamp(10px,2.2vw,15px);letter-spacing:7px;color:#d8d8dc;text-transform:uppercase;opacity:0;animation:cwFadeUp .4s ease .22s both}
+        @keyframes cwFadeUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .cw-smoke-text{
+          font-family:'Oxanium',sans-serif;font-weight:800;text-transform:uppercase;
+          font-size:clamp(28px,8.4vw,64px);line-height:1.04;margin-top:4px;max-width:100%;word-break:break-word;
+          color:#f5f5f5;
+          text-shadow:2px 2px 0 #dcdcdc,4px 4px 0 #bdbdbd,6px 6px 0 #999999,8px 8px 14px rgba(0,0,0,.35),
+            0 0 18px rgba(255,255,255,.6),0 0 44px rgba(255,255,255,.32);
+          opacity:0;
+          animation:cwSmokeIn .55s cubic-bezier(.2,1.5,.4,1) .08s both,cwPuff 2.6s ease-in-out .85s infinite;
+        }
+        @keyframes cwSmokeIn{0%{transform:scale(.25) translateY(34px);opacity:0}60%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
+        @keyframes cwPuff{0%,100%{transform:scale(1)}50%{transform:scale(1.05) translateY(-7px)}}
+        .cw-smoke-sub{font-family:'Oxanium',sans-serif;font-size:clamp(12px,2.6vw,18px);color:rgba(255,255,255,.85);margin-top:10px;letter-spacing:1.5px;opacity:0;animation:cwFadeUp .4s ease .35s both}
+        /* rising smoke rings */
+        .cw-ring{position:absolute;left:26%;bottom:-8%;width:52px;height:52px;border:5px solid rgba(255,255,255,.55);border-radius:50%;opacity:0;pointer-events:none}
+        .cw-ring-1{animation:cwRing 3s ease-out .3s infinite}
+        .cw-ring-2{left:38%;width:36px;height:36px;animation:cwRing 2.6s ease-out .9s infinite}
+        .cw-ring-3{left:18%;width:70px;height:70px;animation:cwRing 3.4s ease-out 1.6s infinite}
+        @keyframes cwRing{0%{transform:scale(.35) translateY(0);opacity:0}18%{opacity:.65}100%{transform:scale(2.1) translateY(-300px);opacity:0}}
+        /* vapor particles */
+        .cw-vapor{position:absolute;bottom:-4%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px);pointer-events:none;animation:cwVapor linear infinite}
+        @keyframes cwVapor{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:.8}100%{transform:translateY(-340px) scale(1.5);opacity:0}}
       `}</style>
 
-      <div className="cw-celebrate-rays" aria-hidden="true">
-        {Array.from({ length: 12 }, (_, i) => <span key={i} style={{ transform: 'rotate(' + (i * 30) + 'deg)' }} />)}
-      </div>
-      {confetti.current.map((c, i) => (
-        <span key={i} className={'cw-confetti cw-confetti-' + c.shape}
-          style={{ left: c.left + '%', width: c.size, height: c.size, background: c.color,
-                   animationDuration: c.dur + 's', animationDelay: c.delay + 's', '--rot': c.rot + 'deg' }} />
-      ))}
-      <div className="cw-celebrate-card">
-        <div className="cw-celebrate-trophy">🏆</div>
-        <div className="cw-celebrate-title">Round Winner</div>
-        <div className="cw-celebrate-name">{winner.name}</div>
-        <div className="cw-celebrate-sub">
+      <div className="cw-char" aria-hidden="true">🏆</div>
+
+      <div className="cw-smoke-wrap">
+        <div className="cw-smoke-label">Round Winner</div>
+        <div className="cw-smoke-text">{winner.name}</div>
+        <div className="cw-smoke-sub">
           {winner.score ? '+' + winner.score + ' points' : ''}{winner.elapsed ? ' · solved in ' + winner.elapsed + 's' : ''}
         </div>
       </div>
+
+      <div className="cw-ring cw-ring-1" aria-hidden="true" />
+      <div className="cw-ring cw-ring-2" aria-hidden="true" />
+      <div className="cw-ring cw-ring-3" aria-hidden="true" />
+      {particles.current.map((p, i) => (
+        <span key={i} className="cw-vapor"
+          style={{ left: p.left + '%', width: p.size, height: p.size, opacity: p.op,
+                   animationDuration: p.dur + 's', animationDelay: p.delay + 's' }} />
+      ))}
     </div>
   );
 }
