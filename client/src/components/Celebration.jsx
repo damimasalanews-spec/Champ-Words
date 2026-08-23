@@ -1,21 +1,32 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Round-winner celebration — Tikfinity-style alert (like PARTNER_HOOKAH_BRO).
- * Dark charcoal stage, a character (trophy) on the left, the winner's name
- * in big PUFFY SMOKE text that pops in and breathes, rising smoke rings,
- * vapor particles and a Web Audio fanfare. Self-contained.
+ * Round-winner celebration — Tikfinity PARTNER_HOOKAH_BRO style.
+ * A cartoon champ with a HOOKAH blows SMOKE, and the winner's name
+ * materializes out of the smoke cloud. Dark charcoal stage, smoke rings,
+ * vapor particles and a Web Audio fanfare. Self-contained (SVG + CSS).
  */
 export default function Celebration({ winner }) {
-  const particles = useRef([]);
-  if (particles.current.length === 0) {
-    for (let i = 0; i < 26; i++) {
-      particles.current.push({
-        left: 8 + Math.random() * 84,
-        delay: Math.random() * 2.4,
+  const puffs = useRef([]);
+  const vapor = useRef([]);
+  if (puffs.current.length === 0) {
+    for (let i = 0; i < 10; i++) {
+      puffs.current.push({
+        delay: 0.15 + i * 0.28,
+        dur: 2.6 + (i % 4) * 0.45,
+        size: 26 + (i % 5) * 12,
+        dx: 90 + (i % 4) * 46,
+        dy: 120 + (i % 3) * 50,
+        op: 0.4 + (i % 3) * 0.16,
+      });
+    }
+    for (let i = 0; i < 22; i++) {
+      vapor.current.push({
+        left: 6 + Math.random() * 88,
+        delay: Math.random() * 2.6,
         dur: 2 + Math.random() * 2.6,
         size: 3 + Math.random() * 6,
-        op: 0.35 + Math.random() * 0.5,
+        op: 0.3 + Math.random() * 0.5,
       });
     }
   }
@@ -58,40 +69,80 @@ export default function Celebration({ winner }) {
   return (
     <div className="cw-celebrate">
       <style>{`
-        .cw-celebrate{position:absolute;inset:0;z-index:1100;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:4%;padding:0 8%;background:radial-gradient(circle at 28% 52%,#1b1b24,#0e0e15 72%);animation:cwOut .45s ease 3.75s both}
+        .cw-celebrate{position:absolute;inset:0;z-index:1100;overflow:hidden;background:radial-gradient(circle at 30% 55%,#1b1b24,#0d0d14 74%);animation:cwOut .45s ease 3.85s both}
         @keyframes cwOut{to{opacity:0}}
-        /* character (trophy) pops in from the left, like the Tikfinity avatar */
-        .cw-char{font-size:clamp(64px,17vw,128px);line-height:1;animation:cwCharPop .55s cubic-bezier(.2,1.8,.4,1) both;filter:drop-shadow(0 0 34px rgba(255,255,255,.28));transform-origin:center}
-        @keyframes cwCharPop{from{transform:scale(.15) translateX(-70px);opacity:0}to{transform:scale(1) translateX(0);opacity:1}}
-        /* smoke text block */
-        .cw-smoke-wrap{max-width:58%;text-align:left}
-        .cw-smoke-label{font-family:'Oxanium',sans-serif;font-weight:700;font-size:clamp(10px,2.2vw,15px);letter-spacing:7px;color:#d8d8dc;text-transform:uppercase;opacity:0;animation:cwFadeUp .4s ease .22s both}
-        @keyframes cwFadeUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+        /* ── cartoon champ with hookah, bottom-left ── */
+        .cw-hookah-char{position:absolute;left:1%;bottom:0;width:46%;max-width:330px;animation:cwCharIn .5s cubic-bezier(.2,1.7,.4,1) both;filter:drop-shadow(0 10px 26px rgba(0,0,0,.5))}
+        @keyframes cwCharIn{from{transform:translateY(70px) scale(.8);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+        /* ── smoke puffs rising from the hookah hose ── */
+        .cw-puff{position:absolute;left:27%;bottom:36%;width:44px;height:36px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 35% 30%,#ffffff,#dcdce4 55%,rgba(200,200,214,.35));filter:blur(1.5px);opacity:0;pointer-events:none;animation:cwPuffRise ease-in infinite}
+        @keyframes cwPuffRise{0%{transform:translate(0,0) scale(.4);opacity:0}15%{opacity:var(--po,.5)}55%{transform:translate(var(--dx,110px),calc(var(--dy,140px) * -1)) scale(1.6);opacity:calc(var(--po,.5) * .8)}100%{transform:translate(calc(var(--dx,110px) * 1.6),calc(var(--dy,140px) * -1.7)) scale(2.4);opacity:0}}
+        /* ── name materializes out of the smoke ── */
+        .cw-smoke-wrap{position:absolute;right:4%;top:50%;transform:translateY(-50%);width:56%;text-align:left;padding-left:6%}
+        .cw-smoke-label{font-family:'Oxanium',sans-serif;font-weight:700;font-size:clamp(10px,2.2vw,15px);letter-spacing:7px;color:#d8d8dc;text-transform:uppercase;opacity:0;animation:cwFadeUp .4s ease .6s both}
         .cw-smoke-text{
           font-family:'Oxanium',sans-serif;font-weight:800;text-transform:uppercase;
-          font-size:clamp(28px,8.4vw,64px);line-height:1.04;margin-top:4px;max-width:100%;word-break:break-word;
-          color:#f5f5f5;
-          text-shadow:2px 2px 0 #dcdcdc,4px 4px 0 #bdbdbd,6px 6px 0 #999999,8px 8px 14px rgba(0,0,0,.35),
-            0 0 18px rgba(255,255,255,.6),0 0 44px rgba(255,255,255,.32);
+          font-size:clamp(27px,8.2vw,62px);line-height:1.04;margin-top:4px;max-width:100%;word-break:break-word;
+          color:#f7f7f7;
+          text-shadow:2px 2px 0 #dedede,4px 4px 0 #c0c0c0,6px 6px 0 #9c9c9c,8px 8px 16px rgba(0,0,0,.38),
+            0 0 20px rgba(255,255,255,.65),0 0 48px rgba(255,255,255,.35);
           opacity:0;
-          animation:cwSmokeIn .55s cubic-bezier(.2,1.5,.4,1) .08s both,cwPuff 2.6s ease-in-out .85s infinite;
+          animation:cwNameIn .75s cubic-bezier(.2,1.4,.4,1) .5s both,cwPuff 2.8s ease-in-out 1.35s infinite;
         }
-        @keyframes cwSmokeIn{0%{transform:scale(.25) translateY(34px);opacity:0}60%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
+        @keyframes cwNameIn{0%{transform:scale(1.35);filter:blur(12px);opacity:0}60%{filter:blur(2px);opacity:1}100%{transform:scale(1);filter:blur(0);opacity:1}}
         @keyframes cwPuff{0%,100%{transform:scale(1)}50%{transform:scale(1.05) translateY(-7px)}}
-        .cw-smoke-sub{font-family:'Oxanium',sans-serif;font-size:clamp(12px,2.6vw,18px);color:rgba(255,255,255,.85);margin-top:10px;letter-spacing:1.5px;opacity:0;animation:cwFadeUp .4s ease .35s both}
-        /* rising smoke rings */
-        .cw-ring{position:absolute;left:26%;bottom:-8%;width:52px;height:52px;border:5px solid rgba(255,255,255,.55);border-radius:50%;opacity:0;pointer-events:none}
-        .cw-ring-1{animation:cwRing 3s ease-out .3s infinite}
-        .cw-ring-2{left:38%;width:36px;height:36px;animation:cwRing 2.6s ease-out .9s infinite}
-        .cw-ring-3{left:18%;width:70px;height:70px;animation:cwRing 3.4s ease-out 1.6s infinite}
-        @keyframes cwRing{0%{transform:scale(.35) translateY(0);opacity:0}18%{opacity:.65}100%{transform:scale(2.1) translateY(-300px);opacity:0}}
-        /* vapor particles */
-        .cw-vapor{position:absolute;bottom:-4%;border-radius:50%;background:rgba(255,255,255,.55);filter:blur(1px);pointer-events:none;animation:cwVapor linear infinite}
-        @keyframes cwVapor{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:.8}100%{transform:translateY(-340px) scale(1.5);opacity:0}}
+        .cw-smoke-sub{font-family:'Oxanium',sans-serif;font-size:clamp(12px,2.6vw,18px);color:rgba(255,255,255,.88);margin-top:10px;letter-spacing:1.5px;opacity:0;animation:cwFadeUp .4s ease .75s both}
+        @keyframes cwFadeUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+        /* ── smoke rings + ambient vapor ── */
+        .cw-ring{position:absolute;left:24%;bottom:26%;width:46px;height:46px;border:4px solid rgba(255,255,255,.5);border-radius:50%;opacity:0;pointer-events:none}
+        .cw-ring-1{animation:cwRing 3s ease-out .4s infinite}
+        .cw-ring-2{left:33%;width:32px;height:32px;animation:cwRing 2.6s ease-out 1s infinite}
+        @keyframes cwRing{0%{transform:scale(.3) translateY(0);opacity:0}18%{opacity:.6}100%{transform:scale(1.9) translateY(-230px);opacity:0}}
+        .cw-vapor{position:absolute;bottom:-4%;border-radius:50%;background:rgba(255,255,255,.5);filter:blur(1px);pointer-events:none;animation:cwVapor linear infinite}
+        @keyframes cwVapor{0%{transform:translateY(0) scale(.5);opacity:0}15%{opacity:.75}100%{transform:translateY(-330px) scale(1.5);opacity:0}}
+        @media (max-width: 480px){
+          .cw-hookah-char{width:52%}
+          .cw-smoke-wrap{width:60%;right:2%}
+        }
       `}</style>
 
-      <div className="cw-char" aria-hidden="true">🏆</div>
+      {/* ── cartoon champ + hookah (SVG) ── */}
+      <svg className="cw-hookah-char" viewBox="0 0 340 310" aria-hidden="true">
+        {/* hookah */}
+        <ellipse cx="64" cy="282" rx="38" ry="13" fill="#251d47" stroke="#8f7bff" strokeWidth="4"/>
+        <rect x="57" y="176" width="13" height="102" rx="6" fill="#8f7bff"/>
+        <rect x="50" y="166" width="27" height="13" rx="5" fill="#c98a3d"/>
+        <ellipse cx="64" cy="166" rx="15" ry="8" fill="#e0a94f"/>
+        {/* hose: stem → hand → mouth */}
+        <path d="M71 196 C 108 212, 126 252, 158 258" stroke="#6a5fd0" strokeWidth="8" fill="none" strokeLinecap="round"/>
+        <path d="M158 258 C 182 262, 192 246, 186 230" stroke="#6a5fd0" strokeWidth="8" fill="none" strokeLinecap="round"/>
+        {/* body */}
+        <rect x="182" y="226" width="92" height="84" rx="24" fill="#ffd76a"/>
+        <path d="M182 248 h92" stroke="#e0a94f" strokeWidth="6"/>
+        <path d="M182 244 C 166 254, 156 262, 154 250" stroke="#ffd76a" strokeWidth="18" strokeLinecap="round" fill="none"/>
+        {/* head */}
+        <circle cx="228" cy="186" r="44" fill="#ffd9a8"/>
+        {/* hair */}
+        <path d="M184 176 A44 44 0 0 1 272 176 L272 188 L184 188 Z" fill="#3a2a1e"/>
+        <path d="M184 188 Q190 200 204 200 L212 188 Z" fill="#3a2a1e"/>
+        {/* face */}
+        <circle cx="213" cy="184" r="5.5" fill="#241a10"/>
+        <circle cx="243" cy="184" r="5.5" fill="#241a10"/>
+        <path d="M213 206 Q228 220 243 206" stroke="#241a10" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+        {/* blush */}
+        <circle cx="202" cy="202" r="6" fill="#ffb3a0" opacity=".65"/>
+        <circle cx="254" cy="202" r="6" fill="#ffb3a0" opacity=".65"/>
+      </svg>
 
+      {/* ── smoke puffs from the hose ── */}
+      {puffs.current.map((p, i) => (
+        <span key={i} className="cw-puff"
+          style={{ '--dx': p.dx + 'px', '--dy': p.dy + 'px', '--po': p.op,
+                   width: p.size, height: p.size * 0.82,
+                   animationDuration: p.dur + 's', animationDelay: p.delay + 's' }} />
+      ))}
+
+      {/* ── winner name in the smoke ── */}
       <div className="cw-smoke-wrap">
         <div className="cw-smoke-label">Round Winner</div>
         <div className="cw-smoke-text">{winner.name}</div>
@@ -102,8 +153,7 @@ export default function Celebration({ winner }) {
 
       <div className="cw-ring cw-ring-1" aria-hidden="true" />
       <div className="cw-ring cw-ring-2" aria-hidden="true" />
-      <div className="cw-ring cw-ring-3" aria-hidden="true" />
-      {particles.current.map((p, i) => (
+      {vapor.current.map((p, i) => (
         <span key={i} className="cw-vapor"
           style={{ left: p.left + '%', width: p.size, height: p.size, opacity: p.op,
                    animationDuration: p.dur + 's', animationDelay: p.delay + 's' }} />
