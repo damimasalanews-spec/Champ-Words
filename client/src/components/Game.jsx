@@ -271,23 +271,14 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // players or to TikTok live chat viewers watching the stream.
       if (data.self && data.word) {
         setSolvedWord(data.word);
-        // Popup for the correct answer — shows the SOLVER'S NAME (not the
-        // word letters), same professional style as the TikTok chat solver
-        // popup (rendered at the confetti spot below).
-        setConfetti({ word: data.winnerName || 'You', msg: 'You found a Champ Word!' });
       }
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // TikTok chat solver: same professional popup as an in-game player,
-      // showing the chat user's name — plus the queued popup (one by one).
-      if (data.fromChat && (data.winnerNick || data.winnerName)) {
-        const chatName = data.winnerNick || data.winnerName;
-        setConfetti({ word: chatName, msg: 'You found a Champ Word!' });
-        pushFoundPopup({ name: chatName, score: data.score, word: data.solved || '' });
-      }
+      // Correct-answer popups were removed — the round-winner banner
+      // announces the winner instead.
       // Every 10th chat solve → milestone celebration
       if (data.fromChat) {
         chatSolves.current += 1;
@@ -301,16 +292,6 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     return () => socket.off('word_found', onFound);
   }, [socket, pushFoundPopup]);
 
-  // 1k / 5k / 10k point milestones — queued with the found-word popups so
-  // they appear in the same spot, in order
-  useEffect(() => {
-    const onMilestone = (data) => {
-      if (!data || !data.name || !data.points) return;
-      pushFoundPopup({ kind: 'milestone', name: data.name, points: data.points });
-    };
-    socket.on('milestone', onMilestone);
-    return () => socket.off('milestone', onMilestone);
-  }, [socket, pushFoundPopup]);
 
   // Hint countdown — champ's 5s hint window
   useEffect(() => {
@@ -736,18 +717,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* Finder popup — SAME professional style for in-game players AND
-          TikTok chat solvers; shows the solver's name (chat nickname for
-          chat solvers, the player's name in-game). */}
-      {confetti && (
-        <Confetti
-          variant="chat"
-          silent
-          word={confetti.word || (me && me.name) || 'You'}
-          onDone={clearConfetti}
-          msg={confetti.msg || 'You found a Champ Word!'}
-        />
-      )}
+      {/* Correct-answer popup removed — the round-winner banner announces
+          the winner instead. */}
 
       {/* Achievement toasts — stacked pills for the stream */}
       {toasts.length > 0 && (
@@ -776,19 +747,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* TikTok chat solver celebration — silent, professional, one by one.
-          key={id} forces a fresh mount per popup so the ~2s timer always runs
-          (fixes popups getting stuck when players solve back-to-back). */}
-      {foundPopup && (
-        <Confetti
-          key={foundPopup.id}
-          variant={foundPopup.kind === 'milestone' ? 'milestone' : 'chat'}
-          silent
-          word={foundPopup.name}
-          onDone={showNextPopup}
-          msg={foundPopup.kind === 'milestone' ? `crossed ${foundPopup.points} points!` : 'You found a Champ Word!'}
-        />
-      )}
+      {/* Chat-solver popup queue removed — the winner is announced by the
+          round-winner banner and the round-over board. */}
 
       {/* Flying "+N" popup on a correct guess (flame on a streak ≥2) */}
       {scorePop !== null && (
