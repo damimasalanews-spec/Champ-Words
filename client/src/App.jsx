@@ -17,6 +17,7 @@ import GameMenu from './components/GameMenu';
 import ScoreCards from './components/ScoreCards';
 import RoundOver from './components/RoundOver';
 import GameOver from './components/GameOver';
+import Celebration from './components/Celebration';
 import Chat from './components/Chat';
 import VoiceChat from './components/VoiceChat';
 import Toast from './components/Toast';
@@ -62,6 +63,8 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
+  const [celebration, setCelebration] = useState(null); // round-winner Tikfinity-style alert
+  const celebTimer = useRef(null);
   const [muted, setMuted] = useState(() => isMuted());
   const [autoStatus, setAutoStatus] = useState('');
   const [duelMsg, setDuelMsg] = useState(''); // speed-duel result banner
@@ -216,7 +219,18 @@ export default function App() {
     socket.on('round_started', (data) => { if (data && data.room) setRoom(data.room); setScreen('playing'); });
     socket.on('word_found', (data) => { if (data && data.room) setRoom(data.room); });
     socket.on('time_up', (data) => { if (data && data.room) setRoom(data.room); });
-    socket.on('round_over', (data) => { if (data && data.room) setRoom(data.room); setRoundResult(data); setScreen('round_over'); playSound('roundover'); });
+    socket.on('round_over', (data) => {
+      if (data && data.room) setRoom(data.room);
+      setRoundResult(data);
+      setScreen('round_over');
+      playSound('roundover');
+      // Big Tikfinity-style celebration for the round winner
+      if (data && data.winner && data.winner.name) {
+        setCelebration({ name: data.winner.name, score: data.winner.score, elapsed: data.winner.elapsed });
+        if (celebTimer.current) clearTimeout(celebTimer.current);
+        celebTimer.current = setTimeout(() => setCelebration(null), 4200);
+      }
+    });
     socket.on('duel_end', (data) => {
       setDuelWord('');
       if (duelMsgTimer.current) clearTimeout(duelMsgTimer.current);
@@ -579,6 +593,7 @@ export default function App() {
       {screen === 'round_over' && roundResult && (
         <RoundOver result={roundResult} room={room} />
       )}
+      {celebration && <Celebration winner={celebration} />}
       </div>
 
       {/* Achievement unlock toast */}

@@ -450,6 +450,12 @@ function handleChatAnswer({ user, text, nickname }) {
     toasts
   });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
+  // New format: a TikTok-chat solver's correct answer also wins the round
+  // immediately — the first correct answer ends the round.
+  if (room.roundWinnerId === player.id) {
+    clearTimer(room);
+    setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
+  }
   return { ok: true, word: room.word, score: gained, elapsed, name: player.name };
 }
 
@@ -1867,7 +1873,9 @@ io.on('connection', socket => {
     notify(room, '⚡', `${player.name} found the word! (+${gained})`);
     cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
 
-    if (allFound) {
+    // New format: the FIRST correct answer wins the round immediately —
+    // only the fastest player scores (points per the existing timing rules).
+    if (room.roundWinnerId === socket.id) {
       clearTimer(room);
       setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
     }
