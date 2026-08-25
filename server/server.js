@@ -542,6 +542,16 @@ app.get('/api/wotd', (req, res) => {
 // Category list for the host's create-room form
 app.get('/api/categories', (req, res) => res.json({ ok: true, list: CATEGORIES.list }));
 
+// Site stats — used by the static website (served at /site) for hero stats
+app.get('/api/stats', (req, res) => {
+  res.json({
+    ok: true,
+    words: DICT.size,
+    categories: CATEGORIES.list.length,
+    playersOnline: (io && io.engine && io.engine.clientsCount) || 0,
+  });
+});
+
 // Active room details — shown on the join page so players can join with a
 // tap (no need to type the room code)
 app.get('/api/active-room', (req, res) => {
