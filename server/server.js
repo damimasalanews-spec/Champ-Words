@@ -322,11 +322,13 @@ function handleChatAnswer({ user, text, nickname }) {
   }
 
   // ── Chat commands (point economy, votes) — run in any room state ──
-  if (guess.startsWith('!hint') || guess.startsWith('!freeze')) {
+  // Hints are disabled for TikTok chat (host request). !freeze still works.
+  if (guess.startsWith('!hint')) return { ok: false, error: 'hints are off for chat right now' };
+  if (guess.startsWith('!freeze')) {
     const room = findChatTargetRoom();
     if (!room) return { ok: false, error: 'no active round' };
     const player = ensureChatPlayer(room, username, profileFirst);
-    return guess.startsWith('!hint') ? handleChatHint(room, player) : handleChatFreeze(room, player);
+    return handleChatFreeze(room, player);
   }
   // ── !score — the user's own score slides in as a card (not a guess) ──
   if (guess === '!score') {
