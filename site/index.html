@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Champ Words — Multiplayer Word Game</title>
+    <meta name="description" content="Champ Words is a real-time multiplayer word guessing game. Race your friends, crack the word before the clock runs out, and climb the leaderboard." />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/game-site.css" rel="stylesheet" />
+</head>
+<body class="cw-gaming">
+    <div class="game-site">
+
+        <!-- ============ NAVBAR ============ -->
+        <nav class="navbar navbar-expand-lg sticky-top cw-navbar">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">
+                    <span class="brand-tile">&#127942;</span>
+                    <span><span class="gold">Champ</span> <span class="purple">Words</span></span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#cwNav" aria-controls="cwNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="cwNav">
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="play.html">Play</a></li>
+                        <li class="nav-item"><a class="nav-link" href="leaderboard.html">Leaderboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="how-to-play.html">How to Play</a></li>
+                        <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><a class="nav-link cw-btn-nav" href="play.html">&#9654;&nbsp; Play Now</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ============ HERO ============ -->
+        <section class="cw-hero">
+            <div class="cw-hero-grid"></div>
+            <span class="cw-tile" style="left:6%;top:14%;animation-delay:0s">A</span>
+            <span class="cw-tile" style="left:14%;top:64%;animation-delay:0.7s">E</span>
+            <span class="cw-tile" style="left:22%;top:30%;animation-delay:1.4s">I</span>
+            <span class="cw-tile" style="left:74%;top:12%;animation-delay:2.1s">O</span>
+            <span class="cw-tile" style="left:82%;top:56%;animation-delay:2.8s">U</span>
+            <span class="cw-tile" style="left:68%;top:76%;animation-delay:3.5s">S</span>
+            <span class="cw-tile" style="left:44%;top:8%;animation-delay:4.2s">R</span>
+            <span class="cw-tile" style="left:38%;top:80%;animation-delay:4.9s">T</span>
+            <span class="cw-tile" style="left:90%;top:32%;animation-delay:5.6s">L</span>
+            <span class="cw-tile" style="left:8%;top:88%;animation-delay:6.3s">N</span>
+
+            <div class="cw-inner" style="position:relative;z-index:2">
+                <div class="cw-hero-badge"><span class="dot" data-srv-dot></span> Live Multiplayer &middot; Word Battle Arena</div>
+                <h1 class="cw-logo"><span class="cw-gold-text">Champ</span> <span class="cw-purple-text">Words</span></h1>
+                <p class="cw-tagline">Race your friends. Crack the word before the clock runs out. Speed wins points, streaks build legends — and the leaderboard remembers everything.</p>
+                <div class="cw-cta-row">
+                    <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Play Now</a>
+                    <a class="cw-btn cw-btn-ghost" href="leaderboard.html">&#127942;&nbsp; Leaderboard</a>
+                </div>
+
+                <div class="cw-stats">
+                    <div class="cw-stat"><span class="n" data-stat="words">7,296+</span><span class="l">&#128218; Word Dictionary</span></div>
+                    <div class="cw-stat"><span class="n" data-stat="wotd">—</span><span class="l">&#127919; Word of the Day</span></div>
+                    <div class="cw-stat"><span class="n" data-stat="cats">13+</span><span class="l">&#128273; Word Categories</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ PLAY ============ -->
+        <section class="cw-section cw-play" id="play">
+            <div class="cw-inner">
+                <span class="cw-kicker">The Arena</span>
+                <h2 class="cw-title">Play Now — <span>Live &amp; Multiplayer</span></h2>
+                <p class="cw-sub">Jump straight in: create a room, invite friends with a code, or join the active arena. Voice chat, power-ups and speed rounds are all live.</p>
+
+                <div class="cw-play-banner">
+                    <div class="cw-play-banner-inner">
+                        <span class="cw-hero-badge" style="margin-bottom:18px"><span class="dot" data-srv-dot></span><span data-srv-label>Arena online — jump in now</span></span>
+                        <h3>Every round is a race against the clock — and against your friends.</h3>
+                        <p>One tap and you're inside: rooms, missions, power-ups, voice chat and live leaderboards.</p>
+                        <div class="cw-cta-row" style="margin-bottom:0">
+                            <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Enter the Arena</a>
+                            <a class="cw-btn cw-btn-ghost" href="play.html?host=1">&#128736;&#65039;&nbsp; Host a Game</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ FEATURES ============ -->
+        <section class="cw-section cw-features" id="features">
+            <div class="cw-inner">
+                <span class="cw-kicker">Why Players Love It</span>
+                <h2 class="cw-title">Built for <span>Word Warriors</span></h2>
+                <p class="cw-sub">Every round is a race. Every guess counts. Here's what keeps players coming back.</p>
+                <div class="cw-grid">
+                    <div class="cw-card"><span class="ic">&#9889;</span><h3>Speed Rounds</h3><p>Every 5th round is a 15-second sprint with 3&times; points. React fast or watch the crown slip away.</p></div>
+                    <div class="cw-card"><span class="ic">&#127919;</span><h3>13+ Categories</h3><p>Travel, sports, food, people, music &amp; arts — or let &ldquo;Surprise me&rdquo; decide your fate.</p></div>
+                    <div class="cw-card"><span class="ic">&#128161;</span><h3>Power-Ups</h3><p>Spend points on Hints, Freeze the timer, or Challenge the round winner to a 30-second duel.</p></div>
+                    <div class="cw-card"><span class="ic">&#128081;</span><h3>Live Leaderboards</h3><p>All-time top 20 plus a daily reset race. Seed yourself into history — today's board resets at midnight.</p></div>
+                    <div class="cw-card"><span class="ic">&#128293;</span><h3>Streaks &amp; XP</h3><p>Chain correct answers for streak bonuses, earn XP, level up and unlock achievements like &ldquo;Speed Demon&rdquo;.</p></div>
+                    <div class="cw-card"><span class="ic">&#127908;</span><h3>Voice Chat</h3><p>Talk tactics with your squad in-game. Guess faster, trash-talk smarter, celebrate louder.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ DAILY MISSIONS ============ -->
+        <section class="cw-section cw-missions-site" id="missions">
+            <div class="cw-inner">
+                <span class="cw-kicker">Fresh Every Day</span>
+                <h2 class="cw-title">Daily <span>Missions</span></h2>
+                <p class="cw-sub">Complete missions to bank bonus points. Progress tracks automatically while you play and resets at midnight — there's always a reason to come back tomorrow.</p>
+                <div class="cw-mission-grid">
+                    <div class="cw-mcard"><span class="m-ic">&#127919;</span><h3>Solve 3 words</h3><p>Any round, any mode. Just keep guessing.</p><span class="m-reward">+150 pts</span></div>
+                    <div class="cw-mcard"><span class="m-ic">&#128260;</span><h3>Play 5 rounds</h3><p>Stay in the arena and bank the points.</p><span class="m-reward">+100 pts</span></div>
+                    <div class="cw-mcard"><span class="m-ic">&#9876;&#65039;</span><h3>Win a duel</h3><p>Beat a challenger in a speed duel.</p><span class="m-reward">+200 pts</span></div>
+                    <div class="cw-mcard"><span class="m-ic">&#128142;</span><h3>Earn 500 points</h3><p>Race hard — every round counts.</p><span class="m-reward">+250 pts</span></div>
+                </div>
+                <div style="text-align:center;margin-top:30px">
+                    <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Start Today's Missions</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ HOW TO PLAY ============ -->
+        <section class="cw-section cw-howto" id="howto">
+            <div class="cw-inner">
+                <span class="cw-kicker">Get Started</span>
+                <h2 class="cw-title">How to <span>Play</span></h2>
+                <div class="cw-steps">
+                    <div class="cw-step"><h3>Join a Room</h3><p>Create a room and share the code, or tap into the active arena. Up to 8 players per game.</p></div>
+                    <div class="cw-step"><h3>Guess the Word</h3><p>A word is shown — type your answer before the timer runs out. Every correct guess scores.</p></div>
+                    <div class="cw-step"><h3>Race for Points</h3><p>The fastest correct answer banks 200 points; slower guesses scale down. Speed rounds triple it.</p></div>
+                    <div class="cw-step"><h3>Own the Board</h3><p>Build streaks, unlock achievements and climb the all-time leaderboard. Daily races reset at midnight.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ TOP PLAYERS ============ -->
+        <section class="cw-section cw-features" id="top-players">
+            <div class="cw-inner">
+                <span class="cw-kicker">Hall of Fame</span>
+                <h2 class="cw-title">Top <span>Players</span></h2>
+                <div class="cw-boards">
+                    <div class="cw-board">
+                        <h3>&#127942; All-Time Leaders <span class="tag">Top 5</span></h3>
+                        <div data-board="alltime" data-limit="5"></div>
+                    </div>
+                    <div class="cw-board">
+                        <h3>&#128197; Today's Race <span class="tag">Top 5</span></h3>
+                        <div data-board="today" data-limit="5"></div>
+                    </div>
+                </div>
+                <div style="text-align:center;margin-top:30px">
+                    <a class="cw-btn cw-btn-ghost" href="leaderboard.html">View Full Leaderboard &rarr;</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CTA BAND ============ -->
+        <section class="cw-cta">
+            <div class="cw-inner">
+                <h2>Ready to claim <span style="color:var(--cw-gold)">the crown</span>?</h2>
+                <p>One word. One clock. A room full of rivals. The leaderboard is waiting for your name.</p>
+                <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Enter the Arena</a>
+            </div>
+        </section>
+
+        <!-- ============ FOOTER ============ -->
+        <footer class="cw-footer pt-5 pb-0">
+            <div class="container">
+                <div class="row g-4 pb-4">
+                    <div class="col-lg-5 col-md-6">
+                        <div class="fw-brand"><span class="gold">Champ</span> <span class="purple">Words</span></div>
+                        <p class="fw-blurb">The word game that turned guessing into a sport. Race your friends, crack the word first, and climb the board.</p>
+                        <span class="fw-status"><span class="dot" data-srv-dot></span><span data-srv-label>Arena online</span></span>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <h5 class="fw-title">Quick Links</h5>
+                        <ul class="fw-list">
+                            <li><a href="index.html">Home</a></li>
+                            <li><a href="play.html">Play Now</a></li>
+                            <li><a href="leaderboard.html">Leaderboard</a></li>
+                            <li><a href="how-to-play.html">How to Play</a></li>
+                            <li><a href="about.html">About</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-6">
+                        <h5 class="fw-title">The Arena</h5>
+                        <ul class="fw-list">
+                            <li><a href="play.html">&#9654; Enter the Arena</a></li>
+                            <li><a href="play.html?host=1">&#128736;&#65039; Host a Game</a></li>
+                            <li><a href="/terms" target="_blank" rel="noopener">Terms of Service</a></li>
+                            <li><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="cw-footer-lower py-3">
+                <div class="container d-flex flex-wrap justify-content-between gap-2">
+                    <span>&copy; <span data-year></span> Champ Words. All rights reserved.</span>
+                    <span>Built with Bootstrap &middot; Powered by the Champ Words arena</span>
+                </div>
+            </div>
+        </footer>
+
+    </div><!-- /.game-site -->
+
+    <button class="cw-topbtn" data-top aria-label="Back to top">&#8593;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
