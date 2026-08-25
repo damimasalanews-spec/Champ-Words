@@ -2157,6 +2157,13 @@ if (CHAT_BRIDGE_ENABLED && TIKTOK_LIVE_USERNAME) {
 
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));
+
+// ── Champ Words static website (marketing pages) ─────────────────────────
+// Served at /site (e.g. https://champ-words.onrender.com/site/). The game
+// client stays at the root — nothing about the game changes.
+const siteDir = path.join(__dirname, '..', 'site');
+app.use('/site', express.static(siteDir));
+
 app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/socket.io')) return next();
   const indexPath = path.join(clientDist, 'index.html');
