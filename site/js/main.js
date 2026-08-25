@@ -36,7 +36,7 @@
 
   /* ---------- fetch with timeout ---------- */
   function fetchJSON(endpoint, ms) {
-    ms = ms || 4000;
+    ms = ms || 15000;
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, ms);
     return fetch(API_BASE + encodeURIComponent(endpoint), {
@@ -66,7 +66,7 @@
     }
     var warns = document.querySelectorAll('[data-srv-warn]');
     for (var k = 0; k < warns.length; k++) {
-      warns[k].textContent = ok ? '' : '(server offline — start start-champ.bat)';
+      warns[k].textContent = ok ? '' : '(server offline — refresh in a moment)';
     }
   }
 
@@ -152,6 +152,21 @@
   }
 
   /* ---------- play page ---------- */
+  // Cold-start friendly: probe the API with retries (Render free tier sleeps
+  // when idle and can take ~30-60s to wake) before showing the offline state.
+  function probeServer(attempt) {
+    attempt = attempt || 0;
+    return fetchJSON('stats', 15000).then(function (stats) {
+      var ok = stats !== null;
+      if (!ok && attempt < 4) {
+        return new Promise(function (resolve) {
+          setTimeout(function () { resolve(probeServer(attempt + 1)); }, 5000);
+        });
+      }
+      return ok;
+    });
+  }
+
   function setupPlayPage() {
     var frame = document.querySelector('[data-game-frame]');
     var offline = document.querySelector('[data-game-offline]');
@@ -159,8 +174,7 @@
     var host = /[?&]host=1/.test(window.location.search) ? '?host=1' : '';
     var full = document.querySelector('[data-game-full]');
     if (full) full.href = GAME_URL + host;
-    fetchJSON('stats').then(function (stats) {
-      var ok = stats !== null;
+    probeServer().then(function (ok) {
       setServerState(ok, ok ? 'Game server online' : 'Game server offline');
       if (ok) {
         frame.src = GAME_URL + host;
