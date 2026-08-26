@@ -6,7 +6,7 @@ rem  for the TikTok Live Studio canvas. Screen-share or window-
 rem  capture this window as your game source.
 rem ============================================================
 
-set URL=https://champ-words.onrender.com/game?auto=1
+set URL=https://champ-words.onrender.com/?auto=1
 
 rem Try the standard Chrome install paths first
 if exist "C:\Program Files\Google\Chrome\Application\chrome.exe" (

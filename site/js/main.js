@@ -8,7 +8,7 @@
   'use strict';
 
   var API_BASE = '/api/';                      // same-origin game API
-  var GAME_URL = '/game';                      // game client (same origin)
+  var GAME_URL = '/';                          // game client at the root (same origin)
   var FALLBACK_WORDS = '7,296';                // original hardcoded fallback
   var FALLBACK_CATS = '13+';                   // original hardcoded fallback
   var FALLBACK_CAT_COUNT = 13;
