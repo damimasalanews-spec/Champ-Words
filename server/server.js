@@ -2449,15 +2449,15 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// ── Game client at the ROOT (same as localhost:3000) ─────────────────────
-app.use(express.static(clientDist));
-
-// ── Champ Words static website at /champwords ────────────────────────────
-// Mirrors the local setup 1:1: game at the root, site at /champwords
-// (like localhost/champwords). Old /site links keep working too.
+// ── Champ Words static website (marketing pages) ─────────────────────────
+// The website IS the front door (same as localhost/champwords): served at
+// the root of champ-words.onrender.com. The game client lives at /game.
 const siteDir = path.join(__dirname, '..', 'site');
-app.use('/champwords', express.static(siteDir));
-app.use('/site', express.static(siteDir));
+app.use(express.static(siteDir));        // root = website
+app.use('/site', express.static(siteDir)); // old /site links keep working
+
+// ── Game client at /game ─────────────────────────────────────────────────
+app.use('/game', express.static(clientDist));
 
 // TikTok aliases keep serving the game client (half-screen modes)
 const clientIndex = path.join(clientDist, 'index.html');
@@ -2470,8 +2470,9 @@ app.get('/compact', serveClientPage);
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/socket.io')) return next();
-  // Game SPA fallback for deep links (as before)
-  serveClientPage(req, res);
+  // Game deep-links under /game → SPA fallback to the client
+  if (req.path.startsWith('/game')) return serveClientPage(req, res);
+  next(); // anything else → Express 404 (website handles its own paths)
 });
 
 server.listen(PORT, () => {
