@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -36,6 +36,7 @@ const DUEL_REWARD = 100;    // speed-duel winner prize
 const DUEL_MS = 30000;      // duel length
 const SPEED_EVERY = 5;      // every 5th round is a speed round
 const SPEED_MS = 15000;     // speed round length
+const SPEED_INTRO_MS = 7000; // full-screen "SPEED ROUND INCOMING" intro before the countdown starts
 const SPEED_MULT = 3;       // speed round points multiplier
 
 // ── Per-room round settings (host picks at room creation) ────────────────
@@ -424,13 +425,11 @@ function handleChatAnswer({ user, text, nickname }) {
   }
 
   // ── Chat commands (point economy, votes) — run in any room state ──
-  // Hints are disabled for TikTok chat (host request). !freeze still works.
-  if (guess.startsWith('!hint')) return { ok: false, error: 'hints are off for chat right now' };
-  if (guess.startsWith('!freeze')) {
+  if (guess.startsWith('!hint') || guess.startsWith('!freeze')) {
     const room = findChatTargetRoom();
     if (!room) return { ok: false, error: 'no active round' };
     const player = ensureChatPlayer(room, username, profileFirst);
-    return handleChatFreeze(room, player);
+    return guess.startsWith('!hint') ? handleChatHint(room, player) : handleChatFreeze(room, player);
   }
   // ── !score — the user's own score slides in as a card (not a guess) ──
   if (guess === '!score') {
@@ -697,16 +696,6 @@ app.get('/api/wotd', (req, res) => {
 
 // Category list for the host's create-room form
 app.get('/api/categories', (req, res) => res.json({ ok: true, list: CATEGORIES.list }));
-
-// Site stats — used by the static website (served at /site) for hero stats
-app.get('/api/stats', (req, res) => {
-  res.json({
-    ok: true,
-    words: DICT.size,
-    categories: CATEGORIES.list.length,
-    playersOnline: (io && io.engine && io.engine.clientsCount) || 0,
-  });
-});
 
 // Active room details — shown on the join page so players can join with a
 // tap (no need to type the room code)
@@ -1107,9 +1096,9 @@ const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_
 const ROUND_OVER_TO_NEXT_MS = Number(process.env.ROUND_OVER_TO_NEXT_MS) || 6000; // 6s scoreboard pause before the next round
 const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 300; // show the round-over leaderboard almost instantly after time-up
 // Winner-animation window: after the FIRST correct answer the client plays the
-// smoke/animation in the TOP 5 column for this long, then the next round starts
-// immediately (no round-over screen for the winner flow).
-const WINNER_ANIM_MS = Number(process.env.WINNER_ANIM_MS) || 6000;
+// CHAMPION popup (8s) in the TOP 5 column, then the round-over screen shows
+// the TOP 10 leaderboard (winnerFlow) before the next round starts.
+const WINNER_ANIM_MS = Number(process.env.WINNER_ANIM_MS) || 11000;
 // Small gap between the animation ending and the next round's round_started event.
 const WINNER_ANIM_TO_NEXT_MS = Number(process.env.WINNER_ANIM_TO_NEXT_MS) || 250;
 const HINT1_MS = Number(process.env.HINT1_MS) || 20 * 1000; // category hint window at 40s remaining
@@ -1228,7 +1217,7 @@ function sanitizeRoom(room) {
     duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
     voteOptions: (room.state === 'champ_pick' && room.voteOptions && room.voteOptions.length >= 2)
       ? room.voteOptions.map(o => ({ id: o.id, label: o.label, votes: (room.votes && room.votes[o.id]) || 0 })) : null,
-    players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, coins: p.coins || 0, nameColor: p.nameColor || null, nameEffect: p.nameEffect || null, emote: p.emote || null, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) })),
+    players: players.map(p => ({ id: p.id, playerKey: p.playerKey || null, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, coins: p.coins || 0, nameColor: p.nameColor || null, nameEffect: p.nameEffect || null, emote: p.emote || null, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) })),
     pinnedMessage: room.pinnedMessage ? { name: room.pinnedMessage.name, text: room.pinnedMessage.text, until: room.pinnedMessage.until } : null,
     host: room.host
   };
@@ -1388,7 +1377,7 @@ function isAdjacent(r1, c1, r2, c2) {
 
 function generateWordGrid(word) {
   const letters = word.replace(/\s+/g, '').split(''); // spaces are not grid cells
-  const GRID = 3; // 3×3 grid
+  const GRID = 4; // 4×4 grid
 
   // Backtracking placement — GUARANTEES the word is embedded in the grid
   // (the old greedy random-walk could fail for 7-8 letter words and returned
@@ -1445,7 +1434,7 @@ function validatePath(grid, path, word) {
   if (!path || !Array.isArray(path) || path.length < 3) return false;
   const letters = word.replace(/\s+/g, ''); // spaces are not grid cells
   if (path.length !== letters.length) return false;
-  const GRID = grid.length; // 3×3 grid (derived from the actual grid)
+  const GRID = grid.length; // grid size (derived from the actual grid)
   for (let i = 1; i < path.length; i++) {
     const [pr, pc] = path[i - 1], [cr, cc] = path[i];
     if (!isAdjacent(pr, pc, cr, cc)) return false;
@@ -1565,17 +1554,26 @@ function startRound(room) {
   room.speedRound = room.round % SPEED_EVERY === 0; // every 5th round: 15s + triple points
   room.roundMs = room.speedRound ? SPEED_MS : (room.roundTimeMs || ROUND_TIME_MS);
   room.grid = generateWordGrid(room.word); // 4×4 grid with the word embedded
-  room.roundStartedAt = Date.now();
+  // Speed rounds open with a 4s full-screen "SPEED ROUND" intro overlay — the
+  // 15s countdown starts only AFTER the intro so players never lose time.
+  const introMs = room.speedRound ? SPEED_INTRO_MS : 0;
+  room.roundStartedAt = Date.now() + introMs;
   clearTimer(room);
-  room.timer = setTimeout(() => onTimeUp(room), room.roundMs);
-  // Auto hint: 2 letters revealed with ~40s remaining (scaled to round length;
-  // short rounds get the reveal early instead of never)
-  const hintAt = Math.max(8000, room.roundMs - 40000);
-  room.hintTimer1 = setTimeout(() => {
-    if (room.state !== 'playing') return;
+  room.timer = setTimeout(() => onTimeUp(room), room.roundMs + introMs);
+  // Speed rounds: 2 letters revealed IMMEDIATELY at round start (the client
+  // also shows the artist sketch instantly — no 35s wipe). Normal rounds:
+  // auto hint with ~40s remaining (scaled to round length).
+  if (room.speedRound) {
     revealRandomHint(room);
     revealRandomHint(room);
-  }, hintAt);
+  } else {
+    const hintAt = Math.max(8000, room.roundMs - 40000);
+    room.hintTimer1 = setTimeout(() => {
+      if (room.state !== 'playing') return;
+      revealRandomHint(room);
+      revealRandomHint(room);
+    }, hintAt);
+  }
   if (room.speedRound) io.to(room.id).emit('chat', { system: true, gold: true, text: `⚡ SPEED ROUND! 15 seconds · TRIPLE points!` });
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
   room.players.forEach(p => { if (p.playerKey) missions.trackRounds(p.playerKey, p.name); });
@@ -1705,14 +1703,14 @@ function endRound(room, skipStump, winnerFlow) {
   room.lastRoundResult = payload; // keep it so players who rejoin see this round's result
 
   // ── Winner flow (first correct answer) ──────────────────────────────────
-  // The 6s smoke animation already played in the client's TOP 5 column while
-  // this timer was pending. There is NO round-over screen and NO winner banner:
-  // the round result is recorded, the word is revealed in chat, and the next
-  // round starts immediately. Non-winner ends (time-up / skip / big gift /
-  // all-found) keep the classic round_over screen + scheduleAdvance below.
+  // The champion popup already played in the client's TOP 5 column while this
+  // timer was pending. After it, the round-over screen shows the redesigned
+  // TOP 10 leaderboard (winnerFlow flags the payload so the client can skip
+  // its duplicate winner banner), then the next round starts automatically.
   if (winnerFlow) {
     io.to(room.id).emit('chat', { system: true, text: `The word was: ${room.word.toUpperCase()}` });
-    setTimeout(() => advanceRound(room), WINNER_ANIM_TO_NEXT_MS);
+    io.to(room.id).emit('round_over', { ...payload, winnerFlow: true });
+    scheduleAdvance(room);
     return;
   }
 
@@ -2424,12 +2422,9 @@ if (CHAT_BRIDGE_ENABLED && TIKTOK_LIVE_USERNAME) {
 }
 
 // ── Static files ─────────────────────────────────────────────────────────
-// Single permanent entry point: champ-words.onrender.com IS the game —
-// it serves the same half-screen experience as /tiktok directly (no
-// redirect). /tiktok and /compact remain identical aliases.
-
-// /compact serves its own redesigned compact view (client-side mode); the
-// /tiktok link itself is untouched.
+// Live layout (matches champwords.onrender.com): the website IS the front
+// door — served at the root — and the game client lives at /game.
+// /tiktok and /compact remain identical aliases of the game client.
 
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 // ── Daily missions API ───────────────────────────────────────────────────
@@ -2449,19 +2444,30 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-app.use(express.static(clientDist));
-
 // ── Champ Words static website (marketing pages) ─────────────────────────
-// Served at /site (e.g. https://champ-words.onrender.com/site/). The game
-// client stays at the root — nothing about the game changes.
+// The website is served at the root (same as localhost/champwords). The
+// game client stays at /game — nothing about the game changes.
 const siteDir = path.join(__dirname, '..', 'site');
-app.use('/site', express.static(siteDir));
+app.use(express.static(siteDir));          // root = website
+app.use('/site', express.static(siteDir)); // old /site links keep working
+
+// ── Game client at /game ─────────────────────────────────────────────────
+app.use('/game', express.static(clientDist));
+
+// TikTok aliases keep serving the game client (half-screen modes)
+const clientIndex = path.join(clientDist, 'index.html');
+const serveClientPage = (req, res) => {
+  if (fs.existsSync(clientIndex)) res.sendFile(clientIndex);
+  else res.status(404).send('Run: cd client && npm run build');
+};
+app.get('/tiktok', serveClientPage);
+app.get('/compact', serveClientPage);
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/auth') || req.path.startsWith('/socket.io')) return next();
-  const indexPath = path.join(clientDist, 'index.html');
-  if (fs.existsSync(indexPath)) res.sendFile(indexPath);
-  else res.status(404).send('Run: cd client && npm run build');
+  // Game deep-links under /game → SPA fallback to the client
+  if (req.path.startsWith('/game')) return serveClientPage(req, res);
+  next(); // anything else → Express 404 (website handles its own paths)
 });
 
 server.listen(PORT, () => {

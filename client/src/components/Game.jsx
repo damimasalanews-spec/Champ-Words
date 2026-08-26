@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
 import { playSound } from '../sounds';
 import useCountUp from '../useCountUp';
-import SmokeAnim from './SmokeAnim';
+import ChampionPopup from './ChampionPopup';
+import SpeedChampionPopup from './SpeedChampionPopup';
 
 // ═══ Helpers ══════════════════════════════════════════════════════════════
 function isAdjacent(r1, c1, r2, c2) {
@@ -182,8 +183,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   // of the round lands, then the server starts the next round automatically.
   const [winnerAnim, setWinnerAnim] = useState(null);
   const winnerAnimTimer = useRef(null);
+const winTimer = useRef(null); // 3s wait: answer fills the hints, then the pink celebration
   // Viewer shop UI (button lives in the app header; panel is rendered by App)
-  const [winConfetti, setWinConfetti] = useState(null); // shop confetti burst overlay
   const [toasts, setToasts] = useState([]); // achievement toasts (first blood, lightning, streak)
   const toastId = useRef(1);
   const [ticker, setTicker] = useState([]); // winner ticker (recent finds)
@@ -280,19 +281,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // the ANSWER brackets are visible ONLY to the solver — never to other
       // players or to TikTok live chat viewers watching the stream.
       if (data.self && data.word) {
+        // The correct answer fills the HINT brackets (next to the timer) with
+        // the flying-letter animation — no popup here. The gold neon popup is
+        // removed; the big pink CHAMPION celebration comes after the 3s wait.
         setSolvedWord(data.word);
-        // Popup for the correct answer — shows the SOLVER'S NAME (not the
-        // word letters), same professional style as the TikTok chat solver
-        // popup (rendered at the confetti spot below).
-        setConfetti({ word: data.winnerName || 'You', msg: 'You found a Champ Word!' });
       }
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // FIRST correct answer of the round → the winner animation plays inside
-      // the TOP 5 board for ~6s, then the server starts the next round.
+      // FIRST correct answer of the round → the big pink CHAMPION celebration
+      // (SmokeAnim fills the TOP 5 board) plays for ~6s, then the server starts
+      // the next round. It waits 3s so the answer sits in the hint brackets first.
       if (data.roundWon && data.winnerId) {
         // Rank inside the fresh real TOP 5 (1-based) + the winner's stats for
         // the animation flair (streak / record / points / word).
@@ -300,34 +301,47 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         const sorted = players.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
         const winner = players.find(p => p.id === data.winnerId);
         const rIdx = sorted.findIndex(p => p.id === data.winnerId);
-        setWinnerAnim({
-          playerId: data.winnerId,
-          playerName: data.winnerName || 'WINNER',
-          id: Date.now() + Math.random(),
-          rank: rIdx >= 0 ? rIdx + 1 : null,
-          streak: winner ? (winner.streak || 0) : 0,
-          bestTime: winner ? (winner.bestTime || 0) : 0,
-          newRecord: !!data.newRecord,
-          elapsed: data.elapsed || 0,
-          gained: data.score || 0,
-          word: data.winnerWord || '',
-          nameColor: data.nameColor || null,   // viewer shop: bought name color
-          nameEffect: data.nameEffect || null, // viewer shop: diamond / sparkle
-          rain: data.rain || null,             // viewer shop: emoji rain on win
-          theme: ((data.round || 1) - 1) % 4,  // rotating animation stage
+        // EVERY participant's FIRST name (in-game players + TikTok chat solvers
+        // all live in room.players) — all in the SAME font/size; they fly inside
+        // the popup for 6s, then the winner's big pink name is revealed for 4s.
+        const seenNames = {};
+        const flyNames = [];
+        (players || []).forEach(p => {
+          const first = String(p.name || '').trim().split(' ')[0];
+          if (first && !seenNames[first.toLowerCase()]) {
+            seenNames[first.toLowerCase()] = 1;
+            flyNames.push(first);
+          }
         });
-        if (data.confetti) setWinConfetti({ word: data.winnerWord || data.winnerName || 'WINNER' }); // viewer shop: confetti burst
-        playSound('fanfare');
-        if (winnerAnimTimer.current) clearTimeout(winnerAnimTimer.current);
-        winnerAnimTimer.current = setTimeout(() => setWinnerAnim(null), 6250);
+        if (flyNames.length === 0) flyNames.push(String(data.winnerName || 'WINNER').split(' ')[0]);
+        const showWinnerAnim = () => {
+          setWinnerAnim({
+            playerId: data.winnerId,
+            playerName: data.winnerName || 'WINNER',
+            id: Date.now() + Math.random(),
+            rank: rIdx >= 0 ? rIdx + 1 : null,
+            streak: winner ? (winner.streak || 0) : 0,
+            bestTime: winner ? (winner.bestTime || 0) : 0,
+            newRecord: !!data.newRecord,
+            elapsed: data.elapsed || 0,
+            gained: data.score || 0,
+            word: data.winnerWord || '',
+            nameColor: data.nameColor || null,   // viewer shop: bought name color
+            nameEffect: data.nameEffect || null, // viewer shop: diamond / sparkle
+            rain: data.rain || null,             // viewer shop: emoji rain on win
+            theme: ((data.round || 1) - 1) % 4,  // rotating animation stage
+            flyNames,  // every participant's first name (shown in the popup)
+          });
+          playSound('fanfare');
+          if (winnerAnimTimer.current) clearTimeout(winnerAnimTimer.current);
+          winnerAnimTimer.current = setTimeout(() => setWinnerAnim(null), 8000);
+        };
+        clearTimeout(winTimer.current);
+        winTimer.current = setTimeout(showWinnerAnim, 3000);
       }
-      // TikTok chat solver: same professional popup as an in-game player,
-      // showing the chat user's name — plus the queued popup (one by one).
-      if (data.fromChat && (data.winnerNick || data.winnerName)) {
-        const chatName = data.winnerNick || data.winnerName;
-        setConfetti({ word: chatName, msg: 'You found a Champ Word!' });
-        pushFoundPopup({ name: chatName, score: data.score, word: data.solved || '' });
-      }
+      // TikTok chat solvers get the SAME big pink CHAMPION celebration as an
+      // in-game player (triggered by the roundWon block above, after the 3s
+      // wait). The gold neon popup is removed entirely.
       // Every 10th chat solve → milestone celebration
       if (data.fromChat) {
         chatSolves.current += 1;
@@ -338,8 +352,55 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       }
     };
     socket.on('word_found', onFound);
-    return () => socket.off('word_found', onFound);
+    return () => {
+      socket.off('word_found', onFound);
+      if (winTimer.current) clearTimeout(winTimer.current);
+    };
   }, [socket, pushFoundPopup]);
+
+  // Letters fly from the grid into the answer brackets the moment the word is solved
+  useEffect(() => {
+    if (!solvedWord) return;
+    const letters = solvedWord.split('');
+    const grid = room.grid || [];
+    const cells = gridRef.current ? Array.from(gridRef.current.querySelectorAll('.grid-cell')) : [];
+    const boxes = Array.from(document.querySelectorAll('.brackets-section .bracket-box'));
+    if (!cells.length || !boxes.length || !grid.length) return;
+    const used = {};
+    const flyLetter = (i) => {
+      const ch = letters[i];
+      if (!ch || ch === ' ') return;
+      let cellEl = null;
+      for (let r = 0; r < grid.length && !cellEl; r++) {
+        for (let c = 0; c < grid[r].length && !cellEl; c++) {
+          if (String(grid[r][c]).toLowerCase() === ch.toLowerCase() && !used[r + '-' + c]) {
+            used[r + '-' + c] = true;
+            cellEl = cells[r * grid.length + c];
+          }
+        }
+      }
+      const boxEl = boxes[i];
+      if (!cellEl || !boxEl) return;
+      const s = cellEl.getBoundingClientRect();
+      const t = boxEl.getBoundingClientRect();
+      const el = document.createElement('span');
+      el.className = 'fly-letter';
+      el.textContent = ch.toUpperCase();
+      el.style.left = (s.left + s.width / 2) + 'px';
+      el.style.top = (s.top + s.height / 2) + 'px';
+      document.body.appendChild(el);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.transform =
+            'translate(' + (t.left + t.width / 2 - (s.left + s.width / 2)) + 'px,' +
+            (t.top + t.height / 2 - (s.top + s.height / 2)) + 'px) scale(0.55)';
+          el.style.opacity = '0.6';
+        });
+      });
+      setTimeout(() => el.remove(), 950);
+    };
+    letters.forEach((_, i) => setTimeout(() => flyLetter(i), i * 70));
+  }, [solvedWord, room.grid]);
 
   // 1k / 5k / 10k point milestones — queued with the found-word popups so
   // they appear in the same spot, in order
@@ -646,13 +707,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     <div key={`inline-${room.round}`} className="art-board art-board-inline">
       {room.art ? (
         <>
-          <div className="art-canvas">
+          <div className={`art-canvas${room.speedRound ? ' art-speed' : ''}`}>
             {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
           </div>
           <div className="art-progress"><div className="art-progress-fill" /></div>
         </>
       ) : (
-        <div className="art-canvas">
+        <div className={`art-canvas${room.speedRound ? ' art-speed' : ''}`}>
           <span className="art-emoji art-emoji-fallback">🎨</span>
         </div>
       )}
@@ -1011,17 +1072,18 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </div>
             );
           })}
-          {winnerAnim && (
-            <SmokeAnim key={winnerAnim.id} name={winnerAnim.playerName}
-              rank={winnerAnim.rank} streak={winnerAnim.streak} bestTime={winnerAnim.bestTime}
-              newRecord={winnerAnim.newRecord} elapsed={winnerAnim.elapsed} gained={winnerAnim.gained}
-              word={winnerAnim.word} nameColor={winnerAnim.nameColor} nameEffect={winnerAnim.nameEffect}
-              rain={winnerAnim.rain} theme={winnerAnim.theme} />
-          )}
-          {winConfetti && (
-            <Confetti word={winConfetti.word} msg="SHOP CONFETTI" variant="chat"
-              onDone={() => setWinConfetti(null)} />
-          )}
+
+          {winnerAnim && (room.speedRound ? (
+            <SpeedChampionPopup name={winnerAnim.playerName}
+              streak={winnerAnim.streak} gained={winnerAnim.gained}
+              elapsed={winnerAnim.elapsed} newRecord={winnerAnim.newRecord}
+              multiplier={3}
+              onDone={() => setWinnerAnim(null)} />
+          ) : (
+            <ChampionPopup name={winnerAnim.playerName} names={winnerAnim.flyNames}
+              streak={winnerAnim.streak} gained={winnerAnim.gained}
+              onDone={() => setWinnerAnim(null)} />
+          ))}
         </div>
         </div>
         </div>
@@ -1038,7 +1100,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
           {!isWeb && (state === 'playing' || state === 'round_over') && (
             <div className="bracket-timer">
               <div className="timer-ring" style={{ '--pct': Math.max(0, Math.min(100, (timeLeft / 60) * 100)) }}>
-                <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}`}>{timerLabel}</div>
+                <div className={`timer-display ${timeLeft <= 10 ? 'timer-warn' : ''}${room.speedRound ? ' timer-speed' : ''}`}>{room.speedRound ? '⚡ ' : ''}{timerLabel}</div>
               </div>
             </div>
           )}
@@ -1123,7 +1185,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
             <div key={room.round} className="art-board">
               {room.art ? (
                 <>
-                  <div className="art-canvas">
+                  <div className={`art-canvas${room.speedRound ? ' art-speed' : ''}`}>
                     {String(room.art).startsWith('http') ? <img className="art-flag" src={room.art} alt="" /> : <span className="art-emoji">{room.art}</span>}
                   </div>
                   <div className="art-progress"><div className="art-progress-fill" /></div>

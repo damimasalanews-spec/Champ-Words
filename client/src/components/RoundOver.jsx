@@ -8,7 +8,7 @@ function CountUpScore({ value }) {
   return <>{v}</>;
 }
 
-export default function RoundOver({ result, room }) {
+export default function RoundOver({ result, room, me }) {
   useEffect(() => { playSound('roundover'); }, []);
   const { word, winner, round, champName, scores, stumpPoints } = result;
   const sorted = [...(scores || [])].sort((a, b) => b.score - a.score);
@@ -100,17 +100,26 @@ export default function RoundOver({ result, room }) {
 
         {topRows.length > 0 && (
           <div className="roundover-top5 lb10">
-            <p className="gameover-final-title">{sorted.length ? 'Top 10 — total points' : 'Top 10 — all time'}</p>
+            <div className="lb10-head">
+              <span className="lb10-head-trophy">🏆</span>
+              <div className="lb10-head-text">
+                <div className="lb10-head-title">Top 10 Leaderboard</div>
+                <div className="lb10-head-sub">{sorted.length ? 'This round · total points' : 'All-time legends'}</div>
+              </div>
+              <span className="lb10-head-live"><span className="lb10-live-dot" />LIVE</span>
+            </div>
             <div className="lb10-list">
               {topRows.map((r, i) => {
                 const typedLen = i < typed.row ? r.nameLen : i === typed.row ? typed.chars : 0;
                 const typing = i === typed.row && typedLen < r.nameLen;
                 const maxScore = topRows[0]?.score || 0;
                 const rankCls = i === 0 ? ' r1' : i === 1 ? ' r2' : i === 2 ? ' r3' : '';
+                const isWinner = winner && r.id === winner.id;
+                const isMe = me && r.id === me.id;
                 return (
                   <div
                     key={r.id || i}
-                    className={`lb10-row${i === 0 ? ' leader' : ''}`}
+                    className={`lb10-row${i === 0 ? ' leader' : ''}${isWinner ? ' winner' : ''}${isMe ? ' me' : ''}`}
                     style={{ '--idx': i, '--bar': `${maxScore > 0 ? Math.max(6, Math.round((r.score / maxScore) * 100)) : 0}%` }}
                   >
                     <span className={`lb10-rank${rankCls}`}>{i + 1}</span>
@@ -122,10 +131,13 @@ export default function RoundOver({ result, room }) {
                       )}
                       <div className="lb10-meta">
                         <div className="lb10-name">
+                          {isWinner && <span className="lb10-crown">👑</span>}
                           {r.name.slice(0, typedLen)}
                           {typing && <span className="typewriter-caret" />}
+                          {isMe && <span className="lb10-you">YOU</span>}
                         </div>
                         <div className="lb10-chips" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
+                          {isWinner && <span className="lb10-chip win">⚡ WINNER</span>}
                           {r.streak >= 2 && <span className="lb10-chip streak">🔥 ×{r.streak}</span>}
                           {!r.isAllTime && r.level > 1 && <span className="lb10-chip lvl">LV {r.level}</span>}
                           {!r.isAllTime && r.xp > 0 && <span className="lb10-chip xp">{r.xp} XP</span>}
@@ -137,6 +149,7 @@ export default function RoundOver({ result, room }) {
                       <CountUpScore value={r.score} />
                       <span className="lb10-pts"> pts</span>
                     </span>
+                    <span className="lb10-bar" aria-hidden="true" />
                   </div>
                 );
               })}

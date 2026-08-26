@@ -19,7 +19,7 @@ function ConfettiRain() {
   return <div className="confetti-rain" aria-hidden="true">{pieces}</div>;
 }
 
-export default function GameOver({ result, room, isHost, onPlayAgain, onLeave }) {
+export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeave }) {
   useEffect(() => { playSound('gameover'); }, []);
   const [allTime, setAllTime] = useState([]);
   const [countdown, setCountdown] = useState(isHost ? AUTO_RESTART_SECONDS : null);
@@ -44,6 +44,9 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
   const sorted = [...result.scores].sort((a, b) => b.score - a.score);
   const winner = sorted[0];
   const rankEmoji = ['🥇', '🥈', '🥉'];
+  // Champion-board rows: all-time legends when available, else this game's scores
+  const boardRows = allTime.length ? allTime : (result.scores || []).slice(0, 10);
+  const boardMax = boardRows[0]?.score || 0;
 
   const shareText = () => {
     const lines = sorted.map((p, i) => `${rankEmoji[i] || ''} ${p.name}: ${p.score}pts`);
@@ -135,20 +138,59 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
           ))}
         </div>
 
-        {(allTime.length > 0 || (result.scores || []).length > 0) && (
-          <div className="alltime-panel">
-            <div className="alltime-title">{allTime.length ? 'ALL-TIME TOP 10' : 'TOP 10 — THIS GAME'}</div>
-            {(allTime.length ? allTime : (result.scores || []).slice(0, 10)).map((p, i) => (
-              <div key={p.key || p.name} className="alltime-row">
-                <span className={`alltime-rank${i === 0 ? ' rank-1' : ''}`}>{i + 1}</span>
-                <span className="mini-avatar">{p.name.slice(0, 1).toUpperCase()}</span>
-                <span className="alltime-name">{p.name}{p.chat && <span className="chat-badge">CHAT</span>}</span>
-                <span className="alltime-meta" title={`${p.found || 0} words found · best streak ${p.bestStreak || 0}`}>
-                  {p.found || 0}🔥{p.bestStreak || 0}
-                </span>
-                <span className="alltime-pts">{p.score}</span>
+        {boardRows.length > 0 && (
+          <div className="alltime-panel lb10">
+            <div className="lb10-head">
+              <span className="lb10-head-trophy">🏆</span>
+              <div className="lb10-head-text">
+                <div className="lb10-head-title">{allTime.length ? 'All-Time Legends' : 'This Game — Top 10'}</div>
+                <div className="lb10-head-sub">{allTime.length ? 'Lifetime scores · hall of fame' : 'Final scores · all players'}</div>
               </div>
-            ))}
+              <span className="lb10-head-live"><span className="lb10-live-dot" />{allTime.length ? 'ALL-TIME' : 'TOP 10'}</span>
+            </div>
+            <div className="lb10-list">
+              {boardRows.map((p, i) => {
+                const name = p.name || p.key || 'Player';
+                const isLeader = i === 0;
+                const isMe = me && (allTime.length
+                  ? !!(me.playerKey && p.key && me.playerKey === p.key)
+                  : me.id === p.id);
+                return (
+                  <div
+                    key={p.key || p.id || name}
+                    className={`lb10-row${isLeader ? ' leader winner' : ''}${isMe ? ' me' : ''}`}
+                    style={{ '--idx': i, '--bar': `${boardMax > 0 ? Math.max(6, Math.round(((p.score || 0) / boardMax) * 100)) : 0}%` }}
+                  >
+                    <span className={`lb10-rank${i === 0 ? ' r1' : i === 1 ? ' r2' : i === 2 ? ' r3' : ''}`}>{i + 1}</span>
+                    <div className="lb10-player">
+                      {p.avatar ? (
+                        <img className="lb10-avatar" src={p.avatar} alt="" />
+                      ) : (
+                        <span className="lb10-avatar initials">{name.slice(0, 1).toUpperCase()}</span>
+                      )}
+                      <div className="lb10-meta">
+                        <div className="lb10-name">
+                          {isLeader && <span className="lb10-crown">👑</span>}
+                          {name}
+                          {isMe && <span className="lb10-you">YOU</span>}
+                        </div>
+                        <div className="lb10-chips">
+                          {isLeader && <span className="lb10-chip win">⚡ TOP</span>}
+                          {(allTime.length ? p.chat : p.isChat) && <span className="lb10-chip chat">CHAT</span>}
+                          {p.found > 0 && <span className="lb10-chip words">{p.found} words</span>}
+                          {p.bestStreak >= 2 && <span className="lb10-chip streak">🔥 ×{p.bestStreak}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="lb10-score">
+                      <CountUpScore value={p.score || 0} />
+                      <span className="lb10-pts"> pts</span>
+                    </span>
+                    <span className="lb10-bar" aria-hidden="true" />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

@@ -63,6 +63,30 @@ const SOUNDS = {
   }
 };
 
+// ── Continuous siren (speed-round alert) ─────────────────────────────────
+// Smooth two-tone "hi-lo" siren (triangle wave — no harsh sawtooth). Runs
+// until stopSiren() is called, so it spans the whole speed-intro popup.
+let sirenTimer = null;
+let sirenUp = true;
+
+export function startSiren() {
+  if (muted || sirenTimer) return;
+  const c = ensureCtx();
+  if (!c) return;
+  const HI = 880, LO = 660, HALF = 0.4; // A5 ↔ E5, classic siren interval
+  const step = () => {
+    if (!sirenTimer || muted) return;
+    tone(sirenUp ? HI : LO, 0, HALF, 'triangle', 0.14);
+    sirenUp = !sirenUp;
+  };
+  step();
+  sirenTimer = setInterval(step, HALF * 1000);
+}
+
+export function stopSiren() {
+  if (sirenTimer) { clearInterval(sirenTimer); sirenTimer = null; }
+}
+
 export function playSound(name) {
   if (muted) return;
   const c = ensureCtx();

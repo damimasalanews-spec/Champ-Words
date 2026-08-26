@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import socket from './socket';
 import ShopPanel from './components/ShopPanel';
 import Logo from './components/Logo';
-import { playSound, toggleMute, isMuted } from './sounds';
+import { playSound, toggleMute, isMuted, startSiren, stopSiren } from './sounds';
 
 // Category → ambient background tint
 const CAT_TINTS = {
@@ -64,8 +64,12 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [roundResult, setRoundResult] = useState(null);
   const [gameResult, setGameResult] = useState(null);
-  const [celebration, setCelebration] = useState(null); // round-winner Tikfinity-style alert
-  const celebTimer = useRef(null);
+const [celebration, setCelebration] = useState(null); // round-winner Tikfinity-style alert
+const celebTimer = useRef(null);
+const [speedIntro, setSpeedIntro] = useState(false); // full-screen speed-round intro overlay
+const speedIntroTimer = useRef(null);
+const [roundIntro, setRoundIntro] = useState(false); // "Round N" intro popup
+const roundIntroTimer = useRef(null);
   const [muted, setMuted] = useState(() => isMuted());
   const [autoStatus, setAutoStatus] = useState('');
   const [duelMsg, setDuelMsg] = useState(''); // speed-duel result banner
@@ -219,7 +223,22 @@ export default function App() {
       if (data.state === 'waiting') { setScreen('waiting'); setGameResult(null); setRoundResult(null); }
     });
     socket.on('champ_turn', (data) => { if (data && data.room) setRoom(data.room); setScreen('playing'); setRoundResult(null); });
-    socket.on('round_started', (data) => { if (data && data.room) setRoom(data.room); setScreen('playing'); });
+    socket.on('round_started', (data) => {
+      if (data && data.room) setRoom(data.room);
+      setScreen('playing');
+      // Speed round: full-screen "SPEED ROUND INCOMING" popup (7s).
+      // Normal rounds: a short "Round N" popup (3s) in the same style.
+      if (data && data.room && data.room.speedRound) {
+        setSpeedIntro(true);
+        startSiren(); // continuous siren until the speed-intro popup disappears
+        if (speedIntroTimer.current) clearTimeout(speedIntroTimer.current);
+        speedIntroTimer.current = setTimeout(() => { setSpeedIntro(false); stopSiren(); }, 7000);
+      } else {
+        setRoundIntro(true);
+        if (roundIntroTimer.current) clearTimeout(roundIntroTimer.current);
+        roundIntroTimer.current = setTimeout(() => setRoundIntro(false), 3000);
+      }
+    });
     socket.on('word_found', (data) => { if (data && data.room) setRoom(data.room); });
     socket.on('time_up', (data) => { if (data && data.room) setRoom(data.room); });
     socket.on('round_over', (data) => {
@@ -227,8 +246,10 @@ export default function App() {
       setRoundResult(data);
       setScreen('round_over');
       playSound('roundover');
-      // Big Tikfinity-style celebration for the round winner
-      if (data && data.winner && data.winner.name) {
+      // Big Tikfinity-style celebration for the round winner. Skipped in the
+      // winner flow — the champion popup already celebrated, so the round-over
+      // screen goes straight to the TOP 10 leaderboard.
+      if (data && data.winner && data.winner.name && !data.winnerFlow) {
         setCelebration({ name: data.winner.name, score: data.winner.score, elapsed: data.winner.elapsed });
         if (celebTimer.current) clearTimeout(celebTimer.current);
         celebTimer.current = setTimeout(() => setCelebration(null), 4200);
@@ -270,6 +291,7 @@ export default function App() {
     });
 
     return () => {
+      stopSiren(); // never leave a siren running if the app unmounts mid-popup
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
       socket.off('game_over'); socket.off('chat'); socket.off('chat_cleared'); socket.off('kicked'); socket.off('connect_error');
@@ -476,6 +498,28 @@ export default function App() {
   // ── Logged in / guest ──
   return (
     <div className="app">
+      {speedIntro && (
+        <div className="speed-intro">
+          <div className="speed-intro-pos">
+            <div className="speed-intro-inner">
+              <div className="speed-intro-icon">⚡</div>
+              <div className="speed-intro-title">Round {room && room.round ? room.round : ''} · Speed Round</div>
+              <div className="speed-intro-msg">Speed round is coming now —<br />Get ready for <b className="speed-intro-pts">1500</b> points!</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {roundIntro && (
+        <div className="speed-intro round-intro">
+          <div className="speed-intro-pos">
+            <div className="speed-intro-inner">
+              <div className="speed-intro-icon">🎯</div>
+              <div className="speed-intro-title">Round {room && room.round ? room.round : ''}</div>
+              <div className="speed-intro-msg">Get ready to guess!</div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="app-header">
         <div className="brand">
           <Logo size={34} />
@@ -599,7 +643,7 @@ export default function App() {
       )}
 
       {screen === 'round_over' && roundResult && (
-        <RoundOver result={roundResult} room={room} />
+        <RoundOver result={roundResult} room={room} me={room && room.players ? room.players.find(p => p.id === socket.id) : null} />
       )}
       {celebration && <Celebration winner={celebration} />}
       </div>
@@ -714,6 +758,7 @@ export default function App() {
           result={gameResult}
           room={room}
           isHost={room?.host === socket.id}
+          me={room && room.players ? room.players.find(p => p.id === socket.id) : null}
           onPlayAgain={handlePlayAgain}
           onLeave={handleLeave}
         />
