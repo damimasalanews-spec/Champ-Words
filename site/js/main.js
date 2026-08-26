@@ -1,14 +1,14 @@
 /* ============================================================
    CHAMP WORDS — static Bootstrap site (no WordPress)
    Live data: direct same-origin fetch to the game server API
-   (Render deployment — site is served at /site by Express).
+   (Render deployment — the site is served at the root by Express).
    Graceful fallbacks when the game server is offline.
    ============================================================ */
 (function () {
   'use strict';
 
-  var GAME_URL = '/';                          // game client (absolute root)
-  var API_BASE = '/api/';                      // same-origin game server API
+  var API_BASE = '/api/';                      // same-origin game API
+  var GAME_URL = '/game';                      // game client (same origin)
   var FALLBACK_WORDS = '7,296';                // original hardcoded fallback
   var FALLBACK_CATS = '13+';                   // original hardcoded fallback
   var FALLBACK_CAT_COUNT = 13;
