@@ -16,15 +16,21 @@ HTML/CSS/JS. No WordPress, no database.
 
 ## How to run
 
-1. Copy this `champwords-site` folder into XAMPP's web root, e.g. `C:\xampp\htdocs\champwords` (or just run the folder anywhere PHP is available — Apache + PHP from XAMPP is all you need).
-2. Start the Champ Words game server: run `start-champ.bat` from `C:\xampp\htdocs\wordpress\game` (it serves on `http://localhost:3000`).
-3. Open **http://localhost/champwords/** in your browser.
+**On Render (production):** this folder lives at `site/` in the repo and is served
+by the game server at `https://champ-words.onrender.com/site/`. No PHP needed —
+`js/main.js` calls the game API same-origin (`/api/...`).
+
+**Locally (XAMPP):** copy this folder into XAMPP's web root (e.g.
+`C:\xampp\htdocs\champwords`), start the game server (`start-champ.bat`,
+serves on `http://localhost:3000`), and open `http://localhost/champwords/`.
+The local copy can use `api-proxy.php` (PHP bridge) if preferred.
 
 ## How the live data works
 
-- `js/main.js` requests data through `api-proxy.php?endpoint=...` — a tiny
-  same-origin PHP bridge that forwards to the game server's REST API
-  (`/api/stats`, `/api/alltime`, `/api/today`, `/api/wotd`, `/api/categories`),
+- **Render:** `js/main.js` fetches `/api/stats`, `/api/alltime`, `/api/today`,
+  `/api/wotd`, `/api/categories` directly from the game server (same origin).
+- **Local XAMPP:** the same code can use `api-proxy.php?endpoint=...` — a tiny
+  same-origin PHP bridge that forwards to the game server's REST API,
   exactly like the old WordPress `champ-helpers.php` did.
 - Game server **online** → hero stats, word of the day and both leaderboards
   show live data; status dots glow green.
@@ -36,8 +42,8 @@ HTML/CSS/JS. No WordPress, no database.
 
 - Colors / fonts / layout: edit `css/game-site.css` (design tokens live in the
   `:root` block at the top).
-- Game server address: change `GAME_URL` in `js/main.js` and `$base` in
-  `api-proxy.php` (e.g. when deploying to a remote server).
+- Game server address: change `GAME_URL` / `API_BASE` in `js/main.js` (or `$base`
+  in `api-proxy.php` for local XAMPP).
 
 ## Original vs this build
 
