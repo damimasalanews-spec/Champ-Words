@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 
 /**
- * Round-winner celebration — a clean top banner (self-designed).
+ * Round-winner celebration â€” a clean top banner (self-designed).
  * Slides down below the header (50px margin), crown + winner name +
  * points chip, shine sweep, crown sparks and a Web Audio fanfare.
  * Auto-dismisses (App removes it after ~4.2s).
@@ -25,7 +25,7 @@ export default function Celebration({ winner }) {
     }
   }
 
-  // Web Audio fanfare — short ascending flourish, no audio file needed
+  // Web Audio fanfare â€” short ascending flourish, no audio file needed
   useEffect(() => {
     let ctx = null;
     try {
@@ -91,13 +91,13 @@ export default function Celebration({ winner }) {
 
       <div className="cw-banner-card">
         <span className="cw-shine" aria-hidden="true" />
-        <span className="cw-banner-crown" aria-hidden="true">👑</span>
+        <span className="cw-banner-crown" aria-hidden="true">ðŸ‘‘</span>
         <div style={{ minWidth: 0 }}>
           <div className="cw-banner-label">Round Winner</div>
           <div className="cw-banner-name">{winner.name}</div>
         </div>
         <div className="cw-banner-pts">
-          {winner.score ? '+' + winner.score : ''}{winner.elapsed ? ' · ' + winner.elapsed + 's' : ''}
+          {winner.score ? '+' + winner.score : ''}{winner.elapsed ? ' Â· ' + winner.elapsed + 's' : ''}
         </div>
         {sparks.current.map((s, i) => (
           <span key={i} className="cw-spark"

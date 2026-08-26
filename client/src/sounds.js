@@ -52,6 +52,14 @@ const SOUNDS = {
     [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * 0.08, 0.15, 'triangle', 0.17));
     [523, 659, 784].forEach(f => tone(f, 0.45, 0.5, 'triangle', 0.15));
     tone(1568, 0.48, 0.55, 'sine', 0.09);
+  },
+  // Full winner fanfare (~2.6s) — bass + arpeggio + shimmer, for the 6s reveal
+  fanfare: () => {
+    [262, 330, 392].forEach((f, i) => tone(f, i * 0.0, 1.4, 'triangle', 0.13));          // chord bed
+    [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, 0.15 + i * 0.09, 0.16, 'sine', 0.17)); // rising arpeggio
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.95 + i * 0.11, 0.2, 'triangle', 0.15));           // echo arpeggio
+    [1047, 1319, 1568].forEach((f, i) => tone(f, 1.55 + i * 0.12, 0.3, 'sine', 0.13));                  // final sparkle
+    tone(2093, 2.0, 0.55, 'sine', 0.08);                                                               // high shimmer
   }
 };
 

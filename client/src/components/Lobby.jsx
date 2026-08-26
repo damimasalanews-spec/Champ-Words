@@ -31,6 +31,35 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   const [loginBusy, setLoginBusy] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // Daily missions (from the game server)
+  const [missions, setMissions] = useState([]);
+  const [missionsLoaded, setMissionsLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/missions?key=' + encodeURIComponent(name || 'guest'))
+      .then(r => r.json())
+      .then(d => { if (d && d.ok) setMissions(d.missions || []); })
+      .catch(() => {})
+      .finally(() => setMissionsLoaded(true));
+  }, []);
+
+  const claimMission = (id) => {
+    playSound('click');
+    fetch('/api/missions/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, key: name || 'guest' }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.ok) {
+          setMissions(prev => prev.map(m => m.id === id ? { ...m, claimed: true } : m));
+          try { playSound('win'); } catch (_) {}
+        }
+      })
+      .catch(() => {});
+  };
+
   const enterHostMode = () => {
     playSound('click');
     const url = new URL(window.location.href);
@@ -104,16 +133,16 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
   if (step === 'intro') {
     return (
       <div className="lobby-intro">
-        {/* Decorative floating letter tiles (CSS animation only) — tinted to match the maroon card */}
+        {/* Decorative floating letter tiles (CSS animation only) */}
         <div className="login-bg-tiles" aria-hidden="true">
-          <span style={{ left: '5%', fontSize: 26, animationDuration: '11s', animationDelay: '0s', color: 'rgba(255,255,255,0.07)' }}>C</span>
-          <span style={{ left: '16%', fontSize: 16, animationDuration: '14s', animationDelay: '2s', color: 'rgba(255,255,255,0.06)' }}>W</span>
-          <span style={{ left: '28%', fontSize: 32, animationDuration: '10s', animationDelay: '4s', color: 'rgba(53,212,149,0.08)' }}>★</span>
-          <span style={{ left: '42%', fontSize: 18, animationDuration: '15s', animationDelay: '1s', color: 'rgba(255,255,255,0.06)' }}>W</span>
-          <span style={{ left: '56%', fontSize: 24, animationDuration: '12s', animationDelay: '3s', color: 'rgba(53,212,149,0.07)' }}>C</span>
-          <span style={{ left: '70%', fontSize: 14, animationDuration: '16s', animationDelay: '5s', color: 'rgba(255,255,255,0.06)' }}>✦</span>
-          <span style={{ left: '82%', fontSize: 28, animationDuration: '11.5s', animationDelay: '0.5s', color: 'rgba(255,255,255,0.07)' }}>A</span>
-          <span style={{ left: '93%', fontSize: 18, animationDuration: '13s', animationDelay: '2.5s', color: 'rgba(53,212,149,0.07)' }}>✦</span>
+          <span style={{ left: '5%', fontSize: 26, animationDuration: '11s', animationDelay: '0s', color: 'rgba(255,215,106,0.12)' }}>C</span>
+          <span style={{ left: '16%', fontSize: 16, animationDuration: '14s', animationDelay: '2s', color: 'rgba(124,108,255,0.12)' }}>W</span>
+          <span style={{ left: '28%', fontSize: 32, animationDuration: '10s', animationDelay: '4s', color: 'rgba(255,215,106,0.13)' }}>★</span>
+          <span style={{ left: '42%', fontSize: 18, animationDuration: '15s', animationDelay: '1s', color: 'rgba(124,108,255,0.11)' }}>W</span>
+          <span style={{ left: '56%', fontSize: 24, animationDuration: '12s', animationDelay: '3s', color: 'rgba(255,215,106,0.12)' }}>C</span>
+          <span style={{ left: '70%', fontSize: 14, animationDuration: '16s', animationDelay: '5s', color: 'rgba(124,108,255,0.11)' }}>✦</span>
+          <span style={{ left: '82%', fontSize: 28, animationDuration: '11.5s', animationDelay: '0.5s', color: 'rgba(255,215,106,0.12)' }}>A</span>
+          <span style={{ left: '93%', fontSize: 18, animationDuration: '13s', animationDelay: '2.5s', color: 'rgba(124,108,255,0.11)' }}>✦</span>
         </div>
 
         <div className="lobby-card intro-card">
@@ -293,6 +322,32 @@ export default function Lobby({ onCreateRoom, onJoinActive, onAdminLogin, userNa
               <button className="btn btn-secondary btn-host-create" onClick={handleHostClick}>Create Room</button>
             </div>
           </div>
+
+          {missionsLoaded && missions.length > 0 && (
+            <div className="cw-missions">
+              <div className="cw-missions-head">
+                🎯 Daily Missions <span className="cw-m-tag">Resets at midnight</span>
+              </div>
+              {missions.map(m => (
+                <div className="cw-mission" key={m.id}>
+                  <div className="cw-mission-row">
+                    <span className="cw-mission-name">{m.icon} {m.title}</span>
+                    <span className="cw-mission-reward">+{m.reward} pts</span>
+                  </div>
+                  <div className="cw-mission-bar">
+                    <div className="cw-mission-fill" style={{ width: Math.min(100, (m.progress / m.target) * 100) + '%' }} />
+                  </div>
+                  {m.claimed ? (
+                    <div className="cw-mission-claimed">✓ Claimed</div>
+                  ) : m.progress >= m.target ? (
+                    <button className="cw-mission-claim" onClick={() => claimMission(m.id)}>Claim Reward</button>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--cw-text-dim)', marginTop: 6 }}>{m.progress} / {m.target}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

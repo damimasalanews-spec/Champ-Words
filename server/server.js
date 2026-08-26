@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const session = require('express-session');
 const axios = require('axios');
 const { Server } = require('socket.io');
+const missions = require('./missions.js');
 
 const app = express();
 const server = http.createServer(app);
@@ -197,7 +198,8 @@ function ensureChatPlayer(room, username, profileFirst) {
     player = {
       id: 'chat:' + username.toLowerCase(), playerKey: 'chat:' + username.toLowerCase(),
       name: (profileFirst || username).slice(0, 7), avatar: '', score: 0, hintsLeft: 0, isChat: true, chatUser: username,
-      foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0, xp: 0, level: 1
+      foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0, xp: 0, level: 1,
+      coins: 0, nameColor: null, rainEffect: null, nameEffect: null, emote: null, winConfetti: false
     };
     room.players.push(player);
   }
@@ -264,6 +266,7 @@ function resolveDuel(room, winner) {
   if (room.duelTimer) { clearTimeout(room.duelTimer); room.duelTimer = null; }
   winner.score += DUEL_REWARD;
   addAllTime(winner.playerKey, winner.name, winner.avatar, DUEL_REWARD);
+  missions.trackDuelWin(winner.playerKey, winner.name);
   io.to(room.id).emit('duel_end', { winner: winner.name });
   io.to(room.id).emit('chat', { system: true, gold: true, text: `🏆 ${maskText(winner.name)} wins the speed duel +${DUEL_REWARD}!` });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
@@ -295,6 +298,105 @@ function handleChatChallenge(room, player) {
 
 // Shared handler used by both the HTTP endpoint and the live-chat bridge.
 const chatAnswerCooldowns = new Map(); // user → last wrong-attempt timestamp
+
+// ── Viewer points shop: shared by chat commands (!color/!rain/!pin) and the in-game shop UI ──
+const SHOP_COLORS = { gold: '#ffd76a', red: '#ff5c7c', pink: '#ff9ecb', green: '#5ef2c6', sky: '#5ea2ff', purple: '#b78cff', orange: '#ffa53d', white: '#ffffff' };
+const SHOP_COLOR_COST = 50, SHOP_RAIN_COST = 100, SHOP_PIN_COST = 150;
+const SHOP_RAIN_EFFECTS = ['hearts', 'fire', 'star', 'gold'];
+const SHOP_EFFECT_COST = { diamond: 150, sparkle: 120 }; // name effects
+const SHOP_EMOTE_COST = 40;      // emote tag next to your name
+const SHOP_EMOTES = ['🔥', '⭐', '💎', '🎯', '❤️', '⚡', '👑', '🎉'];
+const SHOP_HINT_COST = 100;      // +1 hint
+const SHOP_PIN_MS = 15000;
+
+function shopPurchase(room, player, item, arg) {
+  if (!room || !player) return { ok: false, error: 'not in a room' };
+  // The host has unlimited free shop access; TikTok-chat viewers pay coins.
+  const isHost = player.id === room.host;
+  if (item === 'coins' || item === 'balance') {
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `👑 ${maskText(player.name)} is the host — unlimited shop access!`
+      : `🪙 ${maskText(player.name)} has ${player.coins || 0} coins — try !color, !rain, !pin` });
+    return { ok: true, coins: isHost ? Infinity : (player.coins || 0), free: isHost };
+  }
+  if (item === 'color') {
+    const colorName = String(arg || 'gold').toLowerCase();
+    const hex = SHOP_COLORS[colorName];
+    if (!hex) return { ok: false, error: 'pick one: ' + Object.keys(SHOP_COLORS).join(', ') };
+    if (!isHost && (player.coins || 0) < SHOP_COLOR_COST) return { ok: false, error: `need ${SHOP_COLOR_COST} coins for a name color (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= SHOP_COLOR_COST;
+    player.nameColor = hex;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `👑 ${maskText(player.name)} set their name color to ${colorName}`
+      : `🎨 ${maskText(player.name)} bought the ${colorName} name color!` });
+    return { ok: true, color: hex, free: isHost };
+  }
+  if (item === 'rain') {
+    const effect = String(arg || 'hearts').toLowerCase();
+    if (!SHOP_RAIN_EFFECTS.includes(effect)) return { ok: false, error: 'pick one: hearts, fire, star, gold' };
+    if (!isHost && (player.coins || 0) < SHOP_RAIN_COST) return { ok: false, error: `need ${SHOP_RAIN_COST} coins for emoji rain (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= SHOP_RAIN_COST;
+    player.rainEffect = effect;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `👑 ${maskText(player.name)} enabled emoji rain (${effect}) — shows on their next win`
+      : `🌧️ ${maskText(player.name)} bought emoji rain (${effect}) — shows on their next win!` });
+    return { ok: true, rain: effect, free: isHost };
+  }
+  if (item === 'pin') {
+    const pinMsg = String(arg || '').trim().slice(0, 60);
+    if (!pinMsg) return { ok: false, error: '!pin <your message>' };
+    if (!isHost && (player.coins || 0) < SHOP_PIN_COST) return { ok: false, error: `need ${SHOP_PIN_COST} coins to pin a message (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= SHOP_PIN_COST;
+    room.pinnedMessage = { name: player.name, text: pinMsg, until: Date.now() + SHOP_PIN_MS };
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `📌 ${maskText(player.name)} pinned: "${pinMsg}"`
+      : `📌 ${maskText(player.name)} pinned: "${pinMsg}"` });
+    setTimeout(() => {
+      if (room.pinnedMessage && room.pinnedMessage.until <= Date.now()) {
+        room.pinnedMessage = null;
+        io.to(room.id).emit('room_update', sanitizeRoom(room));
+      }
+    }, SHOP_PIN_MS + 200);
+    return { ok: true, pinned: pinMsg, free: isHost };
+  }
+  if (item === 'effect') {
+    const effect = String(arg || '').toLowerCase();
+    const cost = SHOP_EFFECT_COST[effect];
+    if (!cost) return { ok: false, error: 'pick one: diamond (150) or sparkle (120)' };
+    if (!isHost && (player.coins || 0) < cost) return { ok: false, error: `need ${cost} coins for the ${effect} name effect (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= cost;
+    player.nameEffect = effect;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `👑 ${maskText(player.name)} enabled the ${effect} name effect`
+      : `✨ ${maskText(player.name)} bought the ${effect} name effect!` });
+    return { ok: true, effect, free: isHost };
+  }
+  if (item === 'emote') {
+    const emote = String(arg || '');
+    if (!SHOP_EMOTES.includes(emote)) return { ok: false, error: 'pick one: ' + SHOP_EMOTES.join(' ') };
+    if (!isHost && (player.coins || 0) < SHOP_EMOTE_COST) return { ok: false, error: `need ${SHOP_EMOTE_COST} coins for an emote tag (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= SHOP_EMOTE_COST;
+    player.emote = emote;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: isHost
+      ? `👑 ${maskText(player.name)} set their emote tag to ${emote}`
+      : `🏷 ${maskText(player.name)} bought the ${emote} emote tag!` });
+    return { ok: true, emote, free: isHost };
+  }
+  if (item === 'hint') {
+    if (!isHost && (player.coins || 0) < SHOP_HINT_COST) return { ok: false, error: `need ${SHOP_HINT_COST} coins for a bonus hint (you have ${player.coins || 0})` };
+    if (!isHost) player.coins -= SHOP_HINT_COST;
+    player.hintsLeft = (player.hintsLeft || 0) + 1;
+    io.to(room.id).emit('room_update', sanitizeRoom(room));
+    io.to(room.id).emit('chat', { system: true, gold: true, text: `💡 ${maskText(player.name)} bought a bonus hint!` });
+    return { ok: true, hint: true, free: isHost, hintsLeft: player.hintsLeft };
+  }
+  return { ok: false, error: 'unknown item' };
+}
 
 // ── !score anti-spam: one card per user every 15s ─────────────────────────
 const scoreCardCooldowns = new Map(); // key (user/socket) → last !score time
@@ -341,6 +443,37 @@ function handleChatAnswer({ user, text, nickname }) {
     if (!scs.allowed) return { ok: true, scoreCard: false, cooldown: true, wait: scs.wait };
     emitScoreCard(room, ensureChatPlayer(room, username, profileFirst));
     return { ok: true, scoreCard: true };
+  }
+  // ── Viewer points shop (chat commands → shared purchase logic) ──
+  const shopCmd = rawText.toLowerCase().trim();
+  const shopRoom = findChatTargetRoom() || findChatRoomInState('round_over');
+  if (shopCmd === '!coins' || shopCmd === '!balance') {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'coins');
+  }
+  if (/^!color(\s|$)/.test(shopCmd)) {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'color', shopCmd.split(/\s+/)[1] || 'gold');
+  }
+  if (/^!rain(\s|$)/.test(shopCmd)) {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'rain', shopCmd.split(/\s+/)[1] || 'hearts');
+  }
+  if (/^!pin(\s|$)/.test(shopCmd)) {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'pin', rawText.replace(/^!pin\s+/i, '').trim());
+  }
+  if (/^!effect(\s|$)/.test(shopCmd)) {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'effect', shopCmd.split(/\s+/)[1] || '');
+  }
+  if (/^!emote(\s|$)/.test(shopCmd)) {
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'emote', shopCmd.split(/\s+/)[1] || '');
+  }
+  if (shopCmd === '!buyhint') { // !hint is the existing points-based letter reveal
+    if (!shopRoom) return { ok: false, error: 'no active round' };
+    return shopPurchase(shopRoom, ensureChatPlayer(shopRoom, username, profileFirst), 'hint');
   }
   if (guess.startsWith('!challenge')) {
     const room = findChatRoomInState('round_over');
@@ -406,6 +539,7 @@ function handleChatAnswer({ user, text, nickname }) {
   const prevTop = room.players.reduce((m, p) => Math.max(m, p.score || 0), 0);
   const wasLeading = player.score >= prevTop;
   player.score += gained;
+  player.coins = (player.coins || 0) + 10; // viewer shop currency
   if (!wasLeading && player.score > prevTop) badgeEvent(room, '👑', `${maskText(player.name)} takes the lead!`);
   const prevLevel = player.level || 1;
   player.xp = (player.xp || 0) + 10;
@@ -424,8 +558,11 @@ function handleChatAnswer({ user, text, nickname }) {
   player.foundWord = true;
   player.roundFoundAt = elapsed;
   player.roundScore = gained;
+  const newRecord = player.bestTime !== 0 && elapsed < player.bestTime; // beat their previous best
   player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed);
   room.roundFinds.push({ id: player.id, name: player.name, score: gained, elapsed });
+  missions.trackSolved(player.playerKey, player.name);
+  missions.trackScore(player.playerKey, player.name, gained);
   io.to(room.id).emit('chat', { system: true, green: true, text: `${maskText(player.name)} guessed the word! (via TikTok chat)` });
   notify(room, '⚡', `${maskText(player.name)} found the word! (+${gained})`);
   if (streak >= 2) io.to(room.id).emit('chat', { system: true, green: true, text: `🔥 ${maskText(player.name)} is on a ${streak}-streak!` });
@@ -434,9 +571,17 @@ function handleChatAnswer({ user, text, nickname }) {
   // TOP 5 board flip to "THIS ROUND" (✓ tick + round score) and plays the
   // 'found' fanfare. Chat players are NOT counted in the allFound check, so
   // allFound stays false here (browser round timing is unchanged).
+  const rainEffect = player.rainEffect || null;
+  player.rainEffect = null; // one-shot: consumed on this win
+  const confettiEffect = !!player.winConfetti;
+  player.winConfetti = false; // one-shot: consumed on this win
   io.to(room.id).emit('word_found', {
     winnerId: player.id,
     winnerName: player.name,
+    nameColor: player.nameColor || null,
+    nameEffect: player.nameEffect || null,
+    confetti: confettiEffect,
+    rain: rainEffect,
     winnerNick: profileFirst.slice(0, 14) || null, // profile first name → popup only
     score: gained,
     elapsed,
@@ -448,6 +593,9 @@ function handleChatAnswer({ user, text, nickname }) {
     self: false,
     word: null,
     fromChat: true, // client shows the "found a Champ Word!" popup for chat solvers
+    roundWon: room.roundWinnerId === player.id, // FIRST correct answer → winner animation in TOP 5
+    newRecord, // beat their previous best time
+    winnerWord: room.word, // for the winner-animation word reveal
     solved: room.word, // current correct word, shown in the popup text (kept out of `word` so it doesn't fall into the brackets)
     toasts
   });
@@ -456,7 +604,9 @@ function handleChatAnswer({ user, text, nickname }) {
   // immediately — the first correct answer ends the round.
   if (room.roundWinnerId === player.id) {
     clearTimer(room);
-    setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
+    // Winner flow: the client plays the 6s smoke animation in the TOP 5 column,
+    // then the next round starts automatically (endRound with winnerFlow).
+    setTimeout(() => endRound(room, false, true), WINNER_ANIM_MS);
   }
   return { ok: true, word: room.word, score: gained, elapsed, name: player.name };
 }
@@ -497,6 +647,10 @@ function handleChatGift({ user, diamonds }) {
   if (hidden === 0) return { ok: false, error: 'all letters revealed' };
   chatGiftCooldowns.set(username, now);
   recordGift(username, d); // top-gifter stats
+  // Viewer shop currency: gifts pay coins (1 diamond → 10 coins)
+  const gPlayer = ensureChatPlayer(room, username, '');
+  gPlayer.coins = (gPlayer.coins || 0) + d * 10;
+  io.to(room.id).emit('room_update', sanitizeRoom(room));
   if (d >= CHAT_GIFT_TIER3_DIAMONDS) {
     const r = revealAllLetters(room);
     if (!r) return { ok: false, error: 'all letters revealed' };
@@ -952,6 +1106,12 @@ const ROUND_TIME_MS = Number(process.env.ROUND_TIME_MS) || 60 * 1000; // 1 minut
 const WORD_FOUND_TO_ROUND_OVER_MS = Number(process.env.WORD_FOUND_TO_ROUND_OVER_MS) || 300; // show the round-over leaderboard almost instantly after the word is found
 const ROUND_OVER_TO_NEXT_MS = Number(process.env.ROUND_OVER_TO_NEXT_MS) || 6000; // 6s scoreboard pause before the next round
 const TIME_UP_TO_ROUND_OVER_MS = Number(process.env.TIME_UP_TO_ROUND_OVER_MS) || 300; // show the round-over leaderboard almost instantly after time-up
+// Winner-animation window: after the FIRST correct answer the client plays the
+// smoke/animation in the TOP 5 column for this long, then the next round starts
+// immediately (no round-over screen for the winner flow).
+const WINNER_ANIM_MS = Number(process.env.WINNER_ANIM_MS) || 6000;
+// Small gap between the animation ending and the next round's round_started event.
+const WINNER_ANIM_TO_NEXT_MS = Number(process.env.WINNER_ANIM_TO_NEXT_MS) || 250;
 const HINT1_MS = Number(process.env.HINT1_MS) || 20 * 1000; // category hint window at 40s remaining
 const HINT2_MS = Number(process.env.HINT2_MS) || 40 * 1000; // word clue window at 20s remaining
 const HINT_WINDOW_MS = Number(process.env.HINT_WINDOW_MS) || 5 * 1000; // champ has 5s to send each hint
@@ -990,7 +1150,7 @@ function createRoom(hostId, hostName, hostAvatar, opts) {
   const opts2 = opts || {};
   const room = {
     id, host: hostId, createdAt: Date.now(),
-    players: [{ id: hostId, playerKey: opts2.playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0, streak: 0 }],
+    players: [{ id: hostId, playerKey: opts2.playerKey || `k_${hostId}`, name: hostName, avatar: hostAvatar, score: 0, hintsLeft: MAX_HINTS, bestTime: 0, streak: 0, coins: 0, nameColor: null, rainEffect: null, nameEffect: null, emote: null, winConfetti: false }],
     blacklist: new Set(), paused: false, pausedAt: null, pauseRemaining: 0,
     state: 'waiting', round: 0, totalRounds: opts2.totalRounds || 5,
     roundTimeMs: opts2.roundTimeMs || 0,          // 0 = server default (60s)
@@ -1025,6 +1185,7 @@ function createRoom(hostId, hostName, hostAvatar, opts) {
     pendingHostKey: null,     // playerKey of a dropped host — reclaimed on rejoin
     advanceScheduled: false,  // round-over → next round timer is pending
     lastRoundResult: null,    // last round-over payload (so rejoining players see it)
+    pinnedMessage: null,      // viewer shop: 📌 pinned message banner
     lastGameResult: null,     // final scores (so rejoining players see it)
     cleanupTimer: null        // deletes the room after everyone leaves
   };
@@ -1067,7 +1228,9 @@ function sanitizeRoom(room) {
     duel: room.duel ? { challenger: room.duel.challengerName, defender: room.duel.winnerName, defenderId: room.duel.winnerId, endsAt: room.duelEndsAt, art: artForWord(room.duel.word) } : null,
     voteOptions: (room.state === 'champ_pick' && room.voteOptions && room.voteOptions.length >= 2)
       ? room.voteOptions.map(o => ({ id: o.id, label: o.label, votes: (room.votes && room.votes[o.id]) || 0 })) : null,
-    players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) }))
+    players: players.map(p => ({ id: p.id, name: p.name, avatar: p.avatar, score: p.score, hintsLeft: p.hintsLeft, bestTime: p.bestTime || 0, roundScore: p.roundScore || 0, roundFoundAt: p.roundFoundAt || 0, foundWord: !!p.foundWord, isChat: !!p.isChat, streak: p.streak || 0, level: p.level || 1, xp: p.xp || 0, coins: p.coins || 0, nameColor: p.nameColor || null, nameEffect: p.nameEffect || null, emote: p.emote || null, mutedUntil: (room.muted && room.muted.get(p.id)) || 0, connected: io.sockets.sockets.has(p.id) })),
+    pinnedMessage: room.pinnedMessage ? { name: room.pinnedMessage.name, text: room.pinnedMessage.text, until: room.pinnedMessage.until } : null,
+    host: room.host
   };
 }
 
@@ -1415,6 +1578,7 @@ function startRound(room) {
   }, hintAt);
   if (room.speedRound) io.to(room.id).emit('chat', { system: true, gold: true, text: `⚡ SPEED ROUND! 15 seconds · TRIPLE points!` });
   io.to(room.id).emit('round_started', { room: sanitizeRoom(room) });
+  room.players.forEach(p => { if (p.playerKey) missions.trackRounds(p.playerKey, p.name); });
   io.to(room.id).emit('room_update', sanitizeRoom(room));
 }
 
@@ -1500,7 +1664,7 @@ function finishGame(room) {
   });
 }
 
-function endRound(room, skipStump) {
+function endRound(room, skipStump, winnerFlow) {
   if (room.endedRound) return;
   room.endedRound = true;
   clearTimer(room);
@@ -1539,6 +1703,19 @@ function endRound(room, skipStump) {
     scores
   };
   room.lastRoundResult = payload; // keep it so players who rejoin see this round's result
+
+  // ── Winner flow (first correct answer) ──────────────────────────────────
+  // The 6s smoke animation already played in the client's TOP 5 column while
+  // this timer was pending. There is NO round-over screen and NO winner banner:
+  // the round result is recorded, the word is revealed in chat, and the next
+  // round starts immediately. Non-winner ends (time-up / skip / big gift /
+  // all-found) keep the classic round_over screen + scheduleAdvance below.
+  if (winnerFlow) {
+    io.to(room.id).emit('chat', { system: true, text: `The word was: ${room.word.toUpperCase()}` });
+    setTimeout(() => advanceRound(room), WINNER_ANIM_TO_NEXT_MS);
+    return;
+  }
+
   io.to(room.id).emit('round_over', payload);
   scheduleAdvance(room);
 }
@@ -1597,7 +1774,7 @@ io.on('connection', socket => {
       }
     }
     // New player — allowed at ANY game state (mid-game join)
-    const p = { id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0 };
+    const p = { id: socket.id, playerKey: playerKey || `k_${socket.id}`, name: name || 'Player', avatar: avatar || '', score: 0, hintsLeft: MAX_HINTS, foundWord: false, roundFoundAt: 0, roundScore: 0, bestTime: 0, streak: 0, coins: 0, nameColor: null, rainEffect: null, nameEffect: null, emote: null, winConfetti: false };
     room.players.push(p);
     // Race guard: the re-follow interval + reconnect can emit the SAME
     // browser key twice in one tick (find-then-push isn't atomic) → two
@@ -1782,6 +1959,15 @@ io.on('connection', socket => {
     cb && cb({ ok: true });
   });
 
+  // In-game viewer shop (UI buttons) — same purchase logic as the chat commands
+  socket.on('shop_buy', ({ roomId, item, arg } = {}, cb) => {
+    const room = rooms.get(roomId);
+    if (!room) return cb && cb({ ok: false, error: 'not in a room' });
+    const player = playerById(room, socket.id);
+    if (!player) return cb && cb({ ok: false, error: 'player not found' });
+    cb && cb(shopPurchase(room, player, item, arg));
+  });
+
   socket.on('submit_word', ({ roomId, word, path }, cb) => {
     const room = rooms.get(roomId);
     if (!room) return cb && cb({ ok: false, error: 'Room not found' });
@@ -1789,13 +1975,44 @@ io.on('connection', socket => {
     if (isMuted(room, socket.id)) return cb && cb({ ok: false, error: 'You are muted' });
     if (socket.id === room.champId) return cb && cb({ ok: false, error: "You are the champ - you know the word!" });
 
-    // !score typed in the answer box — show the player's own score card
-    // instead of treating it as a (wrong) word guess. Anti-spam: 15s per player.
+    // !commands typed in the answer box — same handlers as the chat box.
     const typedCmd = String(word || '').trim().toLowerCase();
     if (typedCmd === '!score') {
       const scs = scoreCardStatus('sock:' + socket.id);
       if (scs.allowed) emitScoreCard(room, room.players.find(p => p.id === socket.id));
       return cb && cb({ ok: true, scoreCard: scs.allowed, cooldown: !scs.allowed });
+    }
+    if (typedCmd.startsWith('!')) {
+      const cmdPlayer = playerById(room, socket.id);
+      if (!cmdPlayer) return cb && cb({ ok: false, error: 'Player not found' });
+      const argStr = String(word || '').trim().split(/\s+/).slice(1).join(' ').trim();
+      let res = null;
+      if (typedCmd === '!buyhint') res = shopPurchase(room, cmdPlayer, 'hint');
+      else if (/^!color(\s|$)/.test(typedCmd)) res = shopPurchase(room, cmdPlayer, 'color', argStr);
+      else if (/^!effect(\s|$)/.test(typedCmd)) res = shopPurchase(room, cmdPlayer, 'effect', argStr);
+      else if (/^!rain(\s|$)/.test(typedCmd)) res = shopPurchase(room, cmdPlayer, 'rain', argStr);
+      else if (/^!emote(\s|$)/.test(typedCmd)) res = shopPurchase(room, cmdPlayer, 'emote', argStr);
+      else if (/^!pin(\s|$)/.test(typedCmd)) res = shopPurchase(room, cmdPlayer, 'pin', argStr);
+      else if (typedCmd === '!hint') res = handleChatHint(room, cmdPlayer);
+      else if (typedCmd === '!freeze') res = handleChatFreeze(room, cmdPlayer);
+      else if (/^!vote(\s|$)/.test(typedCmd)) res = handleChatVote(room, cmdPlayer, argStr);
+      else if (typedCmd.startsWith('!challenge')) res = handleChatChallenge(room, cmdPlayer);
+      else if (typedCmd === '!shop' || typedCmd === '!coins' || typedCmd === '!balance') res = shopPurchase(room, cmdPlayer, 'coins');
+      else if (typedCmd === '!help') return cb && cb({ ok: false, error: 'Commands: !buyhint · !hint · !freeze · !color <name> · !rain <hearts|fire|star|gold> · !effect <diamond|sparkle> · !emote <emoji> · !pin <msg> · !vote <1-6> · !challenge · !score · !shop' });
+      else return cb && cb({ ok: false, error: 'Unknown command — type !help for the list' });
+      const SENTINEL_OK = new Set(['hint used', 'freeze used', 'vote counted', 'duel started']);
+      if (res.ok) {
+        if (res.hint) return cb && cb({ ok: true, command: 'buyhint', hintsLeft: res.hintsLeft, free: res.free });
+        if (res.color) return cb && cb({ ok: true, command: 'color', name: argStr || 'gold', free: res.free });
+        if (res.rain) return cb && cb({ ok: true, command: 'rain', name: res.rain, free: res.free });
+        if (res.effect) return cb && cb({ ok: true, command: 'effect', name: res.effect, free: res.free });
+        if (res.emote) return cb && cb({ ok: true, command: 'emote', name: res.emote, free: res.free });
+        if (res.pinned) return cb && cb({ ok: true, command: 'pin', name: res.pinned, free: res.free });
+        if (res.coins) return cb && cb({ ok: true, command: 'coins', coins: res.coins, free: res.free });
+        return cb && cb({ ok: true, command: 'ok' });
+      }
+      if (SENTINEL_OK.has(res.error)) return cb && cb({ ok: true, command: 'ok' });
+      return cb && cb({ ok: false, error: res.error });
     }
 
     let guessWord = null;
@@ -1841,6 +2058,7 @@ io.on('connection', socket => {
     const prevTop = room.players.reduce((m, p) => Math.max(m, p.score || 0), 0);
     const wasLeading = player.score >= prevTop;
     player.score += gained;
+    player.coins = (player.coins || 0) + 10; // viewer shop currency
     if (!wasLeading && player.score > prevTop) badgeEvent(room, '👑', `${maskText(player.name)} takes the lead!`);
     checkMilestone(room, player, gained); // 1k / 5k / 10k celebration
     addAllTime(player.playerKey, player.name, player.avatar, gained);
@@ -1856,6 +2074,7 @@ io.on('connection', socket => {
     player.foundWord = true;
     player.roundFoundAt = elapsed;
     player.roundScore = gained;
+    const newRecord = player.bestTime !== 0 && elapsed < player.bestTime; // beat their previous best
     player.bestTime = player.bestTime === 0 ? elapsed : Math.min(player.bestTime, elapsed); // fastest correct answer
     // Correct guess — celebrate in chat (green) WITHOUT revealing the answer
     io.to(roomId).emit('chat', { system: true, green: true, text: `${player.name} guessed the word!` });
@@ -1867,21 +2086,34 @@ io.on('connection', socket => {
     room.allFound = allFound;
 
     // Only the finder gets the word revealed — others keep guessing
+    const rainEffect = player.rainEffect || null;
+    player.rainEffect = null; // one-shot: consumed on this win
+    const confettiEffect = !!player.winConfetti;
+    player.winConfetti = false; // one-shot: consumed on this win
     const base = {
       room: sanitizeRoom(room),
       winnerId: socket.id,
       winnerName: player.name,
+      nameColor: player.nameColor || null,
+      nameEffect: player.nameEffect || null,
+      confetti: confettiEffect,
+      rain: rainEffect,
       score: gained,
       elapsed,
       finds: room.roundFinds,
       allFound,
       round: room.round,
       totalRounds: room.totalRounds,
+      roundWon: room.roundWinnerId === socket.id, // FIRST correct answer → winner animation in TOP 5
+      newRecord, // beat their previous best time
+      winnerWord: room.word, // for the winner-animation word reveal
       toasts
     };
     io.to(socket.id).emit('word_found', { ...base, self: true, word: room.word });
     socket.to(roomId).emit('word_found', { ...base, self: false, word: null });
     io.to(roomId).emit('room_update', sanitizeRoom(room));
+    missions.trackSolved(player.playerKey, player.name);
+    missions.trackScore(player.playerKey, player.name, gained);
     notify(room, '⚡', `${player.name} found the word! (+${gained})`);
     cb && cb({ ok: true, word: room.word, score: gained, elapsed, hintsLeft: player.hintsLeft });
 
@@ -1889,7 +2121,9 @@ io.on('connection', socket => {
     // only the fastest player scores (points per the existing timing rules).
     if (room.roundWinnerId === socket.id) {
       clearTimer(room);
-      setTimeout(() => endRound(room), WORD_FOUND_TO_ROUND_OVER_MS);
+      // Winner flow: the client plays the 6s smoke animation in the TOP 5 column,
+      // then the next round starts automatically (endRound with winnerFlow).
+      setTimeout(() => endRound(room, false, true), WINNER_ANIM_MS);
     }
   });
 
@@ -2042,6 +2276,36 @@ io.on('connection', socket => {
       return;
     }
     if (REACTION_EMOJIS.has(t)) { io.to(roomId).emit('reaction', { emoji: t, name: maskText(player.name) }); return; }
+    // ── In-game chat commands (same handlers as TikTok chat) ──
+    if (t.startsWith('!')) {
+      const cmd = t.toLowerCase();
+      const argStr = t.split(/\s+/).slice(1).join(' ').trim();
+      let res = null;
+      if (cmd === '!buyhint') res = shopPurchase(room, player, 'hint');
+      else if (/^!color(\s|$)/.test(cmd)) res = shopPurchase(room, player, 'color', argStr);
+      else if (/^!effect(\s|$)/.test(cmd)) res = shopPurchase(room, player, 'effect', argStr);
+      else if (/^!rain(\s|$)/.test(cmd)) res = shopPurchase(room, player, 'rain', argStr);
+      else if (/^!emote(\s|$)/.test(cmd)) res = shopPurchase(room, player, 'emote', argStr);
+      else if (/^!pin(\s|$)/.test(cmd)) res = shopPurchase(room, player, 'pin', argStr);
+      else if (cmd === '!hint') res = handleChatHint(room, player);
+      else if (cmd === '!freeze') res = handleChatFreeze(room, player);
+      else if (/^!vote(\s|$)/.test(cmd)) res = handleChatVote(room, player, argStr);
+      else if (cmd.startsWith('!challenge')) res = handleChatChallenge(room, player);
+      else if (cmd === '!shop' || cmd === '!coins' || cmd === '!balance') res = shopPurchase(room, player, 'coins');
+      else if (cmd === '!help') {
+        io.to(roomId).emit('chat', { system: true, text: 'Commands: !buyhint · !hint · !freeze · !color <name> · !rain <hearts|fire|star|gold> · !effect <diamond|sparkle> · !emote <emoji> · !pin <msg> · !vote <1-6> · !challenge · !score · !shop' });
+        return;
+      }
+      // Unknown commands just show as normal chat text.
+      if (!res) { io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(t) }); return; }
+      // Shop purchases broadcast their own success line; helpers broadcast theirs
+      // and signal success with a sentinel error string. Only surface real failures.
+      const SENTINEL_OK = new Set(['hint used', 'freeze used', 'vote counted', 'duel started']);
+      if (!res.ok && !SENTINEL_OK.has(res.error)) {
+        io.to(roomId).emit('chat', { system: true, text: `⚠️ ${res.error}` });
+      }
+      return;
+    }
     io.to(roomId).emit('chat', { playerId: socket.id, playerName: maskText(player.name), text: maskText(t) });
   });
   socket.on('disconnect', () => {
@@ -2168,6 +2432,23 @@ if (CHAT_BRIDGE_ENABLED && TIKTOK_LIVE_USERNAME) {
 // /tiktok link itself is untouched.
 
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
+// ── Daily missions API ───────────────────────────────────────────────────
+app.get('/api/missions', (req, res) => {
+  res.json({ ok: true, missions: missions.getMissions(req.query.key || 'guest') });
+});
+app.post('/api/missions/claim', (req, res) => {
+  const { id, key } = req.body || {};
+  res.json(missions.claimMission(key || 'guest', id, addAllTime));
+});
+app.get('/api/stats', (req, res) => {
+  res.json({
+    ok: true,
+    words: DICT.size,
+    categories: CATEGORIES.list.length,
+    playersOnline: (io && io.engine && io.engine.clientsCount) || 0,
+  });
+});
+
 app.use(express.static(clientDist));
 
 // ── Champ Words static website (marketing pages) ─────────────────────────

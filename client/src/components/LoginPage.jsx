@@ -5,10 +5,6 @@ import { playSound } from '../sounds';
 export default function LoginPage({ onPlayAsGuest }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [hall, setHall] = useState([]);
-  const [today, setToday] = useState([]);
-  const [gifters, setGifters] = useState([]);
-  const [tab, setTab] = useState('all');
 
   useEffect(() => {
     // Check if already logged in
@@ -22,22 +18,6 @@ export default function LoginPage({ onPlayAsGuest }) {
         }
       })
       .catch(() => setLoading(false));
-
-    // Hall of Fame — top 10 lifetime scores
-    fetch('/api/alltime')
-      .then(r => r.json())
-      .then(d => { if (d && d.ok) setHall((d.top || []).slice(0, 10)); })
-      .catch(() => {});
-    // Today's Top 10 — daily reset race
-    fetch('/api/today')
-      .then(r => r.json())
-      .then(d => { if (d && d.ok) setToday((d.top || []).slice(0, 10)); })
-      .catch(() => {});
-    // Top gifters — biggest supporters of the stream
-    fetch('/api/topgifters')
-      .then(r => r.json())
-      .then(d => { if (d && d.ok) setGifters((d.top || []).slice(0, 10)); })
-      .catch(() => {});
 
     // Check for error in URL
     const params = new URLSearchParams(window.location.search);
@@ -58,18 +38,31 @@ export default function LoginPage({ onPlayAsGuest }) {
     );
   }
 
+  // Decorative floating word-art letters — CHAMP WORDS theme
+  const tiles = [
+    { c: 'C', l: '4%', t: '12%', s: 30, d: '11s', delay: '0s', gold: true },
+    { c: 'H', l: '13%', t: '72%', s: 20, d: '14s', delay: '2s' },
+    { c: 'A', l: '24%', t: '26%', s: 36, d: '10s', delay: '4s', gold: true },
+    { c: 'M', l: '38%', t: '84%', s: 22, d: '15s', delay: '1s' },
+    { c: 'P', l: '52%', t: '10%', s: 28, d: '12s', delay: '3s', gold: true },
+    { c: 'W', l: '66%', t: '78%', s: 18, d: '16s', delay: '5s' },
+    { c: 'O', l: '78%', t: '22%', s: 34, d: '11.5s', delay: '0.5s', gold: true },
+    { c: 'R', l: '90%', t: '62%', s: 22, d: '13s', delay: '2.5s' },
+    { c: 'D', l: '46%', t: '48%', s: 16, d: '17s', delay: '6s', gold: true },
+    { c: 'S', l: '60%', t: '40%', s: 14, d: '18s', delay: '7s' },
+  ];
+
   return (
     <div className="login-page">
-      {/* Decorative floating letter tiles (CSS animation only) — tinted to match the maroon card */}
+      {/* Decorative floating letter tiles (CSS animation only) */}
       <div className="login-bg-tiles" aria-hidden="true">
-        <span style={{ left: '5%', fontSize: 26, animationDuration: '11s', animationDelay: '0s', color: 'rgba(255,255,255,0.07)' }}>C</span>
-        <span style={{ left: '16%', fontSize: 16, animationDuration: '14s', animationDelay: '2s', color: 'rgba(255,255,255,0.06)' }}>W</span>
-        <span style={{ left: '28%', fontSize: 32, animationDuration: '10s', animationDelay: '4s', color: 'rgba(53,212,149,0.08)' }}>★</span>
-        <span style={{ left: '42%', fontSize: 18, animationDuration: '15s', animationDelay: '1s', color: 'rgba(255,255,255,0.06)' }}>W</span>
-        <span style={{ left: '56%', fontSize: 24, animationDuration: '12s', animationDelay: '3s', color: 'rgba(53,212,149,0.07)' }}>C</span>
-        <span style={{ left: '70%', fontSize: 14, animationDuration: '16s', animationDelay: '5s', color: 'rgba(255,255,255,0.06)' }}>✦</span>
-        <span style={{ left: '82%', fontSize: 28, animationDuration: '11.5s', animationDelay: '0.5s', color: 'rgba(255,255,255,0.07)' }}>A</span>
-        <span style={{ left: '93%', fontSize: 18, animationDuration: '13s', animationDelay: '2.5s', color: 'rgba(53,212,149,0.07)' }}>✦</span>
+        {tiles.map((t, i) => (
+          <span key={i} style={{
+            left: t.l, top: t.t, fontSize: t.s,
+            animationDuration: t.d, animationDelay: t.delay,
+            color: t.gold ? 'rgba(255,215,106,0.14)' : 'rgba(124,108,255,0.13)',
+          }}>{t.c}</span>
+        ))}
       </div>
 
       <div className="login-card">
@@ -102,56 +95,17 @@ export default function LoginPage({ onPlayAsGuest }) {
             <span>or</span>
           </div>
           <button className="guest-login-btn" onClick={() => { playSound('click'); onPlayAsGuest(); }}>
-            Play as Guest
+            ▶ Play as Guest
           </button>
         </div>
 
-        {/* Bottom — footer */}
+        {/* Bottom — daily highlights strip */}
         <div className="login-bottom">
-          <div className="hall-of-fame">
-            <div className="hall-tabs">
-              <button className={`hall-tab${tab === 'all' ? ' active' : ''}`} onClick={() => setTab('all')}>🏆 All-time</button>
-              <button className={`hall-tab${tab === 'today' ? ' active' : ''}`} onClick={() => setTab('today')}>🔥 Today</button>
-              <button className={`hall-tab${tab === 'gifters' ? ' active' : ''}`} onClick={() => setTab('gifters')}>🎁 Gifters</button>
-            </div>
-            {tab === 'all' && hall.length > 0 && (
-              <div className="hall-list">
-                {hall.map((p, i) => (
-                  <div key={p.key || i} className="hall-row">
-                    <span className="hall-rank">{i + 1}</span>
-                    <span className="hall-name">{p.name}</span>
-                    {p.chat && <span className="hall-chat">LIVE</span>}
-                    <span className="hall-score">{p.score}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {tab === 'today' && today.length > 0 && (
-              <div className="hall-list">
-                {today.map((p, i) => (
-                  <div key={p.key || i} className="hall-row">
-                    <span className="hall-rank">{i + 1}</span>
-                    <span className="hall-name">{p.name}</span>
-                    {p.chat && <span className="hall-chat">LIVE</span>}
-                    <span className="hall-score">{p.score}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {tab === 'gifters' && gifters.length > 0 && (
-              <div className="hall-list">
-                {gifters.map((p, i) => (
-                  <div key={p.key || i} className="hall-row">
-                    <span className="hall-rank">{i + 1}</span>
-                    <span className="hall-name">{p.name}</span>
-                    <span className="hall-score">💎 {p.diamonds}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {tab === 'all' && hall.length === 0 && <p className="hall-empty">Play a game to make the leaderboard!</p>}
-            {tab === 'today' && today.length === 0 && <p className="hall-empty">No scores yet today — be the first!</p>}
-            {tab === 'gifters' && gifters.length === 0 && <p className="hall-empty">Send a gift during a live to appear here!</p>}
+          <div className="cw-daily-strip">
+            <span className="cw-daily-chip">⚡ 60-sec word races</span>
+            <span className="cw-daily-chip">🎯 13+ categories</span>
+            <span className="cw-daily-chip">🏆 Daily leaderboards</span>
+            <span className="cw-daily-chip">🎁 Daily missions</span>
           </div>
           <p className="login-note">
             No account needed to play. We only access your public profile name and avatar when you sign in with TikTok.

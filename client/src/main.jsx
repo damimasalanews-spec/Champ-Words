@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import './arcade.css' // arcade-neon responsive game screen (web mode only, after App.css)
+import './theme-royal.css' // Royal theme — matches the WordPress site palette (loaded last)
 
 // Two render modes, decided here (+ on resize) and refined by App.jsx:
 //  1) tiktok-half — the ORIGINAL fixed 540×960 design canvas. Used by TikTok

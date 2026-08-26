@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import socket from './socket';
+import ShopPanel from './components/ShopPanel';
 import Logo from './components/Logo';
 import { playSound, toggleMute, isMuted } from './sounds';
 
@@ -89,6 +90,7 @@ export default function App() {
   const REJOIN_DELAY_MS = 30000;
   const [rejoinIn, setRejoinIn] = useState(null);     // countdown seconds
   const [pendingRoom, setPendingRoom] = useState(''); // room we're waiting to return to
+  const [waitShopOpen, setWaitShopOpen] = useState(false); // viewer shop on the waiting screen
   const rejoinTimerRef = useRef(null);
 
   const cancelAutoRejoin = useCallback(() => {
@@ -129,11 +131,12 @@ export default function App() {
     if (isStudio) { setCanvasMode(true); return; }
     const applyMode = () => {
       const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
-      // Game screens use the studio canvas (540×960) on DESKTOP viewports and
-      // studio sources — exactly as they always were. On small/mobile viewports
-      // they stay in the responsive cw-web layout so phones get a full-size,
-      // thumb-friendly game instead of a shrunken stream canvas.
-      const canvas = inGame && window.innerWidth >= 768;
+      // GAME SCREENS ALWAYS USE THE CLASSIC CANVAS LAYOUT (540×960) on
+      // EVERY viewport — desktop AND mobile — exactly like the original
+      // desktop game. The responsive canvas scaling (main.jsx) fits it to
+      // the window and the dark background makes any letterboxing seamless.
+      // The responsive cw-web layout is used for login/lobby/home screens.
+      const canvas = inGame;
       document.documentElement.classList.toggle('tiktok-half', canvas);
       document.documentElement.classList.toggle('cw-web', !canvas);
       setCanvasMode(canvas);
@@ -478,6 +481,11 @@ export default function App() {
           <Logo size={34} />
           <span className="brand-name">Champ Words</span>
           {room && <span className="room-badge">{room.id}</span>}
+          {room && (
+            <button className="shop-toggle" onClick={() => setWaitShopOpen(v => !v)} style={{ marginLeft: 8 }}>
+              🛍 Shop
+            </button>
+          )}
         </div>
         <div className="header-right">
           {watching > 0 && <span className="viewers-badge"><span className="live-dot" />{watching} watching</span>}
@@ -595,6 +603,9 @@ export default function App() {
       )}
       {celebration && <Celebration winner={celebration} />}
       </div>
+
+      {/* ── Viewer shop (opens from the header 🛍 button) ── */}
+      {waitShopOpen && room && <ShopPanel room={room} socket={socket} onClose={() => setWaitShopOpen(false)} />}
 
       {/* Achievement unlock toast */}
       {achPopup && (

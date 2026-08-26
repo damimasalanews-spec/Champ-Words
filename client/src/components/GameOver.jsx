@@ -28,7 +28,7 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
   useEffect(() => {
     fetch('/api/alltime')
       .then(r => r.json())
-      .then(d => { if (d && d.ok) setAllTime(d.top.slice(0, 10)); })
+      .then(d => { if (d && d.ok && Array.isArray(d.top)) setAllTime(d.top.slice(0, 10)); })
       .catch(() => {});
   }, []);
 
@@ -135,10 +135,10 @@ export default function GameOver({ result, room, isHost, onPlayAgain, onLeave })
           ))}
         </div>
 
-        {allTime.length > 0 && (
+        {(allTime.length > 0 || (result.scores || []).length > 0) && (
           <div className="alltime-panel">
-            <div className="alltime-title">ALL-TIME TOP 10</div>
-            {allTime.map((p, i) => (
+            <div className="alltime-title">{allTime.length ? 'ALL-TIME TOP 10' : 'TOP 10 — THIS GAME'}</div>
+            {(allTime.length ? allTime : (result.scores || []).slice(0, 10)).map((p, i) => (
               <div key={p.key || p.name} className="alltime-row">
                 <span className={`alltime-rank${i === 0 ? ' rank-1' : ''}`}>{i + 1}</span>
                 <span className="mini-avatar">{p.name.slice(0, 1).toUpperCase()}</span>

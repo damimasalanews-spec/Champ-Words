@@ -1,0 +1,277 @@
+/* ============================================================
+   CHAMP WORDS — "Royal" theme override (matches the WordPress site)
+   Loaded last in main.jsx so it wins the cascade.
+   Palette: deep space #0d0a1f · panel #141032 · purple #7c6cff
+            gold #ffd76a · pink #ff5c7c · green #3ddc97
+   ============================================================ */
+
+:root,
+[data-theme='midnight'],
+[data-theme='aurora'] {
+  --bg: #0d0a1f;
+  --bg-2: #0a0818;
+  --surface: #141032;
+  --surface-2: #1c1540;
+  --surface-3: #241c52;
+  --bg-light: var(--surface);
+  --text: #f4f1ff;
+  --text-dim: #a99fc9;
+  --text-faint: #6f6690;
+  --accent: #7c6cff;
+  --accent-strong: #9b8fff;
+  --accent-soft: rgba(124, 108, 255, 0.16);
+  --sky: #8f7bff;
+  --sky-soft: rgba(143, 123, 255, 0.14);
+  --amber: #ffd76a;
+  --amber-soft: rgba(255, 215, 106, 0.14);
+  --danger: #ff5c7c;
+  --danger-soft: rgba(255, 92, 124, 0.14);
+  --green: #3ddc97;
+  --gold: var(--amber);
+  --yellow: var(--amber);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 215, 106, 0.32);
+  --border-empty: var(--border-strong);
+  --key-bg: rgba(255, 255, 255, 0.06);
+  --bracket-bg: rgba(124, 108, 255, 0.14);
+  --bracket-border: rgba(124, 108, 255, 0.45);
+  --tile: #ffffff;
+  --tile-text: #1b2436;
+  /* arcade.css custom set */
+  --cw-bg: #0d0a1f;
+  --cw-panel: #141032;
+  --cw-panel-2: #1c1540;
+  --cw-cyan: #7c6cff;
+  --cw-purple: #7c6cff;
+  --cw-pink: #ff5c7c;
+  --cw-amber: #ffd76a;
+  --cw-green: #3ddc97;
+  --cw-red: #ff5c7c;
+  --cw-text: #f4f1ff;
+  --cw-dim: #a99fc9;
+  --cw-faint: #6f6690;
+  --cw-line: rgba(124, 108, 255, 0.28);
+  --cw-line-strong: rgba(255, 215, 106, 0.45);
+  --cw-display: 'Oxanium', 'Outfit', system-ui, sans-serif;
+}
+
+/* ---------- Login card — premium glass card ---------- */
+.login-page {
+  background:
+    radial-gradient(1000px 520px at 85% -10%, rgba(124, 108, 255, 0.22), transparent 60%),
+    radial-gradient(900px 520px at 5% 110%, rgba(255, 92, 124, 0.12), transparent 60%),
+    var(--bg) !important;
+}
+.login-card {
+  background: linear-gradient(165deg, rgba(28, 21, 64, 0.92), rgba(20, 16, 50, 0.92)) !important;
+  border: 1px solid rgba(124, 108, 255, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(255, 215, 106, 0.06), 0 24px 70px rgba(0, 0, 0, 0.55), 0 0 60px rgba(124, 108, 255, 0.15) !important;
+  backdrop-filter: blur(10px);
+  animation: cwCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes cwCardIn {
+  from { opacity: 0; transform: translateY(22px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.login-logo h1 { font-family: var(--cw-display); letter-spacing: 1px; }
+.login-logo h1 { background: linear-gradient(92deg, #ffd76a 5%, #fff3c9 40%, #7c6cff 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.login-live-badge {
+  border-color: rgba(124, 108, 255, 0.5) !important;
+  color: var(--cw-text) !important;
+  background: rgba(124, 108, 255, 0.14) !important;
+}
+.live-dot { background: var(--cw-green) !important; box-shadow: 0 0 10px var(--cw-green) !important; }
+.tiktok-login-btn {
+  background: rgba(124, 108, 255, 0.16) !important;
+  border: 1px solid rgba(124, 108, 255, 0.55) !important;
+  color: var(--cw-text) !important;
+  transition: transform 0.18s ease, background 0.18s ease !important;
+}
+.tiktok-login-btn:hover { background: rgba(124, 108, 255, 0.3) !important; transform: translateY(-2px); }
+.guest-login-btn {
+  background: linear-gradient(92deg, #ffd76a, #ffb84d) !important;
+  color: #241a02 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 34px rgba(255, 215, 106, 0.3) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+.guest-login-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 44px rgba(255, 215, 106, 0.45) !important; }
+.login-divider span { color: var(--cw-text-dim) !important; }
+
+/* ---------- Floating letter tiles — richer word-art ---------- */
+.login-bg-tiles span {
+  animation: cwDrift 9s ease-in-out infinite;
+  text-shadow: 0 0 18px rgba(255, 215, 106, 0.35);
+}
+@keyframes cwDrift {
+  0%, 100% { transform: translateY(0) rotate(-6deg); opacity: 0.85; }
+  50%      { transform: translateY(-30px) rotate(8deg); opacity: 1; }
+}
+.lobby-intro .login-bg-tiles span { color: rgba(255, 215, 106, 0.12) !important; }
+
+/* ---------- Lobby intro card polish ---------- */
+.lobby-card {
+  border-radius: 18px !important;
+  border: 1px solid rgba(124, 108, 255, 0.35) !important;
+  background: linear-gradient(165deg, rgba(28, 21, 64, 0.94), rgba(20, 16, 50, 0.94)) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+.btn-primary {
+  background: linear-gradient(92deg, #7c6cff, #9b8fff) !important;
+  border: 0 !important;
+  color: #fff !important;
+  box-shadow: 0 10px 30px rgba(124, 108, 255, 0.35) !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(124, 108, 255, 0.5) !important; }
+.btn-secondary {
+  background: rgba(124, 108, 255, 0.12) !important;
+  border: 1px solid rgba(124, 108, 255, 0.5) !important;
+  color: var(--cw-text) !important;
+}
+.round-option.selected {
+  background: linear-gradient(92deg, #7c6cff, #9b8fff) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+.intro-title { font-family: var(--cw-display); letter-spacing: 1px; }
+.intro-chip {
+  background: rgba(255, 215, 106, 0.1) !important;
+  border: 1px solid rgba(255, 215, 106, 0.3) !important;
+  color: var(--cw-text) !important;
+}
+
+/* ---------- Daily Missions panel ---------- */
+.cw-missions {
+  margin-top: 18px;
+  background: linear-gradient(165deg, rgba(28, 21, 64, 0.94), rgba(20, 16, 50, 0.94)) !important;
+  border: 1px solid rgba(255, 215, 106, 0.28) !important;
+  border-radius: 18px !important;
+  padding: 18px 18px 14px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45) !important;
+}
+.cw-missions-head {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--cw-display); font-weight: 700; font-size: 16px; letter-spacing: 0.5px;
+  color: var(--cw-text); margin-bottom: 12px;
+}
+.cw-missions-head .cw-m-tag {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--cw-amber); background: rgba(255, 215, 106, 0.12);
+  border: 1px solid rgba(255, 215, 106, 0.35); padding: 2px 9px; border-radius: 999px;
+}
+.cw-mission { margin-bottom: 13px; }
+.cw-mission-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px;
+}
+.cw-mission-name { font-size: 13.5px; color: var(--cw-text); font-weight: 600; }
+.cw-mission-reward { font-size: 12px; color: var(--cw-amber); font-weight: 700; white-space: nowrap; }
+.cw-mission-bar {
+  height: 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden;
+}
+.cw-mission-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(92deg, #7c6cff, #ffd76a);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cw-mission-claim {
+  margin-top: 6px; width: 100%;
+  background: linear-gradient(92deg, #ffd76a, #ffb84d) !important;
+  color: #241a02 !important; border: 0 !important; font-weight: 800 !important;
+  border-radius: 10px !important; padding: 9px 14px !important; cursor: pointer;
+  transition: transform 0.15s ease !important;
+}
+.cw-mission-claim:hover { transform: translateY(-1px); }
+.cw-mission-claimed {
+  font-size: 12.5px; color: var(--cw-green); font-weight: 700; text-align: center; padding: 8px 0;
+}
+.cw-missions-done {
+  text-align: center; color: var(--cw-green); font-weight: 700; font-size: 13.5px; padding: 6px 0;
+}
+
+/* ---------- WOTD / daily strip on login ---------- */
+.cw-daily-strip {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  margin: 0 0 14px; padding: 0;
+}
+.cw-daily-chip {
+  font-size: 12px; letter-spacing: 0.4px; color: var(--cw-text-dim);
+  background: rgba(124, 108, 255, 0.1); border: 1px solid rgba(124, 108, 255, 0.3);
+  padding: 6px 13px; border-radius: 999px;
+}
+
+/* ---------- Hall of fame (kept for in-game use) ---------- */
+.hall-row { border-color: rgba(124, 108, 255, 0.18) !important; }
+.hall-rank { color: var(--cw-text-faint) !important; }
+.hall-score { color: var(--cw-amber) !important; font-family: var(--cw-display); font-weight: 700; }
+.hall-tab.active { color: var(--cw-amber) !important; border-color: rgba(255, 215, 106, 0.4) !important; }
+.hall-chat { background: rgba(61, 220, 151, 0.16) !important; color: var(--cw-green) !important; border-color: rgba(61, 220, 151, 0.4) !important; }
+
+/* ---------- Global polish ---------- */
+body { background: var(--bg); }
+.logo-text, .intro-title, .boot-logo { font-family: var(--cw-display); }
+
+/* ---------- In-game menu on web game screens (desktop) ----------
+   Web sessions now play in the full responsive layout; the menu floats
+   top-right, anchored to the viewport, over the game screen. */
+html.cw-web .game-menu {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 900;
+}
+html.cw-web .game-menu-btn {
+  background: rgba(13, 17, 40, 0.85) !important;
+  border: 1px solid rgba(122, 170, 255, 0.28) !important;
+  border-radius: 999px !important;
+  padding: 7px 14px !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.cw-web .game-menu-dd {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 250px;
+  background: rgba(13, 17, 40, 0.97) !important;
+  border: 1px solid rgba(122, 170, 255, 0.3) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ---------- Final: kill remaining cyan, add gold accents ---------- */
+.login-page .login-logo h1 {
+  background: linear-gradient(92deg, #ffd76a 5%, #fff3c9 40%, #7c6cff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 4px 18px rgba(124, 108, 255, 0.45));
+}
+.login-page .login-live-badge {
+  background: rgba(255, 215, 106, 0.1) !important;
+  border: 1px solid rgba(255, 215, 106, 0.45) !important;
+  color: #ffd76a !important;
+}
+.login-page .login-live-badge .live-dot {
+  background: #3ddc97 !important;
+  box-shadow: 0 0 10px #3ddc97 !important;
+}
+.login-page .login-logo p { color: var(--cw-text-dim) !important; }
+.login-page .login-avatar {
+  border: 2px solid rgba(255, 215, 106, 0.55) !important;
+  box-shadow: 0 0 24px rgba(255, 215, 106, 0.25) !important;
+}
+.btn-primary {
+  background: linear-gradient(92deg, #7c6cff, #9b8fff) !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(124, 108, 255, 0.35) !important;
+}
+.btn-primary:hover { box-shadow: 0 14px 40px rgba(124, 108, 255, 0.5) !important; }
+.arc-pill, .live-pill, .stream-badge {
+  background: rgba(255, 215, 106, 0.12) !important;
+  border: 1px solid rgba(255, 215, 106, 0.45) !important;
+  color: #ffd76a !important;
+}

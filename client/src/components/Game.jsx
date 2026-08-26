@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PlayerList from './PlayerList';
 import { playSound } from '../sounds';
 import useCountUp from '../useCountUp';
+import SmokeAnim from './SmokeAnim';
 
 // ═══ Helpers ══════════════════════════════════════════════════════════════
 function isAdjacent(r1, c1, r2, c2) {
@@ -176,6 +177,13 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [confetti, setConfetti] = useState(null);
   const [scorePop, setScorePop] = useState(null); // flying "+N" on correct guess
   const [foundPopup, setFoundPopup] = useState(null); // TikTok chat solver celebration popup
+  // Round-winner animation: { playerId, playerName, id } — plays inside the TOP 5
+  // board (in the winner's exact column) for ~6s when the FIRST correct answer
+  // of the round lands, then the server starts the next round automatically.
+  const [winnerAnim, setWinnerAnim] = useState(null);
+  const winnerAnimTimer = useRef(null);
+  // Viewer shop UI (button lives in the app header; panel is rendered by App)
+  const [winConfetti, setWinConfetti] = useState(null); // shop confetti burst overlay
   const [toasts, setToasts] = useState([]); // achievement toasts (first blood, lightning, streak)
   const toastId = useRef(1);
   const [ticker, setTicker] = useState([]); // winner ticker (recent finds)
@@ -240,6 +248,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setFalling(false); setConfetti(null); setSubmitting(false); setTimeLeft(60);
     popupQueue.current = [];
     setFoundPopup(null);
+    if (winnerAnimTimer.current) { clearTimeout(winnerAnimTimer.current); winnerAnimTimer.current = null; }
+    setWinnerAnim(null);
     setToasts([]);
     setDragPath([]); setIsDragging(false); setTypedWord(''); lastCellRef.current = null;
   }, [room.round, room.champId]);
@@ -271,14 +281,53 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
       // players or to TikTok live chat viewers watching the stream.
       if (data.self && data.word) {
         setSolvedWord(data.word);
+        // Popup for the correct answer — shows the SOLVER'S NAME (not the
+        // word letters), same professional style as the TikTok chat solver
+        // popup (rendered at the confetti spot below).
+        setConfetti({ word: data.winnerName || 'You', msg: 'You found a Champ Word!' });
       }
       // Everyone learns WHO solved it (green name in the TOP 5)…
       if (data.winnerId) {
         setSolvedBy(data.winnerId);
         setSolvedByName(data.winnerName || '');
       }
-      // Correct-answer popups were removed — the round-winner banner
-      // announces the winner instead.
+      // FIRST correct answer of the round → the winner animation plays inside
+      // the TOP 5 board for ~6s, then the server starts the next round.
+      if (data.roundWon && data.winnerId) {
+        // Rank inside the fresh real TOP 5 (1-based) + the winner's stats for
+        // the animation flair (streak / record / points / word).
+        const players = data.room && data.room.players ? data.room.players : [];
+        const sorted = players.filter(p => p.score > 0).sort((a, b) => b.score - a.score);
+        const winner = players.find(p => p.id === data.winnerId);
+        const rIdx = sorted.findIndex(p => p.id === data.winnerId);
+        setWinnerAnim({
+          playerId: data.winnerId,
+          playerName: data.winnerName || 'WINNER',
+          id: Date.now() + Math.random(),
+          rank: rIdx >= 0 ? rIdx + 1 : null,
+          streak: winner ? (winner.streak || 0) : 0,
+          bestTime: winner ? (winner.bestTime || 0) : 0,
+          newRecord: !!data.newRecord,
+          elapsed: data.elapsed || 0,
+          gained: data.score || 0,
+          word: data.winnerWord || '',
+          nameColor: data.nameColor || null,   // viewer shop: bought name color
+          nameEffect: data.nameEffect || null, // viewer shop: diamond / sparkle
+          rain: data.rain || null,             // viewer shop: emoji rain on win
+          theme: ((data.round || 1) - 1) % 4,  // rotating animation stage
+        });
+        if (data.confetti) setWinConfetti({ word: data.winnerWord || data.winnerName || 'WINNER' }); // viewer shop: confetti burst
+        playSound('fanfare');
+        if (winnerAnimTimer.current) clearTimeout(winnerAnimTimer.current);
+        winnerAnimTimer.current = setTimeout(() => setWinnerAnim(null), 6250);
+      }
+      // TikTok chat solver: same professional popup as an in-game player,
+      // showing the chat user's name — plus the queued popup (one by one).
+      if (data.fromChat && (data.winnerNick || data.winnerName)) {
+        const chatName = data.winnerNick || data.winnerName;
+        setConfetti({ word: chatName, msg: 'You found a Champ Word!' });
+        pushFoundPopup({ name: chatName, score: data.score, word: data.solved || '' });
+      }
       // Every 10th chat solve → milestone celebration
       if (data.fromChat) {
         chatSolves.current += 1;
@@ -290,6 +339,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     };
     socket.on('word_found', onFound);
     return () => socket.off('word_found', onFound);
+  }, [socket, pushFoundPopup]);
+
+  // 1k / 5k / 10k point milestones — queued with the found-word popups so
+  // they appear in the same spot, in order
+  useEffect(() => {
+    const onMilestone = (data) => {
+      if (!data || !data.name || !data.points) return;
+      pushFoundPopup({ kind: 'milestone', name: data.name, points: data.points });
+    };
+    socket.on('milestone', onMilestone);
+    return () => socket.off('milestone', onMilestone);
   }, [socket, pushFoundPopup]);
 
 
@@ -388,7 +448,18 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     setSubmitting(true);
     socket.emit('submit_word', { roomId: room.id, word: w, path: [] }, (res) => {
       setSubmitting(false);
-      if (res.ok) { setTypedWord(''); }
+      if (res.ok && res.command) {
+        setTypedWord('');
+        if (res.command === 'buyhint') showToast(`✅ +1 bonus hint added! (now ${res.hintsLeft} total)`);
+        else if (res.command === 'color') showToast(`✅ ${res.name} name color ${res.free ? 'set' : 'bought'}!`);
+        else if (res.command === 'rain') showToast(`✅ ${res.name} rain ${res.free ? 'enabled' : 'bought'}!`);
+        else if (res.command === 'effect') showToast(`✅ ${res.name} name effect ${res.free ? 'enabled' : 'bought'}!`);
+        else if (res.command === 'emote') showToast(`✅ ${res.name} emote tag set!`);
+        else if (res.command === 'pin') showToast(`✅ Pinned: "${res.name}"`);
+        else if (res.command === 'coins') showToast(res.free ? '👑 Host — unlimited shop access!' : `🪙 You have ${res.coins} coins`);
+        else showToast('✅ Done!');
+      }
+      else if (res.ok) { setTypedWord(''); }
       else if (res.error && res.error.includes('Not the word')) {
         playSound('wrong');
         buzz(70);
@@ -421,25 +492,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const timerLabel = `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`;
   const dragWord = dragPath.map(([r, c]) => grid[r]?.[c] || '').join('').toUpperCase();
   // TOP 5 leaderboard (half-screen right side):
-  // - Before anyone solves / during the all-found & round-over pauses →
-  //   top 5 players by TOTAL score (anyone in the room).
-  // - After the fastest player solves (but not everyone yet) →
-  //   ONLY this round's solvers, fastest first, with their round score —
-  //   non-solvers are hidden (no zeros).
+  // ALWAYS the real TOP 5 players by TOTAL score — shown from the moment the
+  // round starts and never swapped for the round-solvers view. When someone
+  // makes the first correct answer, the smoke animation plays in the winner's
+  // exact column here for ~6s (column sizes never change), and the next round
+  // starts immediately after.
   const leaderTop = room.players
     .filter(p => p.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 5);
-  const roundSolvers = room.players
-    .filter(p => p.foundWord && (p.roundScore || 0) > 0)
-    .sort((a, b) => (a.roundFoundAt || 0) - (b.roundFoundAt || 0))
-    .slice(0, 5);
   // FULL leaderboard: every player ranked by total score (scrollable below)
   const overallPlayers = room.players.slice().sort((a, b) => b.score - a.score);
-  // Flip to "THIS ROUND" when solvers exist this round. Derived from BOTH the
-  // local foundList AND the server room data (roundSolvers), so a rejoin or a
-  // missed event can never leave the round score hidden behind the totals.
-  const showRoundScores = state === 'playing' && !allFound && (foundList.length > 0 || roundSolvers.length > 0);
 
   // Flash a board row briefly when that player's score increases
   const [flashSet, setFlashSet] = useState(() => new Set());
@@ -474,6 +537,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
     }
     prevLeaderRef.current = lid;
   }, [room?.players]);
+
+  // ── Winner-animation placement inside the TOP 5 board ──────────────────
+  // The animation fills the whole TOP 5 column for ~6s (board covered while it
+  // plays), then fades and the real top 5 is shown again. Column sizes are
+  // never changed — it is an overlay.
 
   // Wrong-guess shake + correct-guess emerald flash on the grid
   const [wrongFlash, setWrongFlash] = useState(false);
@@ -622,8 +690,10 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         ))}
       </div>
 
-      {/* ── Top 5 celebration during the 6s pause (covers the grid) ── */}
-      {(allFound || state === 'round_over') && top5Row.length > 0 && (
+      {/* ── Top 5 celebration during the 6s pause (covers the grid) ──
+             Hidden while the round-winner smoke animation plays in the TOP 5
+             board — the animation replaces the pause card for winner rounds. */}
+      {(allFound || state === 'round_over') && !winnerAnim && top5Row.length > 0 && (
         <Top5Celebration players={top5Row} />
       )}
 
@@ -717,8 +787,18 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* Correct-answer popup removed — the round-winner banner announces
-          the winner instead. */}
+      {/* Finder popup — SAME professional style for in-game players AND
+          TikTok chat solvers; shows the solver's name (chat nickname for
+          chat solvers, the player's name in-game). */}
+      {confetti && (
+        <Confetti
+          variant="chat"
+          silent
+          word={confetti.word || (me && me.name) || 'You'}
+          onDone={clearConfetti}
+          msg={confetti.msg || 'You found a Champ Word!'}
+        />
+      )}
 
       {/* Achievement toasts — stacked pills for the stream */}
       {toasts.length > 0 && (
@@ -747,8 +827,19 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         </div>
       )}
 
-      {/* Chat-solver popup queue removed — the winner is announced by the
-          round-winner banner and the round-over board. */}
+      {/* TikTok chat solver celebration — silent, professional, one by one.
+          key={id} forces a fresh mount per popup so the ~2s timer always runs
+          (fixes popups getting stuck when players solve back-to-back). */}
+      {foundPopup && (
+        <Confetti
+          key={foundPopup.id}
+          variant={foundPopup.kind === 'milestone' ? 'milestone' : 'chat'}
+          silent
+          word={foundPopup.name}
+          onDone={showNextPopup}
+          msg={foundPopup.kind === 'milestone' ? `crossed ${foundPopup.points} points!` : 'You found a Champ Word!'}
+        />
+      )}
 
       {/* Flying "+N" popup on a correct guess (flame on a streak ≥2) */}
       {scorePop !== null && (
@@ -805,6 +896,23 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         {/* ── Left: play field ── */}
         <div className="game-col-left">
         <div className="game-frame">
+        {/* Pinned message (viewer shop: !pin) — floats above the answer input
+            so it never overlaps the TOP 5 board or the grid */}
+        {room.pinnedMessage && room.pinnedMessage.until > Date.now() && (
+          <div style={{
+            position: 'absolute', left: '50%', bottom: 74, transform: 'translateX(-50%)',
+            zIndex: 45, display: 'flex', alignItems: 'center', gap: 8,
+            background: 'rgba(18,14,44,.94)', border: '1px solid rgba(255,215,106,.6)',
+            borderRadius: 12, padding: '7px 16px', maxWidth: '86%',
+            boxShadow: '0 6px 20px rgba(0,0,0,.45)', color: '#fff',
+            fontFamily: "'Oxanium', sans-serif", fontSize: 13,
+          }}>
+            <span style={{ fontSize: 15 }}>📌</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <b style={{ color: '#ffd76a' }}>{room.pinnedMessage.name}</b>&nbsp;·&nbsp;{room.pinnedMessage.text}
+            </span>
+          </div>
+        )}
         <div className="grid-score-row">
         {/* ── Grid + TOP 5 share ONE bordered panel (TikTok half view) ── */}
         <div className={`grid-leader-panel${state === 'playing' && timeLeft <= 10 ? ' low-time' : ''}`}>
@@ -871,25 +979,31 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
 
         </div>
 
-        {/* ── TOP 5 (half-size right side) ── */}
+        {/* ── TOP 5 (half-size right side) — ALWAYS the real top 5 by total
+             score; the winner's smoke animation overlays it in the winner's
+             exact column for ~6s when the first correct answer lands ── */}
         <div className="leader-col">
-        <div className="top10-board">
-          <div className="top10-title">TOP 5{showRoundScores ? ' · THIS ROUND' : ''}</div>
+        <div className={`top10-board${winnerAnim ? ' top10-animating' : ''}`}>
+          <div className="top10-title">TOP 5</div>
           {Array.from({ length: 5 }, (_, i) => {
-            const p = (showRoundScores ? roundSolvers : leaderTop)[i];
+            const p = leaderTop[i];
             return (
-              <div key={i} className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}${p && p.id === crownId ? ' just-crowned' : ''}`}>
+              <div key={i}
+                className={`top10-row${p ? (p.id === socket.id ? ' top10-me' : '') : ' top10-empty'}${p && flashSet.has(p.id) ? ' just-updated' : ''}${p && p.id === crownId ? ' just-crowned' : ''}`}>
                 <span className={`top10-rank${i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : ''}`}>{i + 1}</span>
                 {p ? (
                   <>
-                    <span className={`top10-name${showRoundScores ? ' solver' : ''}`}>
-                      {showRoundScores ? '✓ ' : ''}
+                    <span className="top10-name">
                       {p.isChat && <span className="tt-badge" title="TikTok player"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg></span>}
+                      {p.emote && <span style={{ marginRight: 3 }}>{p.emote}</span>}
                       {p.name.split(' ')[0].slice(0, 7)}{p.name.split(' ')[0].length > 7 ? '…' : ''}
                     </span>
                     {p.streak >= 2 && <span className="stat-chip chip-fire">🔥{p.streak}</span>}
                     {p.bestTime > 0 && <span className="stat-chip chip-fast">⚡{p.bestTime}s</span>}
-                    <span className="top10-pts">{showRoundScores ? p.roundScore : p.score}</span>
+                    <span className="top10-pts">{p.score}</span>
+                    {p.id === socket.id && (
+                      <span style={{ fontSize: 11, color: '#ffd76a', marginLeft: 4, fontWeight: 700 }}>🪙{p.coins || 0}</span>
+                    )}
                   </>
                 ) : (
                   <span className="top10-name">—</span>
@@ -897,6 +1011,17 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
               </div>
             );
           })}
+          {winnerAnim && (
+            <SmokeAnim key={winnerAnim.id} name={winnerAnim.playerName}
+              rank={winnerAnim.rank} streak={winnerAnim.streak} bestTime={winnerAnim.bestTime}
+              newRecord={winnerAnim.newRecord} elapsed={winnerAnim.elapsed} gained={winnerAnim.gained}
+              word={winnerAnim.word} nameColor={winnerAnim.nameColor} nameEffect={winnerAnim.nameEffect}
+              rain={winnerAnim.rain} theme={winnerAnim.theme} />
+          )}
+          {winConfetti && (
+            <Confetti word={winConfetti.word} msg="SHOP CONFETTI" variant="chat"
+              onDone={() => setWinConfetti(null)} />
+          )}
         </div>
         </div>
         </div>
