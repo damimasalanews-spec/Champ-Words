@@ -1,213 +1,1659 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Champ Words — Multiplayer Word Game</title>
-    <meta name="description" content="Champ Words is a real-time multiplayer word guessing game. Race your friends, crack the word before the clock runs out, and climb the leaderboard." />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/game-site.css" rel="stylesheet" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Champ Words — Multiplayer Word Battle Arena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #07070a;
+            --bg-surface: #0f0f18;
+            --bg-elevated: #161622;
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --accent-cyan: #00f0ff;
+            --accent-cyan-dim: rgba(0, 240, 255, 0.15);
+            --accent-purple: #a855f7;
+            --accent-purple-dim: rgba(168, 85, 247, 0.15);
+            --accent-pink: #ec4899;
+            --accent-pink-dim: rgba(236, 72, 153, 0.15);
+            --accent-gold: #fbbf24;
+            --accent-gold-dim: rgba(251, 191, 36, 0.15);
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-dim: #475569;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: -3;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(168, 85, 247, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 50% at 50% 50%, rgba(236, 72, 153, 0.06) 0%, transparent 50%);
+            animation: mesh-shift 20s ease-in-out infinite alternate;
+        }
+        @keyframes mesh-shift {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-2%, -1%) scale(1.05); }
+        }
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 80%);
+        }
+        .bg-noise {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float-particle linear infinite;
+        }
+        @keyframes float-particle {
+            0% { transform: translateY(110vh) translateX(0) scale(0); opacity: 0; }
+            5% { opacity: 0.5; }
+            95% { opacity: 0.5; }
+            100% { transform: translateY(-10vh) translateX(30px) scale(1); opacity: 0; }
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(7, 7, 10, 0.6);
+            backdrop-filter: blur(24px) saturate(1.2);
+            border-bottom: 1px solid transparent;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        nav.scrolled {
+            padding: 0.625rem 2rem;
+            background: rgba(7, 7, 10, 0.9);
+            border-bottom-color: var(--border-subtle);
+        }
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            cursor: pointer;
+        }
+        .logo-mark {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+            letter-spacing: 0.02em;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 2px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-cta {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .btn {
+            padding: 0.625rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.01em;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        .btn:hover::before { transform: translateX(100%); }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 240, 255, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-glass);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .btn-outline:hover {
+            background: var(--bg-glass);
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #0a0a0f;
+            font-weight: 700;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+        }
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+            border-color: var(--border-subtle);
+        }
+        .btn-lg { padding: 0.875rem 2rem; font-size: 1rem; }
+        .btn-xl { padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 14px; }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 2rem 5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: glow-pulse 4s ease-in-out infinite;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            z-index: 1;
+            position: relative;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            animation: badge-glow 3s ease-in-out infinite;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        @keyframes badge-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.15); }
+            50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.3); }
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: live-blink 2s ease-in-out infinite;
+        }
+        @keyframes live-blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 700;
+            line-height: 1.05;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .hero h1 .gradient-text {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+        .hero h1 .gradient-text::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-pink));
+            border-radius: 3px;
+            opacity: 0.5;
+        }
+        .hero-desc {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 4rem;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            position: relative;
+        }
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(180deg, transparent, var(--border-glass), transparent);
+        }
+        .stat-item:last-child::after { display: none; }
+        .stat-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+        .hero-word-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(5rem, 15vw, 14rem);
+            font-weight: 700;
+            opacity: 0.025;
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 0.15em;
+            z-index: 0;
+            transition: opacity 0.5s ease;
+        }
+        section {
+            padding: 7rem 2rem;
+            position: relative;
+        }
+        .section-header {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 4rem;
+        }
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.25rem;
+        }
+        .section-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+        .section-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 2.25rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 240, 255, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(0, 240, 255, 0.15);
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover::after { opacity: 1; }
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 1;
+        }
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+        .icon-cyan { background: var(--accent-cyan-dim); color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.1); }
+        .icon-purple { background: var(--accent-purple-dim); color: var(--accent-purple); box-shadow: 0 0 20px rgba(168, 85, 247, 0.1); }
+        .icon-pink { background: var(--accent-pink-dim); color: var(--accent-pink); box-shadow: 0 0 20px rgba(236, 72, 153, 0.1); }
+        .icon-gold { background: var(--accent-gold-dim); color: var(--accent-gold); box-shadow: 0 0 20px rgba(251, 191, 36, 0.1); }
+        .icon-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); box-shadow: 0 0 20px rgba(34, 197, 94, 0.1); }
+        .icon-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
+        .arena-section {
+            background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.02), transparent);
+            padding: 8rem 2rem;
+        }
+        .arena-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 28px;
+            padding: 4rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .arena-card::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 240, 255, 0.03), transparent, rgba(168, 85, 247, 0.03), transparent);
+            animation: rotate-glow 15s linear infinite;
+        }
+        @keyframes rotate-glow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .arena-card > * { position: relative; z-index: 1; }
+        .arena-card h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .arena-card p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 520px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+        .arena-features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0 2.5rem;
+            flex-wrap: wrap;
+        }
+        .arena-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .arena-feature .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+        }
+        .game-demo-section {
+            background: linear-gradient(180deg, transparent, rgba(168, 85, 247, 0.02), transparent);
+            padding: 7rem 2rem;
+        }
+        .game-interface {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .game-room-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .room-badge {
+            padding: 0.375rem 0.875rem;
+            background: var(--accent-purple-dim);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+        .player-count {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        .game-timer {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .game-body {
+            padding: 3rem 2rem;
+            text-align: center;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .word-reveal {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            color: var(--text-primary);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3em;
+        }
+        .word-letter {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: letter-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes letter-pop {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .word-hint {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .word-input-demo {
+            width: 100%;
+            max-width: 400px;
+            padding: 1rem 1.5rem;
+            background: var(--bg-deep);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .word-input-demo:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .word-input-demo::placeholder {
+            color: var(--text-dim);
+        }
+        .game-players-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .player-avatar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .player-avatar-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: white;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .player-avatar-img.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            animation: avatar-pulse 2s ease-in-out infinite;
+        }
+        @keyframes avatar-pulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.5); }
+        }
+        .player-avatar-name {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .game-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-subtle);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .round-info {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .round-info span {
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+        .powerups-bar {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .powerup-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        .powerup-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: var(--accent-cyan-dim);
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .category-chip {
+            padding: 0.625rem;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .category-chip:hover, .category-chip.active {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            background: var(--accent-purple-dim);
+        }
+        .missions-grid {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .mission-card {
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+        .mission-card:hover {
+            border-color: rgba(251, 191, 36, 0.2);
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 30px rgba(251, 191, 36, 0.15);
+        }
+        .mission-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--accent-gold-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .mission-info { flex: 1; }
+        .mission-info h4 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .mission-info p { font-size: 0.8rem; color: var(--text-muted); }
+        .mission-points {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            background: var(--accent-gold-dim);
+            padding: 0.375rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+        .step-card {
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 2.5rem 1.75rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .step-card:hover {
+            border-color: rgba(168, 85, 247, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .step-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3);
+            position: relative;
+        }
+        .step-number::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.3;
+        }
+        .step-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+        .leaderboard-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+        }
+        .leaderboard-card {
+            background: linear-gradient(145deg, var(--bg-surface), var(--bg-elevated));
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .leaderboard-card:hover {
+            border-color: rgba(251, 191, 36, 0.1);
+        }
+        .leaderboard-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.875rem 1rem;
+            background: var(--bg-glass);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(6px);
+            border-color: var(--border-glass);
+        }
+        .rank {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #0a0a0f; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3); }
+        .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #0a0a0f; }
+        .rank-3 { background: linear-gradient(135deg, #fdba74, #ea580c); color: #0a0a0f; }
+        .rank-other { background: var(--bg-glass); color: var(--text-muted); border: 1px solid var(--border-subtle); }
+        .player-avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        .player-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.9375rem;
+        }
+        .player-score {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            font-size: 0.9375rem;
+        }
+        .final-cta {
+            text-align: center;
+            padding: 8rem 2rem;
+            background: linear-gradient(180deg, transparent, rgba(168, 85, 247, 0.03), transparent);
+            position: relative;
+        }
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .final-cta h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .final-cta p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 480px;
+            margin: 0 auto 2.5rem;
+            position: relative;
+        }
+        footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover { color: var(--accent-cyan); }
+        .footer-bottom {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .hero { padding: 7rem 1.5rem 4rem; }
+            .hero-stats { gap: 2rem; }
+            .stat-item::after { display: none; }
+            .features-grid { grid-template-columns: 1fr; }
+            .arena-card { padding: 2.5rem 1.5rem; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .leaderboard-container { grid-template-columns: 1fr; }
+            .game-body { padding: 2rem 1rem; }
+            .game-footer { flex-direction: column; gap: 1rem; }
+            section { padding: 5rem 1.5rem; }
+            .footer-top { flex-direction: column; text-align: center; }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-subtle); }
+        ::selection {
+            background: rgba(0, 240, 255, 0.2);
+            color: var(--text-primary);
+        }
+    </style>
 </head>
-<body class="cw-gaming">
-    <div class="game-site">
+<body>
+    <div class="bg-mesh"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+    <div class="particles" id="particles"></div>
 
-        <!-- ============ NAVBAR ============ -->
-        <nav class="navbar navbar-expand-lg sticky-top cw-navbar">
-            <div class="container">
-                <a class="navbar-brand" href="index.html">
-                    <span class="brand-tile">&#127942;</span>
-                    <span><span class="gold">Champ</span> <span class="purple">Words</span></span>
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo" onclick="window.scrollTo(0,0)">
+                <div class="logo-mark">C</div>
+                Champ Words
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#arena">Arena</a>
+                <a href="#demo">Game</a>
+                <a href="#how-to-play">How to Play</a>
+                <a href="#leaderboard">Leaderboard</a>
+            </div>
+            <div class="nav-cta">
+                <a href="game/" class="btn btn-ghost">Log In</a>
+                <a href="game/" class="btn btn-primary">Play Now</a>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-word-bg" id="heroWordBg">CHAMPWORDS</div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="live-dot"></span>
+                Live Multiplayer Arena
+            </div>
+            <h1>
+                Race Your Friends.<br>
+                <span class="gradient-text">Crack the Word.</span>
+            </h1>
+            <p class="hero-desc">
+                Speed wins points, streaks build legends — and the leaderboard remembers everything. 
+                Jump into the arena and claim your crown.
+            </p>
+            <div class="hero-buttons">
+                <a href="#arena" class="btn btn-primary btn-lg">
+                    <span>▶</span> Enter the Arena
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#cwNav" aria-controls="cwNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="cwNav">
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
-                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="play.html">Play</a></li>
-                        <li class="nav-item"><a class="nav-link" href="leaderboard.html">Leaderboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="how-to-play.html">How to Play</a></li>
-                        <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-                        <li class="nav-item ms-lg-2 mt-2 mt-lg-0"><a class="nav-link cw-btn-nav" href="play.html">&#9654;&nbsp; Play Now</a></li>
-                    </ul>
+                <a href="#how-to-play" class="btn btn-outline btn-lg">How It Works</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number" data-count="7296">0</div>
+                    <div class="stat-label">Word Dictionary</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="13">0</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Word Battles</div>
                 </div>
             </div>
-        </nav>
+        </div>
+    </section>
 
-        <!-- ============ HERO ============ -->
-        <section class="cw-hero">
-            <div class="cw-hero-grid"></div>
-            <span class="cw-tile" style="left:6%;top:14%;animation-delay:0s">A</span>
-            <span class="cw-tile" style="left:14%;top:64%;animation-delay:0.7s">E</span>
-            <span class="cw-tile" style="left:22%;top:30%;animation-delay:1.4s">I</span>
-            <span class="cw-tile" style="left:74%;top:12%;animation-delay:2.1s">O</span>
-            <span class="cw-tile" style="left:82%;top:56%;animation-delay:2.8s">U</span>
-            <span class="cw-tile" style="left:68%;top:76%;animation-delay:3.5s">S</span>
-            <span class="cw-tile" style="left:44%;top:8%;animation-delay:4.2s">R</span>
-            <span class="cw-tile" style="left:38%;top:80%;animation-delay:4.9s">T</span>
-            <span class="cw-tile" style="left:90%;top:32%;animation-delay:5.6s">L</span>
-            <span class="cw-tile" style="left:8%;top:88%;animation-delay:6.3s">N</span>
-
-            <div class="cw-inner" style="position:relative;z-index:2">
-                <div class="cw-hero-badge"><span class="dot" data-srv-dot></span> Live Multiplayer &middot; Word Battle Arena</div>
-                <h1 class="cw-logo"><span class="cw-gold-text">Champ</span> <span class="cw-purple-text">Words</span></h1>
-                <p class="cw-tagline">Race your friends. Crack the word before the clock runs out. Speed wins points, streaks build legends — and the leaderboard remembers everything.</p>
-                <div class="cw-cta-row">
-                    <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Play Now</a>
-                    <a class="cw-btn cw-btn-ghost" href="leaderboard.html">&#127942;&nbsp; Leaderboard</a>
-                </div>
-
-                <div class="cw-stats">
-                    <div class="cw-stat"><span class="n" data-stat="words">7,296+</span><span class="l">&#128218; Word Dictionary</span></div>
-                    <div class="cw-stat"><span class="n" data-stat="wotd">—</span><span class="l">&#127919; Word of the Day</span></div>
-                    <div class="cw-stat"><span class="n" data-stat="cats">13+</span><span class="l">&#128273; Word Categories</span></div>
-                </div>
+    <section id="features">
+        <div class="section-header reveal">
+            <div class="section-tag">Built for Word Warriors</div>
+            <h2>Every Round is a Race</h2>
+            <p>Every guess counts. Here is what keeps players coming back for more.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-cyan">⚡</div>
+                <h3>Speed Rounds</h3>
+                <p>Every 5th round is a 15-second sprint with 3x points. React fast or watch the crown slip away.</p>
             </div>
-        </section>
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-purple">🎯</div>
+                <h3>13+ Categories</h3>
+                <p>Travel, sports, food, people, music & arts — or let "Surprise me" decide your fate.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-pink">💡</div>
+                <h3>Power-Ups</h3>
+                <p>Spend points on Hints, Freeze the timer, or Challenge the round winner to a 30-second duel.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-gold">👑</div>
+                <h3>Live Leaderboards</h3>
+                <p>All-time top 20 plus a daily reset race. Seed yourself into history — today is board resets at midnight.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-green">🔥</div>
+                <h3>Streaks & XP</h3>
+                <p>Chain correct answers for streak bonuses, earn XP, level up and unlock achievements like "Speed Demon".</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon icon-cyan">🎤</div>
+                <h3>Voice Chat</h3>
+                <p>Talk tactics with your squad in-game. Guess faster, trash-talk smarter, celebrate louder.</p>
+            </div>
+        </div>
+    </section>
 
-        <!-- ============ PLAY ============ -->
-        <section class="cw-section cw-play" id="play">
-            <div class="cw-inner">
-                <span class="cw-kicker">The Arena</span>
-                <h2 class="cw-title">Play Now — <span>Live &amp; Multiplayer</span></h2>
-                <p class="cw-sub">Jump straight in: create a room, invite friends with a code, or join the active arena. Voice chat, power-ups and speed rounds are all live.</p>
+    <section id="arena" class="arena-section">
+        <div class="arena-card reveal">
+            <div class="section-tag">The Arena</div>
+            <h2>Play Now — Live & Multiplayer</h2>
+            <p>Jump straight in: create a room, invite friends with a code, or join the active arena. Voice chat, power-ups and speed rounds are all live.</p>
+            <div class="arena-features">
+                <div class="arena-feature"><span class="dot"></span> Up to 8 Players</div>
+                <div class="arena-feature"><span class="dot"></span> Real-time Sync</div>
+                <div class="arena-feature"><span class="dot"></span> Voice Enabled</div>
+                <div class="arena-feature"><span class="dot"></span> Instant Rooms</div>
+            </div>
+            <a href="game/" class="btn btn-gold btn-xl">
+                <span>▶</span> Create Room
+            </a>
+        </div>
+    </section>
 
-                <div class="cw-play-banner">
-                    <div class="cw-play-banner-inner">
-                        <span class="cw-hero-badge" style="margin-bottom:18px"><span class="dot" data-srv-dot></span><span data-srv-label>Arena online — jump in now</span></span>
-                        <h3>Every round is a race against the clock — and against your friends.</h3>
-                        <p>One tap and you're inside: rooms, missions, power-ups, voice chat and live leaderboards.</p>
-                        <div class="cw-cta-row" style="margin-bottom:0">
-                            <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Enter the Arena</a>
-                            <a class="cw-btn cw-btn-ghost" href="play.html?host=1">&#128736;&#65039;&nbsp; Host a Game</a>
-                        </div>
+    <section id="demo" class="game-demo-section">
+        <div class="section-header reveal">
+            <div class="section-tag">Live Preview</div>
+            <h2>Inside the Arena</h2>
+            <p>See what a real match looks like. Fast, clean, and built for speed.</p>
+        </div>
+        <div class="game-interface reveal">
+            <div class="game-header">
+                <div class="game-room-info">
+                    <div class="room-badge">ROOM: X7K9P2</div>
+                    <div class="player-count">
+                        <span>👥</span> 4/8 Players
+                    </div>
+                </div>
+                <div class="game-timer" id="gameTimer">00:15</div>
+            </div>
+            <div class="game-body">
+                <div class="category-grid">
+                    <div class="category-chip active">Travel</div>
+                    <div class="category-chip">Sports</div>
+                    <div class="category-chip">Food</div>
+                    <div class="category-chip">Music</div>
+                    <div class="category-chip">Science</div>
+                    <div class="category-chip">History</div>
+                    <div class="category-chip">Movies</div>
+                    <div class="category-chip">Tech</div>
+                </div>
+                <div class="word-reveal" id="wordReveal">
+                    <span class="word-letter" style="animation-delay:0s">_</span>
+                    <span class="word-letter" style="animation-delay:0.1s">_</span>
+                    <span class="word-letter" style="animation-delay:0.2s">_</span>
+                    <span class="word-letter" style="animation-delay:0.3s">_</span>
+                    <span class="word-letter" style="animation-delay:0.4s">_</span>
+                    <span class="word-letter" style="animation-delay:0.5s">_</span>
+                    <span class="word-letter" style="animation-delay:0.6s">_</span>
+                    <span class="word-letter" style="animation-delay:0.7s">_</span>
+                </div>
+                <p class="word-hint">Hint: A famous landmark in Paris</p>
+                <input type="text" class="word-input-demo" placeholder="Type your guess..." readonly>
+                <div class="game-players-bar">
+                    <div class="player-avatar">
+                        <div class="player-avatar-img active">You</div>
+                        <span class="player-avatar-name">You</span>
+                    </div>
+                    <div class="player-avatar">
+                        <div class="player-avatar-img" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">A</div>
+                        <span class="player-avatar-name">Alex</span>
+                    </div>
+                    <div class="player-avatar">
+                        <div class="player-avatar-img" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)">S</div>
+                        <span class="player-avatar-name">Sam</span>
+                    </div>
+                    <div class="player-avatar">
+                        <div class="player-avatar-img" style="background:linear-gradient(135deg,#ec4899,#a855f7)">M</div>
+                        <span class="player-avatar-name">Mia</span>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- ============ FEATURES ============ -->
-        <section class="cw-section cw-features" id="features">
-            <div class="cw-inner">
-                <span class="cw-kicker">Why Players Love It</span>
-                <h2 class="cw-title">Built for <span>Word Warriors</span></h2>
-                <p class="cw-sub">Every round is a race. Every guess counts. Here's what keeps players coming back.</p>
-                <div class="cw-grid">
-                    <div class="cw-card"><span class="ic">&#9889;</span><h3>Speed Rounds</h3><p>Every 5th round is a 15-second sprint with 3&times; points. React fast or watch the crown slip away.</p></div>
-                    <div class="cw-card"><span class="ic">&#127919;</span><h3>13+ Categories</h3><p>Travel, sports, food, people, music &amp; arts — or let &ldquo;Surprise me&rdquo; decide your fate.</p></div>
-                    <div class="cw-card"><span class="ic">&#128161;</span><h3>Power-Ups</h3><p>Spend points on Hints, Freeze the timer, or Challenge the round winner to a 30-second duel.</p></div>
-                    <div class="cw-card"><span class="ic">&#128081;</span><h3>Live Leaderboards</h3><p>All-time top 20 plus a daily reset race. Seed yourself into history — today's board resets at midnight.</p></div>
-                    <div class="cw-card"><span class="ic">&#128293;</span><h3>Streaks &amp; XP</h3><p>Chain correct answers for streak bonuses, earn XP, level up and unlock achievements like &ldquo;Speed Demon&rdquo;.</p></div>
-                    <div class="cw-card"><span class="ic">&#127908;</span><h3>Voice Chat</h3><p>Talk tactics with your squad in-game. Guess faster, trash-talk smarter, celebrate louder.</p></div>
+            <div class="game-footer">
+                <div class="round-info">Round <span>3</span> of 10 • Speed Round Next</div>
+                <div class="powerups-bar">
+                    <button class="powerup-btn">💡 Hint (50pts)</button>
+                    <button class="powerup-btn">❄️ Freeze</button>
+                    <button class="powerup-btn">⚔️ Duel</button>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- ============ DAILY MISSIONS ============ -->
-        <section class="cw-section cw-missions-site" id="missions">
-            <div class="cw-inner">
-                <span class="cw-kicker">Fresh Every Day</span>
-                <h2 class="cw-title">Daily <span>Missions</span></h2>
-                <p class="cw-sub">Complete missions to bank bonus points. Progress tracks automatically while you play and resets at midnight — there's always a reason to come back tomorrow.</p>
-                <div class="cw-mission-grid">
-                    <div class="cw-mcard"><span class="m-ic">&#127919;</span><h3>Solve 3 words</h3><p>Any round, any mode. Just keep guessing.</p><span class="m-reward">+150 pts</span></div>
-                    <div class="cw-mcard"><span class="m-ic">&#128260;</span><h3>Play 5 rounds</h3><p>Stay in the arena and bank the points.</p><span class="m-reward">+100 pts</span></div>
-                    <div class="cw-mcard"><span class="m-ic">&#9876;&#65039;</span><h3>Win a duel</h3><p>Beat a challenger in a speed duel.</p><span class="m-reward">+200 pts</span></div>
-                    <div class="cw-mcard"><span class="m-ic">&#128142;</span><h3>Earn 500 points</h3><p>Race hard — every round counts.</p><span class="m-reward">+250 pts</span></div>
+    <section id="missions">
+        <div class="section-header reveal">
+            <div class="section-tag">Fresh Every Day</div>
+            <h2>Daily Missions</h2>
+            <p>Complete missions to bank bonus points. Progress tracks automatically while you play and resets at midnight.</p>
+        </div>
+        <div class="missions-grid">
+            <div class="mission-card reveal">
+                <div class="mission-icon">🎯</div>
+                <div class="mission-info">
+                    <h4>Solve 3 Words</h4>
+                    <p>Any round, any mode</p>
                 </div>
-                <div style="text-align:center;margin-top:30px">
-                    <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Start Today's Missions</a>
-                </div>
+                <div class="mission-points">+150 pts</div>
             </div>
-        </section>
-
-        <!-- ============ HOW TO PLAY ============ -->
-        <section class="cw-section cw-howto" id="howto">
-            <div class="cw-inner">
-                <span class="cw-kicker">Get Started</span>
-                <h2 class="cw-title">How to <span>Play</span></h2>
-                <div class="cw-steps">
-                    <div class="cw-step"><h3>Join a Room</h3><p>Create a room and share the code, or tap into the active arena. Up to 8 players per game.</p></div>
-                    <div class="cw-step"><h3>Guess the Word</h3><p>A word is shown — type your answer before the timer runs out. Every correct guess scores.</p></div>
-                    <div class="cw-step"><h3>Race for Points</h3><p>The fastest correct answer banks 200 points; slower guesses scale down. Speed rounds triple it.</p></div>
-                    <div class="cw-step"><h3>Own the Board</h3><p>Build streaks, unlock achievements and climb the all-time leaderboard. Daily races reset at midnight.</p></div>
+            <div class="mission-card reveal">
+                <div class="mission-icon">🔄</div>
+                <div class="mission-info">
+                    <h4>Play 5 Rounds</h4>
+                    <p>Stay in the arena</p>
                 </div>
+                <div class="mission-points">+100 pts</div>
             </div>
-        </section>
+            <div class="mission-card reveal">
+                <div class="mission-icon">⚔️</div>
+                <div class="mission-info">
+                    <h4>Win a Duel</h4>
+                    <p>Beat a challenger</p>
+                </div>
+                <div class="mission-points">+200 pts</div>
+            </div>
+            <div class="mission-card reveal">
+                <div class="mission-icon">💎</div>
+                <div class="mission-info">
+                    <h4>Earn 500 Points</h4>
+                    <p>Race hard — every round</p>
+                </div>
+                <div class="mission-points">+250 pts</div>
+            </div>
+        </div>
+    </section>
 
-        <!-- ============ TOP PLAYERS ============ -->
-        <section class="cw-section cw-features" id="top-players">
-            <div class="cw-inner">
-                <span class="cw-kicker">Hall of Fame</span>
-                <h2 class="cw-title">Top <span>Players</span></h2>
-                <div class="cw-boards">
-                    <div class="cw-board">
-                        <h3>&#127942; All-Time Leaders <span class="tag">Top 5</span></h3>
-                        <div data-board="alltime" data-limit="5"></div>
+    <section id="how-to-play">
+        <div class="section-header reveal">
+            <div class="section-tag">Get Started</div>
+            <h2>How to Play</h2>
+            <p>Four steps between you and the crown. It is that simple.</p>
+        </div>
+        <div class="steps-container">
+            <div class="step-card reveal">
+                <div class="step-number">1</div>
+                <h3>Join a Room</h3>
+                <p>Create a room and share the code, or tap into the active arena. Up to 8 players per game.</p>
+            </div>
+            <div class="step-card reveal">
+                <div class="step-number">2</div>
+                <h3>Guess the Word</h3>
+                <p>A word is shown — type your answer before the timer runs out. Every correct guess scores.</p>
+            </div>
+            <div class="step-card reveal">
+                <div class="step-number">3</div>
+                <h3>Race for Points</h3>
+                <p>The fastest correct answer banks 200 points; slower guesses scale down. Speed rounds triple it.</p>
+            </div>
+            <div class="step-card reveal">
+                <div class="step-number">4</div>
+                <h3>Own the Board</h3>
+                <p>Build streaks, unlock achievements and climb the all-time leaderboard. Daily races reset at midnight.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="leaderboard">
+        <div class="section-header reveal">
+            <div class="section-tag">Hall of Fame</div>
+            <h2>Top Players</h2>
+            <p>The best of the best. Climb the ranks and etch your name into history.</p>
+        </div>
+        <div class="leaderboard-container">
+            <div class="leaderboard-card reveal">
+                <h3>🏆 All-Time Leaders</h3>
+                <div class="leaderboard-list">
+                    <div class="leaderboard-item">
+                        <div class="rank rank-1">1</div>
+                        <div class="player-avatar-sm">WM</div>
+                        <div class="player-name">WordMaster_99</div>
+                        <div class="player-score">124,500</div>
                     </div>
-                    <div class="cw-board">
-                        <h3>&#128197; Today's Race <span class="tag">Top 5</span></h3>
-                        <div data-board="today" data-limit="5"></div>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-2">2</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">SD</div>
+                        <div class="player-name">SpeedDemon</div>
+                        <div class="player-score">118,200</div>
                     </div>
-                </div>
-                <div style="text-align:center;margin-top:30px">
-                    <a class="cw-btn cw-btn-ghost" href="leaderboard.html">View Full Leaderboard &rarr;</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============ CTA BAND ============ -->
-        <section class="cw-cta">
-            <div class="cw-inner">
-                <h2>Ready to claim <span style="color:var(--cw-gold)">the crown</span>?</h2>
-                <p>One word. One clock. A room full of rivals. The leaderboard is waiting for your name.</p>
-                <a class="cw-btn cw-btn-gold" href="play.html">&#9654;&nbsp; Enter the Arena</a>
-            </div>
-        </section>
-
-        <!-- ============ FOOTER ============ -->
-        <footer class="cw-footer pt-5 pb-0">
-            <div class="container">
-                <div class="row g-4 pb-4">
-                    <div class="col-lg-5 col-md-6">
-                        <div class="fw-brand"><span class="gold">Champ</span> <span class="purple">Words</span></div>
-                        <p class="fw-blurb">The word game that turned guessing into a sport. Race your friends, crack the word first, and climb the board.</p>
-                        <span class="fw-status"><span class="dot" data-srv-dot></span><span data-srv-label>Arena online</span></span>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-3">3</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)">LK</div>
+                        <div class="player-name">LexiconKing</div>
+                        <div class="player-score">105,800</div>
                     </div>
-                    <div class="col-lg-3 col-md-6 col-6">
-                        <h5 class="fw-title">Quick Links</h5>
-                        <ul class="fw-list">
-                            <li><a href="index.html">Home</a></li>
-                            <li><a href="play.html">Play Now</a></li>
-                            <li><a href="leaderboard.html">Leaderboard</a></li>
-                            <li><a href="how-to-play.html">How to Play</a></li>
-                            <li><a href="about.html">About</a></li>
-                        </ul>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-other">4</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#ec4899,#a855f7)">VV</div>
+                        <div class="player-name">VocabViper</div>
+                        <div class="player-score">98,400</div>
                     </div>
-                    <div class="col-lg-4 col-md-6 col-6">
-                        <h5 class="fw-title">The Arena</h5>
-                        <ul class="fw-list">
-                            <li><a href="play.html">&#9654; Enter the Arena</a></li>
-                            <li><a href="play.html?host=1">&#128736;&#65039; Host a Game</a></li>
-                            <li><a href="/terms" target="_blank" rel="noopener">Terms of Service</a></li>
-                            <li><a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a></li>
-                        </ul>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-other">5</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#fbbf24,#f59e0b)">GG</div>
+                        <div class="player-name">GrammarGladiator</div>
+                        <div class="player-score">92,100</div>
                     </div>
                 </div>
             </div>
-            <div class="cw-footer-lower py-3">
-                <div class="container d-flex flex-wrap justify-content-between gap-2">
-                    <span>&copy; <span data-year></span> Champ Words. All rights reserved.</span>
-                    <span>Built with Bootstrap &middot; Powered by the Champ Words arena</span>
+            <div class="leaderboard-card reveal">
+                <h3>📅 Today is Race</h3>
+                <div class="leaderboard-list">
+                    <div class="leaderboard-item">
+                        <div class="rank rank-1">1</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#ef4444,#f97316)">RR</div>
+                        <div class="player-name">RapidFire_Ray</div>
+                        <div class="player-score">8,450</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-2">2</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#0ea5e9,#22c55e)">AL</div>
+                        <div class="player-name">AlphaLex</div>
+                        <div class="player-score">7,200</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-3">3</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#a855f7,#ec4899)">TT</div>
+                        <div class="player-name">TypeTitan</div>
+                        <div class="player-score">6,850</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-other">4</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#f59e0b,#fbbf24)">SS</div>
+                        <div class="player-name">SwiftSolver</div>
+                        <div class="player-score">5,900</div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div class="rank rank-other">5</div>
+                        <div class="player-avatar-sm" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)">WW</div>
+                        <div class="player-name">WordWiz</div>
+                        <div class="player-score">5,400</div>
+                    </div>
                 </div>
             </div>
-        </footer>
+        </div>
+    </section>
 
-    </div><!-- /.game-site -->
+    <section class="final-cta">
+        <div class="reveal">
+            <h2>Ready to claim <span class="gradient-text">the crown?</span></h2>
+            <p>One word. One clock. A room full of rivals. The leaderboard is waiting for your name.</p>
+            <a href="#arena" class="btn btn-primary btn-xl">
+                <span>▶</span> Enter the Arena
+            </a>
+        </div>
+    </section>
 
-    <button class="cw-topbtn" data-top aria-label="Back to top">&#8593;</button>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="logo-mark" style="width:28px;height:28px;font-size:0.9rem;">C</div>
+                    Champ Words
+                </div>
+                <div class="footer-links">
+                    <a href="game/privacy">Privacy</a>
+                    <a href="game/terms">Terms</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Discord</a>
+                    <a href="#">Twitter</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Champ Words. Built for word warriors everywhere.</p>
+            </div>
+        </div>
+    </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Scroll reveal animation
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Floating particles
+        const particlesContainer = document.getElementById('particles');
+        const colors = ['#00f0ff', '#a855f7', '#ec4899', '#fbbf24'];
+        
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (Math.random() * 15 + 12) + 's';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+            const size = Math.random() * 5 + 2;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Hero word rotation
+        const words = ['CHAMPWORDS', 'BATTLE', 'SPEED', 'VICTORY', 'STREAK', 'ARENA'];
+        let wordIndex = 0;
+        const heroWordBg = document.getElementById('heroWordBg');
+        
+        setInterval(() => {
+            wordIndex = (wordIndex + 1) % words.length;
+            heroWordBg.style.opacity = '0';
+            setTimeout(() => {
+                heroWordBg.textContent = words[wordIndex];
+                heroWordBg.style.opacity = '0.025';
+            }, 600);
+        }, 4000);
+
+        // Counter animation
+        const counters = document.querySelectorAll('[data-count]');
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const target = parseInt(entry.target.dataset.count);
+                    const duration = 2000;
+                    const start = performance.now();
+                    
+                    const updateCounter = (currentTime) => {
+                        const elapsed = currentTime - start;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        const current = Math.floor(easeOut * target);
+                        
+                        entry.target.textContent = current.toLocaleString() + '+';
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCounter);
+                        } else {
+                            entry.target.textContent = target.toLocaleString() + '+';
+                        }
+                    };
+                    
+                    requestAnimationFrame(updateCounter);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        counters.forEach(counter => counterObserver.observe(counter));
+
+        // Game timer demo
+        const timerEl = document.getElementById('gameTimer');
+        let seconds = 15;
+        setInterval(() => {
+            seconds--;
+            if (seconds < 0) seconds = 15;
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${mins}:${secs}`;
+            
+            if (seconds <= 5) {
+                timerEl.style.color = 'var(--accent-red)';
+                timerEl.style.textShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+            } else {
+                timerEl.style.color = 'var(--accent-cyan)';
+                timerEl.style.textShadow = '0 0 20px rgba(0, 240, 255, 0.3)';
+            }
+        }, 1000);
+
+        // Word reveal demo
+        const wordReveal = document.getElementById('wordReveal');
+        const demoWords = [
+            { word: 'PARIS___', hint: 'A famous landmark in Paris' },
+            { word: 'GUITAR__', hint: 'A stringed musical instrument' },
+            { word: 'PIZZA___', hint: 'Italian dish with cheese and toppings' },
+            { word: 'JUPITER_', hint: 'The largest planet in our solar system' },
+            { word: 'MARATHON', hint: 'A long-distance running race' }
+        ];
+        let demoWordIndex = 0;
+
+        function showWord() {
+            const current = demoWords[demoWordIndex];
+            wordReveal.innerHTML = '';
+            
+            current.word.split('').forEach((char, i) => {
+                const span = document.createElement('span');
+                span.className = 'word-letter';
+                span.style.animationDelay = (i * 0.08) + 's';
+                span.textContent = char;
+                wordReveal.appendChild(span);
+            });
+            
+            document.querySelector('.word-hint').textContent = 'Hint: ' + current.hint;
+            demoWordIndex = (demoWordIndex + 1) % demoWords.length;
+        }
+
+        showWord();
+        setInterval(showWord, 5000);
+
+        // Category chips
+        document.querySelectorAll('.category-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Mobile menu
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.display = 'none';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.background = 'rgba(7,7,10,0.95)';
+                navLinks.style.padding = '1.5rem';
+                navLinks.style.gap = '1.5rem';
+                navLinks.style.backdropFilter = 'blur(20px)';
+                navLinks.style.borderBottom = '1px solid var(--border-subtle)';
+            }
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
