@@ -641,7 +641,7 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
   const [fastestSec, setFastestSec] = useState(null);
   useEffect(() => { setFastestSec(null); }, [room && room.round]);
   useEffect(() => { if (room && room.state === 'playing') setRoundIntro(room.round); }, [room && room.round, room && room.state]);
-  useEffect(() => { if (roundIntro === null || !isWeb) return; const t = setTimeout(() => setRoundIntro(null), 3100); return () => clearTimeout(t); }, [roundIntro, isWeb]);
+  useEffect(() => { if (roundIntro === null) return; const t = setTimeout(() => setRoundIntro(null), 3200); return () => clearTimeout(t); }, [roundIntro]);
   useEffect(() => {
     const el = top5Ref.current; if (!el) return;
     const update = () => setTop5Scroll(el.scrollWidth > el.clientWidth + 2);
@@ -728,7 +728,8 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         isWeb ? <GoCountdown key={roundIntro} /> : (
           <div key={roundIntro} onAnimationEnd={() => setRoundIntro(null)} style={{
             position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center',
-            background:'rgba(7,7,10,0.85)', backdropFilter:'blur(20px)'
+            background:'rgba(7,7,10,0.85)', backdropFilter:'blur(20px)',
+            animation:'roundIntroFade 3.1s ease forwards', pointerEvents:'none'
           }}>
             <GlassCard style={{padding:'3rem 4rem', textAlign:'center'}} glow>
               <div style={{fontSize:'0.875rem', fontWeight:600, color:DT.textMuted, textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:'1rem'}}>ROUND</div>
@@ -1288,6 +1289,11 @@ export default function Game({ room, socket, me, showToast, onChatToggle, chatOp
         @keyframes tickerScroll {
           0% { transform: translateX(100%); }
           100% { transform: translateX(-100%); }
+        }
+        @keyframes roundIntroFade {
+          0% { opacity: 1; }
+          70% { opacity: 1; }
+          100% { opacity: 0; }
         }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
