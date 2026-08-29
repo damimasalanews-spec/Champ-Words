@@ -2,6 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import socket from './socket';
 import ShopPanel from './components/ShopPanel';
 import Logo from './components/Logo';
+import WallPushIntro from './components/WallPushIntro';
+import ChampionCelebration from './components/ChampionCelebration';
+import DuelSolvedPopup from './components/DuelSolvedPopup';
+import { TurnPopup } from './components/DuelGame';
 import { playSound, toggleMute, isMuted, startSiren, stopSiren } from './sounds';
 
 // Category → ambient background tint
@@ -95,6 +99,15 @@ const roundIntroTimer = useRef(null);
   const [rejoinIn, setRejoinIn] = useState(null);     // countdown seconds
   const [pendingRoom, setPendingRoom] = useState(''); // room we're waiting to return to
   const [waitShopOpen, setWaitShopOpen] = useState(false); // viewer shop on the waiting screen
+  const [duel, setDuel] = useState(null); // Wall Duel (Top-4 finale)
+  const [duelResult, setDuelResult] = useState(null); // champion name for the results banner
+  const [showDuelIntro, setShowDuelIntro] = useState(false); // "Wall Push is coming now" popup
+  const [champCelebration, setChampCelebration] = useState(null); // Wall Push champion — 8s winner celebration
+  const champCelebTimer = useRef(null);
+  const [duelSolved, setDuelSolved] = useState(null); // "guessed correctly — wall pushed" popup
+  const duelSolvedTimers = useRef([]);
+  const [turnAnnounce, setTurnAnnounce] = useState(null);    // "It's <player>'s turn" popup (3s)
+  const turnTimer = useRef(null);
   const rejoinTimerRef = useRef(null);
 
   const cancelAutoRejoin = useCallback(() => {
@@ -108,6 +121,8 @@ const roundIntroTimer = useRef(null);
     if (!res || !res.ok) return false;
     setRoom(res.room);
     localStorage.setItem('cw_last_room', res.room.id);
+    // No active duel server-side → drop any stale overlay
+    setDuel(prev => (prev && res.room.duelActive === false) ? null : prev);
     const st = res.room.state;
     if (st === 'round_over' && res.lastRound) { setRoundResult(res.lastRound); setGameResult(null); setScreen('round_over'); }
     else if (st === 'game_over' && res.lastGame) { setGameResult(res.lastGame); setRoundResult(null); setScreen('game_over'); }
@@ -134,7 +149,7 @@ const roundIntroTimer = useRef(null);
   useEffect(() => {
     if (isStudio) { setCanvasMode(true); return; }
     const applyMode = () => {
-      const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over';
+      const inGame = screen === 'playing' || screen === 'round_over' || screen === 'game_over' || screen === 'duel';
       // GAME SCREENS ALWAYS USE THE CLASSIC CANVAS LAYOUT (540×960) on
       // EVERY viewport — desktop AND mobile — exactly like the original
       // desktop game. The responsive canvas scaling (main.jsx) fits it to
@@ -219,6 +234,8 @@ const roundIntroTimer = useRef(null);
 
     socket.on('room_update', (data) => {
       setRoom(data);
+      // Duel over server-side → never leave a stuck overlay
+      setDuel(prev => (prev && data.duelActive === false) ? null : prev);
       // Host restarted the game → everyone returns to the waiting room
       if (data.state === 'waiting') { setScreen('waiting'); setGameResult(null); setRoundResult(null); }
     });
@@ -268,8 +285,71 @@ const roundIntroTimer = useRef(null);
     socket.on('notify', (n) => {
       if (n && n.text) setNotifications(prev => [...prev.slice(-7), n]);
     });
-    socket.on('game_over', (data) => { if (data && data.room) setRoom(data.room); setRoundResult(null); setGameResult(data); setScreen('game_over'); playSound('gameover'); });
+    socket.on('game_over', (data) => {
+      if (data && data.room) setRoom(data.room);
+      setRoundResult(null); setGameResult(data); setScreen('game_over'); setDuel(null); playSound('gameover');
+      // Wall Push is coming now — announcement popup, then the duel auto-starts
+      if (!data || !data.wallDuelEnded) {
+        setShowDuelIntro(true);
+        setTimeout(() => setShowDuelIntro(false), 3800);
+      }
+    });
+
     socket.on('chat', (msg) => { setMessages(prev => [...prev, msg]); playSound(msg && msg.sound ? msg.sound : 'chat'); });
+
+    // ── Wall Duel (Top-4 tug-of-war finale, host starts it at game over) ──
+    socket.on('duel_start', (d) => {
+      if (champCelebTimer.current) { clearTimeout(champCelebTimer.current); champCelebTimer.current = null; }
+      setChampCelebration(null);
+      duelSolvedTimers.current.forEach(t => clearTimeout(t));
+      duelSolvedTimers.current = [];
+      setDuelSolved(null);
+      setDuel({ phase: 'start', left: null, right: null, turn: null, player: null, pos: 0, art: null, wordLen: 0, duration: 0, receivedAt: null, name: '', stage: 'match' });
+      setDuelResult(null);
+      setScreen('duel'); // the duel plays ON the game page (board + art/brackets)
+      playSound('alert');
+    });
+    socket.on('duel_turn', (d) => {
+      setDuel(prev => ({ ...d, phase: 'turn', receivedAt: Date.now(), revealed: d.hints || [] }));
+      // Turn announcement popup: "It's <player>'s turn — TYPE THE WORD!" for
+      // 3 seconds, THEN the wall board is revealed (turn by turn). The timer
+      // keeps counting through the popup so it stays in sync with the server.
+      const side = d.left && d.player && d.player.id === d.left.id ? 'left' : 'right';
+      setTurnAnnounce({ name: d.player ? d.player.name : '', side, avatar: d.player ? d.player.avatar : null });
+      if (turnTimer.current) clearTimeout(turnTimer.current);
+      turnTimer.current = setTimeout(() => setTurnAnnounce(null), 3000);
+    });
+    socket.on('duel_push', (d) => {
+      // Fill the ANSWER brackets with the correct word, letter by letter.
+      const wordLetters = String(d.word || '').replace(/[^a-zA-Z]/g, '').toUpperCase().split('');
+      setDuel(prev => ({
+        ...prev,
+        phase: 'push',
+        name: d.name,
+        pos: d.pos,
+        dir: d.dir,
+        word: d.word || prev.word,
+        counts: d.counts || prev.counts,
+        revealed: wordLetters.length ? wordLetters.map((letter, index) => ({ index, letter })) : prev.revealed,
+      }));
+      // ~2s later announce "guessed the correct answer — wall pushed 1 step",
+      // then clear it before the next turn announcement (server sends the
+      // next duel_turn ~4.8s after the correct answer).
+      duelSolvedTimers.current.forEach(t => clearTimeout(t));
+      duelSolvedTimers.current = [
+        setTimeout(() => setDuelSolved({ name: d.name, id: Date.now() }), 2000),
+        setTimeout(() => setDuelSolved(null), 4300),
+      ];
+    });
+    socket.on('duel_wrong', (d) => setDuel(prev => ({ ...prev, phase: 'wrong', name: d.name, dir: d.dir, pos: d.pos, timeout: !!d.timeout, word: d.word })));
+    socket.on('duel_match_win', (d) => setDuel(prev => ({ ...prev, phase: 'match_win', name: d.winner })));
+    socket.on('duel_champion', (d) => { setDuel(prev => ({ ...prev, phase: 'champion', name: d.name })); setDuelResult(d.name);
+      // Premium 8s winner celebration for the Wall Push champion
+      setChampCelebration(d.name);
+      if (champCelebTimer.current) clearTimeout(champCelebTimer.current);
+      champCelebTimer.current = setTimeout(() => setChampCelebration(null), 8000);
+    });
+    socket.on('duel_end', () => setDuel(null));
     socket.on('chat_cleared', () => setMessages([]));
     socket.on('kicked', () => {
       showToast('You were removed by the host', 'error');
@@ -292,6 +372,7 @@ const roundIntroTimer = useRef(null);
 
     return () => {
       stopSiren(); // never leave a siren running if the app unmounts mid-popup
+      if (turnTimer.current) clearTimeout(turnTimer.current);
       socket.off('room_update'); socket.off('champ_turn'); socket.off('round_started');
       socket.off('word_found'); socket.off('time_up'); socket.off('round_over');
       socket.off('game_over'); socket.off('chat'); socket.off('chat_cleared'); socket.off('kicked'); socket.off('connect_error');
@@ -628,7 +709,7 @@ const roundIntroTimer = useRef(null);
         </div>
       )}
 
-      {screen === 'playing' && room && (
+      {(screen === 'playing' || screen === 'duel') && room && (
         <Game
           room={room}
           socket={socket}
@@ -639,6 +720,7 @@ const roundIntroTimer = useRef(null);
           onChooseWord={handleChooseWord}
           messages={messages}
           notifications={notifications}
+          duel={screen === 'duel' ? duel : null}
         />
       )}
 
@@ -726,7 +808,7 @@ const roundIntroTimer = useRef(null);
           <div className="duel-card">
             <div className="duel-title">⚔️ SPEED DUEL</div>
             <div className="duel-art">
-              {String(room.duel.art || '').startsWith('http')
+              {String(room.duel.art || '').startsWith('http') || String(room.duel.art || '').startsWith('/')
                 ? <img className="duel-art-img" src={room.duel.art} alt="" />
                 : <span className="duel-art-emoji">{room.duel.art}</span>}
             </div>
@@ -753,6 +835,22 @@ const roundIntroTimer = useRef(null);
         </div>
       ) : null}
 
+      {/* Wall Push is coming now — announcement popup */}
+      {showDuelIntro && <WallPushIntro onDone={() => setShowDuelIntro(false)} />}
+
+      {/* Wall Push champion — premium 8s winner celebration */}
+      {champCelebration && (
+        <ChampionCelebration name={champCelebration} onDone={() => setChampCelebration(null)} />
+      )}
+
+      {/* Turn announcement — "It's <player>'s turn" popup (3s), turn by turn */}
+      {turnAnnounce && screen === 'duel' && (
+        <TurnPopup name={turnAnnounce.name} side={turnAnnounce.side} avatar={turnAnnounce.avatar} />
+      )}
+
+      {/* Wall Push correct answer — "guessed the correct answer, wall pushed 1 step" */}
+      {duelSolved && screen === 'duel' && <DuelSolvedPopup key={duelSolved.id} name={duelSolved.name} />}
+
       {screen === 'game_over' && gameResult && (
         <GameOver
           result={gameResult}
@@ -761,6 +859,7 @@ const roundIntroTimer = useRef(null);
           me={room && room.players ? room.players.find(p => p.id === socket.id) : null}
           onPlayAgain={handlePlayAgain}
           onLeave={handleLeave}
+          duelResult={duelResult}
         />
       )}
       {chatOpen && <Chat messages={messages} onSend={handleSendMessage} onClose={() => setChatOpen(false)} />}

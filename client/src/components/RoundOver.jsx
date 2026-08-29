@@ -119,7 +119,7 @@ export default function RoundOver({ result, room, me }) {
                 return (
                   <div
                     key={r.id || i}
-                    className={`lb10-row${i === 0 ? ' leader' : ''}${isWinner ? ' winner' : ''}${isMe ? ' me' : ''}`}
+                    className={`lb10-row${isMe ? ' me' : ''}`}
                     style={{ '--idx': i, '--bar': `${maxScore > 0 ? Math.max(6, Math.round((r.score / maxScore) * 100)) : 0}%` }}
                   >
                     <span className={`lb10-rank${rankCls}`}>{i + 1}</span>
@@ -131,13 +131,13 @@ export default function RoundOver({ result, room, me }) {
                       )}
                       <div className="lb10-meta">
                         <div className="lb10-name">
-                          {isWinner && <span className="lb10-crown">👑</span>}
-                          {r.name.slice(0, typedLen)}
-                          {typing && <span className="typewriter-caret" />}
-                          {isMe && <span className="lb10-you">YOU</span>}
+                          <span className="lb10-name-text">
+                            {r.name.slice(0, typedLen)}
+                            {typing && <span className="typewriter-caret" />}
+                          </span>
                         </div>
                         <div className="lb10-chips" style={{ opacity: typedLen >= r.nameLen ? 1 : 0, transition: 'opacity 0.25s' }}>
-                          {isWinner && <span className="lb10-chip win">⚡ WINNER</span>}
+                          {isMe && !isWinner && <span className="lb10-chip you">YOU</span>}
                           {r.streak >= 2 && <span className="lb10-chip streak">🔥 ×{r.streak}</span>}
                           {!r.isAllTime && r.level > 1 && <span className="lb10-chip lvl">LV {r.level}</span>}
                           {!r.isAllTime && r.xp > 0 && <span className="lb10-chip xp">{r.xp} XP</span>}

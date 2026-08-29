@@ -19,7 +19,7 @@ function ConfettiRain() {
   return <div className="confetti-rain" aria-hidden="true">{pieces}</div>;
 }
 
-export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeave }) {
+export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeave, duelResult }) {
   useEffect(() => { playSound('gameover'); }, []);
   const [allTime, setAllTime] = useState([]);
   const [countdown, setCountdown] = useState(isHost ? AUTO_RESTART_SECONDS : null);
@@ -42,7 +42,14 @@ export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeav
   }, [isHost, countdown, onPlayAgain]);
 
   const sorted = [...result.scores].sort((a, b) => b.score - a.score);
-  const winner = sorted[0];
+  // After the Top-4 Wall Push duel the headline celebrates the WALL DUEL
+  // champion — the main game's top scorer still has their place in the
+  // scoreboard below. (The server marks the post-duel game_over with
+  // wallDuelEnded so we don't hijack a normal game-over screen.)
+  const duelWinner = result && result.wallDuelEnded && duelResult
+    ? { name: duelResult, score: sorted[0] ? sorted[0].score : 0 }
+    : null;
+  const winner = duelWinner || sorted[0];
   const rankEmoji = ['🥇', '🥈', '🥉'];
   // Champion-board rows: all-time legends when available, else this game's scores
   const boardRows = allTime.length ? allTime : (result.scores || []).slice(0, 10);
@@ -109,6 +116,13 @@ export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeav
           <div className="winner-name">{winner?.name || 'Nobody'} Wins!</div>
         </div>
 
+        {/* Wall Duel champion banner (the duel auto-starts after the game) */}
+        {duelResult && (
+          <div className="duel-launch">
+            <div className="duel-result-banner">🏆 Wall Duel Champion: <b>{duelResult}</b></div>
+          </div>
+        )}
+
         {sorted.length >= 1 && (
           <div className="podium">
             {[sorted[1], sorted[0], sorted[2]].filter(Boolean).map((p, i) => (
@@ -158,7 +172,7 @@ export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeav
                 return (
                   <div
                     key={p.key || p.id || name}
-                    className={`lb10-row${isLeader ? ' leader winner' : ''}${isMe ? ' me' : ''}`}
+                    className={`lb10-row${isMe ? ' me' : ''}`}
                     style={{ '--idx': i, '--bar': `${boardMax > 0 ? Math.max(6, Math.round(((p.score || 0) / boardMax) * 100)) : 0}%` }}
                   >
                     <span className={`lb10-rank${i === 0 ? ' r1' : i === 1 ? ' r2' : i === 2 ? ' r3' : ''}`}>{i + 1}</span>
@@ -170,12 +184,10 @@ export default function GameOver({ result, room, isHost, me, onPlayAgain, onLeav
                       )}
                       <div className="lb10-meta">
                         <div className="lb10-name">
-                          {isLeader && <span className="lb10-crown">👑</span>}
-                          {name}
-                          {isMe && <span className="lb10-you">YOU</span>}
+                          <span className="lb10-name-text">{name}</span>
                         </div>
                         <div className="lb10-chips">
-                          {isLeader && <span className="lb10-chip win">⚡ TOP</span>}
+                          {isMe && !isLeader && <span className="lb10-chip you">YOU</span>}
                           {(allTime.length ? p.chat : p.isChat) && <span className="lb10-chip chat">CHAT</span>}
                           {p.found > 0 && <span className="lb10-chip words">{p.found} words</span>}
                           {p.bestStreak >= 2 && <span className="lb10-chip streak">🔥 ×{p.bestStreak}</span>}

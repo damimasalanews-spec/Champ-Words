@@ -1,27 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 /**
- * SpeedChampionPopup — full-screen reveal for SPEED ROUND winners.
+ * SpeedChampionPopup — full-screen lightning reveal for SPEED ROUND winners.
  * Completely different from the regular champion popup: an electric
- * lightning theme (cyan/violet + gold) with a charging energy core,
- * radiating speed lines, crackling bolts and electric sparks — then the
- * winner's name STRIKES in behind a white-out flash.
- *
- * Phase 1 (4s): CHARGING — the hex core spins up, bolts flicker, the
- *               winner stays hidden ("Charging the strike…").
- * Phase 2 (4s): STRIKE — a flash, then name + triple-points stats slam in.
+ * lightning theme (cyan/violet + gold) with radiating speed lines, crackling
+ * bolts and electric sparks — the winner's name STRIKES in behind a
+ * white-out flash. (The charging-core phase was removed on request — the
+ * lightning reveal appears immediately.)
  *
  * Total 8s — EXACTLY the same timing as the regular ChampionPopup
- * (reveal at 4s, onDone at 8s) so the round flow never changes.
+ * (onDone at 8s) so the round flow never changes.
  */
 export default function SpeedChampionPopup({ name = 'WINNER', streak = 0, gained = 0, elapsed = 0, newRecord = false, multiplier = 3, onDone }) {
-  const [revealed, setRevealed] = useState(false);
-
   useEffect(() => {
-    const t1 = setTimeout(() => setRevealed(true), 4000);       // strike after the 4s charge
-    const t2 = setTimeout(() => { if (onDone) onDone(); }, 8000); // total 8s — matches the champion popup
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t = setTimeout(() => { if (onDone) onDone(); }, 8000); // total 8s — matches the champion popup
+    return () => clearTimeout(t);
   }, []);
 
   const bolts = [
@@ -32,7 +26,7 @@ export default function SpeedChampionPopup({ name = 'WINNER', streak = 0, gained
   ];
 
   const popup = (
-    <div className={`speed-popup${revealed ? ' revealed' : ''}`}>
+    <div className="speed-popup">
       {/* Crackling lightning bolts at the edges */}
       {bolts.map((b, i) => (
         <svg key={i} className={`speed-bolt ${b.cls}`} viewBox="0 0 100 200" preserveAspectRatio="none" aria-hidden="true">
@@ -50,19 +44,8 @@ export default function SpeedChampionPopup({ name = 'WINNER', streak = 0, gained
       {/* White-out flash at the strike moment */}
       <div className="speed-flash" aria-hidden="true" />
 
-      {!revealed ? (
-        <div className="speed-charge">
-          <div className="speed-core">
-            <span className="speed-core-ring r3" />
-            <span className="speed-core-ring r2" />
-            <span className="speed-core-ring r1" />
-            <span className="speed-core-hex" />
-            <span className="speed-core-bolt">⚡</span>
-          </div>
-          <div className="speed-charge-label">⚡ Speed Round ⚡</div>
-          <div className="speed-charge-sub">Charging the strike…</div>
-        </div>
-      ) : (
+      {/* Same anchor as the speed-round intro popup (.speed-intro-pos) */}
+      <div className="speed-popup-pos">
         <div className="speed-reveal">
           <div className="speed-wordmark"><span className="sw-bolt">⚡</span>Speed Champion<span className="sw-bolt">⚡</span></div>
           <div className="speed-name">{name}</div>
@@ -74,7 +57,7 @@ export default function SpeedChampionPopup({ name = 'WINNER', streak = 0, gained
             {newRecord && <span className="speed-stat record">🏁 New record</span>}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Electric sparks flying outward */}
       <div className="speed-sparks" aria-hidden="true">

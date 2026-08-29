@@ -3606,47 +3606,49 @@ html.tiktok-half .top10-row.top10-me {
   color: #ffd9ec; padding: 6px 18px; border-radius: 999px;
   background: rgba(255, 158, 203, 0.12); border: 1px solid rgba(255, 158, 203, 0.4);
 }
-/* Phase 1 placeholder — a pulsing ✦ while the names orbit (winner hidden) */
+/* Phase 1 placeholder — a pulsing ✦ while the other players fly out (winner hidden) */
 .champ-popup-wait {
   font-family: 'Outfit', sans-serif; font-weight: 300;
   font-size: clamp(34px, 6vw, 58px); color: rgba(255, 209, 102, 0.8);
   text-shadow: 0 0 26px rgba(255, 209, 102, 0.55);
   animation: champWaitPulse 1.6s ease-in-out infinite;
 }
-/* ── Orbit: the glowing ring with every other player's name circling it ── */
-.champ-popup-orbit {
+/* ── The champion's circle: glowing ring where the correct-answer player appears ── */
+.champ-popup-ring {
   position: absolute; left: 50%; top: 50%;
   width: min(60vw, 56vh, 400px); height: min(60vw, 56vh, 400px);
-  /* --off pulls the whole circle (and names) up from the center */
+  /* --off pulls the circle up from the center (same spot as before) */
   margin: calc(min(60vw, 56vh, 400px) / -2 - var(--off, 178px)) 0 0 calc(min(60vw, 56vh, 400px) / -2);
-  --cr: calc(min(60vw, 56vh, 400px) / 2 - 30px);
   z-index: 1; pointer-events: none;
   border-radius: 50%;
   border: 2px dashed rgba(255, 158, 203, 0.45);
   box-shadow: 0 0 50px rgba(255, 158, 203, 0.18), inset 0 0 50px rgba(255, 158, 203, 0.1);
-  animation: champOrbit 12s linear infinite, champRingPulse 3.5s ease-in-out infinite;
+  animation: champRingPulse 3.5s ease-in-out infinite;
 }
-.champ-popup-orbit::before {
+.champ-popup-ring::before {
   content: ''; position: absolute; inset: 14px; border-radius: 50%;
   border: 1px solid rgba(255, 158, 203, 0.18);
 }
+
+/* ── Free flight: player names fly across the FULL screen on random paths ── */
+.champ-popup-orbit {
+  position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  z-index: 1; pointer-events: none;
+}
 .champ-popup-orbit-slot {
-  position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
 }
 .champ-popup-orbit-center {
   position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
 }
 .champ-popup-orbit-name {
-  display: inline-block;
+  position: absolute; transform: translate(-50%, -50%); will-change: left, top;
   font-family: 'Outfit', sans-serif; font-weight: 700; font-size: clamp(12px, 2vw, 18px);
   letter-spacing: 1px; text-transform: uppercase; color: #ffd2e9;
   padding: 4px 12px; border-radius: 999px; white-space: nowrap;
   background: rgba(255, 158, 203, 0.12); border: 1px solid rgba(255, 158, 203, 0.4);
   text-shadow: 0 0 10px rgba(255, 158, 203, 0.5);
-  animation: champOrbitReverse 12s linear infinite; /* keeps names upright */
 }
-@keyframes champOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes champOrbitReverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
 @keyframes champRingPulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; box-shadow: 0 0 70px rgba(255, 158, 203, 0.3), inset 0 0 64px rgba(255, 158, 203, 0.12); } }
 @keyframes champWaitPulse { 0%, 100% { opacity: 0.45; transform: scale(0.94) rotate(0deg); } 50% { opacity: 1; transform: scale(1.08) rotate(20deg); } }
 .champ-popup-particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }

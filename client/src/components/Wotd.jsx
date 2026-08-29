@@ -66,7 +66,7 @@ export default function Wotd({ onBack }) {
           <div className="wotd-date">{data.date}</div>
 
           <div className="wotd-art">
-            {String(data.art).startsWith('http') ? <img className="art-flag" src={data.art} alt="" /> : data.art}
+            {String(data.art).startsWith('http') || String(data.art).startsWith('/') ? <img className="art-flag" src={data.art} alt="" /> : data.art}
           </div>
 
           <div className="wotd-brackets">
