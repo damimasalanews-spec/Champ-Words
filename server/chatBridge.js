@@ -125,12 +125,18 @@ function start() {
   conn.on('disconnected', () => {
     if (state.stopped) return;
     state.lastError = 'disconnected';
+    // Reset the running flag + drop the dead socket so the scheduled
+    // reconnect below can actually proceed (start() bails while running).
+    state.running = false;
+    state.conn = null;
     scheduleReconnect(15000);
   });
 
   conn.on('streamEnd', () => {
     if (state.stopped) return;
     state.lastError = 'stream ended — waiting for the next live';
+    state.running = false;
+    state.conn = null;
     scheduleReconnect(30000);
   });
 
